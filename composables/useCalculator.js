@@ -353,7 +353,7 @@ export const useCalculator = () => {
     }
 
     // Sum / total (only if not a defined variable)
-    const isSumKeyword = (cleanLower === 'sum' || cleanLower === 'total') && !variables.value[cleanLower]
+    const isSumKeyword = cleanLower === 'sum' && !variables.value['sum']
     if (isSumKeyword) {
       const currency = detectSumCurrency(index, allResults)
       if (currency) {
@@ -364,11 +364,9 @@ export const useCalculator = () => {
       return { value: sum, display: formatResult(sum) }
     }
 
-    const isSumWithOp = (cleanLower.startsWith('sum ') || cleanLower.startsWith('total ')) &&
-      !variables.value[cleanLower.startsWith('sum') ? 'sum' : 'total']
+    const isSumWithOp = cleanLower.startsWith('sum ') && !variables.value['sum']
     if (isSumWithOp) {
-      const keyword = cleanLower.startsWith('sum') ? 'sum' : 'total'
-      const sumConvMatch = cleanInput.match(new RegExp(`^${keyword}\\s+(in|as)\\s+([a-zA-Z€$£¥₹₽]+\\d?|m\\/s|km\\/h|mi\\/h|ft\\/s)`, 'i'))
+      const sumConvMatch = cleanInput.match(/^sum\s+(in|as)\s+([a-zA-Z€$£¥₹₽]+\d?|m\/s|km\/h|mi\/h|ft\/s)/i)
       if (sumConvMatch) {
         const targetStr = sumConvMatch[2].trim()
         const targetCurrency = currencyMap[targetStr.toLowerCase()] || targetStr.toUpperCase()
@@ -380,7 +378,7 @@ export const useCalculator = () => {
         return { value: sum, display: `${formatResult(sum)} ${targetStr}` }
       }
       const sum = calculateSum(index, allResults)
-      const expression = cleanInput.replace(new RegExp(`^${keyword}\\s+`, 'i'), `${sum} `)
+      const expression = cleanInput.replace(/^sum\s+/i, `${sum} `)
       const result = evaluateMath(expression)
       return { value: result, display: formatResult(result) }
     }

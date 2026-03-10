@@ -25,7 +25,7 @@
  * 21. Date arithmetic (today + 3 days, etc.)
  * 22. Duration calculations
  * 23. fromunix() function
- * 24. Sum & total operators
+ * 24. Sum operator
  * 25. Average & avg operators
  * 26. Formatting: headers (#), comments (//), labels (Label:)
  * 27. Inline comments with double quotes
@@ -1104,17 +1104,12 @@ describe('fromunix()', () => {
 })
 
 // ============================================================
-// 29. SUM & TOTAL
+// 29. SUM
 // ============================================================
-describe('Sum & Total', () => {
+describe('Sum', () => {
   it('sum of lines above', () => {
     const results = calcLines(['10', '15', '25', 'sum'])
     expect(parseFloat(results[3])).toBe(50)
-  })
-
-  it('total is alias for sum', () => {
-    const results = calcLines(['10', '20', 'total'])
-    expect(parseFloat(results[2])).toBe(30)
   })
 
   it('sum stops at empty line', () => {
@@ -1133,7 +1128,7 @@ describe('Sum & Total', () => {
   })
 
   it('sum with labels', () => {
-    const results = calcLines(['Item 1: 10', 'Item 2: 20', 'Total: sum'])
+    const results = calcLines(['Item 1: 10', 'Item 2: 20', 'Sum: sum'])
     expect(parseFloat(results[2])).toBe(30)
   })
 
@@ -1143,8 +1138,8 @@ describe('Sum & Total', () => {
     expect(results[3]).toMatch(/GBP/)
   })
 
-  it('total preserves currency from lines above', () => {
-    const results = calcLines(['€100', '€200', '€50', 'total'])
+  it('sum preserves currency from EUR lines above', () => {
+    const results = calcLines(['€100', '€200', '€50', 'sum'])
     expect(parseFloat(results[3])).toBe(350)
     expect(results[3]).toMatch(/EUR/)
   })
