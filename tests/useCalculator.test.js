@@ -969,6 +969,35 @@ describe('Currency', () => {
     expect(parseFloat(results[1])).toBe(150)
     expect(results[1]).toMatch(/EUR/)
   })
+
+  it('parenthesized currency expression converted: a = €1, (a + $4) in GBP', () => {
+    const results = calcLines(['a = €1', '(a + $4) in GBP'])
+    expect(results[1]).toMatch(/GBP/)
+    // €1 in USD = 1/0.87 ≈ 1.1494, $4 = 4 USD, total ≈ 5.1494 USD
+    // 5.1494 USD in GBP = 5.1494 * 0.75 ≈ 3.862
+    const gbpValue = parseFloat(results[1])
+    expect(gbpValue).toBeGreaterThan(3.5)
+    expect(gbpValue).toBeLessThan(4.5)
+  })
+
+  it('simple currency expression converted: $100 + €50 in GBP', () => {
+    const results = calcLines(['$100 + €50 in GBP'])
+    expect(results[0]).toMatch(/GBP/)
+    // $100 = 100 USD, €50 in USD = 50/0.87 ≈ 57.47, total ≈ 157.47 USD
+    // 157.47 * 0.75 ≈ 118.1 GBP
+    const gbpValue = parseFloat(results[0])
+    expect(gbpValue).toBeGreaterThan(110)
+    expect(gbpValue).toBeLessThan(130)
+  })
+
+  it('currency variable expression converted: a = €100, a in GBP (no parens)', () => {
+    // This already worked, but verify it still does
+    const results = calcLines(['a = €100', 'a in GBP'])
+    expect(results[1]).toMatch(/GBP/)
+    const gbpValue = parseFloat(results[1])
+    expect(gbpValue).toBeGreaterThan(80)
+    expect(gbpValue).toBeLessThan(95)
+  })
 })
 
 // ============================================================

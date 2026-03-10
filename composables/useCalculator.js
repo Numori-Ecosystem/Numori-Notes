@@ -1182,7 +1182,7 @@ export const useCalculator = () => {
   const handleCurrencyExpression = (input) => {
     const noResult = { value: 0, currency: null, hasCurrency: false, isConverted: false }
 
-    // "$30 in EUR" or "€50 in USD"
+    // "$30 in EUR" or "€50 in USD" or "(a + $4) in GBP"
     const convMatch = input.match(/^(.+?)\s+in\s+([a-zA-Z€$£¥₹₽]+)$/i)
     if (convMatch) {
       const sourceExpr = convMatch[1].trim()
@@ -1190,27 +1190,52 @@ export const useCalculator = () => {
       const targetCurrency = currencyMap[targetStr.toLowerCase()] || targetStr.toUpperCase()
 
       if (exchangeRates.value[targetCurrency]) {
-        // Try to parse source as currency
+        // Try to parse source as simple currency: "$30", "€50"
         const parsed = parseCurrency(sourceExpr)
-        if (parsed) {
+        if (parsed && !parsed.rest) {
           const converted = convertCurrency(parsed.value, parsed.currency, targetCurrency)
           return { value: converted, currency: targetCurrency, hasCurrency: true, isConverted: true }
         }
 
-        // Try to evaluate source as math and assume USD
-        try {
-          const value = evaluateMath(sourceExpr)
-          // Check if there's a variable with currency
-          for (const [varName, varVal] of Object.entries(variables.value)) {
-            if (typeof varVal === 'object' && varVal.currency) {
-              const regex = new RegExp(`\\b${varName}\\b`, 'i')
-              if (regex.test(sourceExpr)) {
-                const converted = convertCurrency(value, varVal.currency, targetCurrency)
-                return { value: converted, currency: targetCurrency, hasCurrency: true, isConverted: true }
-              }
+        // Check if source expression contains currency symbols or currency variables
+        const hasCurrencySymbols = /[€$£¥₹₽]/.test(sourceExpr)
+        let hasCurrencyVars = false
+        const cvarsInSource = []
+        for (const [varName, varVal] of Object.entries(variables.value)) {
+          if (varName.startsWith('_')) continue
+          if (typeof varVal === 'object' && varVal.currency) {
+            const regex = new RegExp(`\\b${varName}\\b`, 'i')
+            if (regex.test(sourceExpr)) {
+              hasCurrencyVars = true
+              cvarsInSource.push({ name: varName, value: varVal.value, currency: varVal.currency })
             }
           }
-          // Default: assume USD
+        }
+
+        if (hasCurrencySymbols || hasCurrencyVars) {
+          // Normalize everything to USD, evaluate, then convert to target
+          let expr = sourceExpr
+          expr = expr.replace(/([€$£¥₹₽])\s*(\d+(?:\.\d+)?)/g, (_, symbol, num) => {
+            const cur = currencyMap[symbol]
+            const val = parseFloat(num)
+            const usdVal = val / exchangeRates.value[cur]
+            return `(${usdVal})`
+          })
+          for (const cv of cvarsInSource) {
+            const regex = new RegExp(`\\b${cv.name}\\b`, 'gi')
+            const usdVal = cv.value / exchangeRates.value[cv.currency]
+            expr = expr.replace(regex, `(${usdVal})`)
+          }
+          try {
+            const usdResult = evaluateMath(expr)
+            const converted = usdResult * exchangeRates.value[targetCurrency]
+            return { value: converted, currency: targetCurrency, hasCurrency: true, isConverted: true }
+          } catch (e) { /* fall through */ }
+        }
+
+        // Plain math expression — try to evaluate and assume USD
+        try {
+          const value = evaluateMath(sourceExpr)
           const converted = convertCurrency(value, 'USD', targetCurrency)
           return { value: converted, currency: targetCurrency, hasCurrency: true, isConverted: true }
         } catch (e) { /* fall through */ }
