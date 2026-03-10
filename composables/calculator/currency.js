@@ -3,6 +3,37 @@ import { currencyMap, exchangeRates, ratesFetched, variables } from './constants
 import { SCALE_SUFFIX, SCALED_NUM_RE, applyScale } from './scales'
 import { evaluateMath } from './math'
 
+// Regex for matching code-based currency amounts like "56 EUR", "2k usd", "1.5M gbp"
+const CODE_CURRENCY_RE = /(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s+([a-zA-Z]+)/g
+
+// Replace code-based currency amounts (e.g. "56 EUR") with their USD value in an expression
+const replaceCodeCurrencies = (expr) => {
+  return expr.replace(CODE_CURRENCY_RE, (match, num, scale, code) => {
+    const currency = currencyMap[code.toLowerCase()] || code.toUpperCase()
+    if (exchangeRates.value[currency]) {
+      const val = applyScale(num, scale)
+      const usdVal = val / exchangeRates.value[currency]
+      return `(${usdVal})`
+    }
+    return match
+  })
+}
+
+// Find all code-based currency matches in an expression
+const findCodeCurrencyMatches = (input) => {
+  const matches = []
+  const re = new RegExp(CODE_CURRENCY_RE.source, 'g')
+  let m
+  while ((m = re.exec(input)) !== null) {
+    const code = m[3]
+    const currency = currencyMap[code.toLowerCase()] || code.toUpperCase()
+    if (exchangeRates.value[currency]) {
+      matches.push({ value: applyScale(m[1], m[2]), currency })
+    }
+  }
+  return matches
+}
+
 // Fetch live exchange rates
 export const fetchExchangeRates = async () => {
   const tryFetch = async (url) => {
@@ -117,7 +148,9 @@ export const handleCurrencyExpression = (input) => {
         }
       }
 
-      if (hasCurrencySymbols || hasCurrencyVars) {
+      const hasCodeCurrencies = findCodeCurrencyMatches(sourceExpr).length > 0
+
+      if (hasCurrencySymbols || hasCurrencyVars || hasCodeCurrencies) {
         let expr = sourceExpr
         expr = expr.replace(/([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?/g, (_, symbol, num, scale) => {
           const cur = currencyMap[symbol]
@@ -130,6 +163,7 @@ export const handleCurrencyExpression = (input) => {
           const usdVal = cv.value / exchangeRates.value[cv.currency]
           expr = expr.replace(regex, `(${usdVal})`)
         }
+        expr = replaceCodeCurrencies(expr)
         try {
           const usdResult = evaluateMath(expr)
           const converted = usdResult * exchangeRates.value[targetCurrency]
@@ -191,12 +225,22 @@ export const handleCurrencyExpression = (input) => {
     symbolMatches.push({ symbol: sMatch[1], value: applyScale(sMatch[2], sMatch[3]), currency: currencyMap[sMatch[1]] })
   }
 
-  const hasCurrencyContext = currencyVarsInExpr.length > 0 || symbolMatches.length > 0
+  const codeCurrencyMatches = findCodeCurrencyMatches(input)
+
+  const hasCurrencyContext = currencyVarsInExpr.length > 0 || symbolMatches.length > 0 || codeCurrencyMatches.length > 0
 
   if (hasCurrencyContext) {
-    const primaryCurrency = currencyVarsInExpr.length > 0
-      ? currencyVarsInExpr[0].currency
-      : symbolMatches[0].currency
+    // Determine primary currency by what appears first in the expression
+    let primaryCurrency
+    if (currencyVarsInExpr.length > 0) {
+      primaryCurrency = currencyVarsInExpr[0].currency
+    } else {
+      const firstSymbolIdx = symbolMatches.length > 0 ? input.indexOf(symbolMatches[0].symbol) : Infinity
+      const firstCodeIdx = codeCurrencyMatches.length > 0 ? input.search(new RegExp(`\\d[\\d.]*\\s*(?:[kKM]|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\\s+${codeCurrencyMatches[0].currency}`, 'i')) : Infinity
+      primaryCurrency = firstSymbolIdx <= firstCodeIdx
+        ? symbolMatches[0].currency
+        : codeCurrencyMatches[0].currency
+    }
 
     let expr = input
 
@@ -212,6 +256,8 @@ export const handleCurrencyExpression = (input) => {
       const usdVal = cv.value / exchangeRates.value[cv.currency]
       expr = expr.replace(regex, `(${usdVal})`)
     }
+
+    expr = replaceCodeCurrencies(expr)
 
     try {
       const usdResult = evaluateMath(expr)

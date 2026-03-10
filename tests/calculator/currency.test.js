@@ -87,6 +87,58 @@ describe('Currency', () => {
   })
 })
 
+describe('Currency with code-based amounts in arithmetic', () => {
+  it('$20 + 56 EUR (symbol + code-based currency)', () => {
+    const result = calc('$20 + 56 EUR')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/USD/)
+    const usdValue = parseFloat(result)
+    // 56 EUR converted to USD + 20 USD
+    expect(usdValue).toBeGreaterThan(75)
+    expect(usdValue).toBeLessThan(90)
+  })
+
+  it('$20 - 10 EUR (symbol + code subtraction)', () => {
+    const result = calc('$20 - 10 EUR')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/USD/)
+  })
+
+  it('100 USD + 50 EUR (both code-based)', () => {
+    const result = calc('100 USD + 50 EUR')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/USD/)
+    const usdValue = parseFloat(result)
+    expect(usdValue).toBeGreaterThan(150)
+    expect(usdValue).toBeLessThan(170)
+  })
+
+  it('50 EUR + $20 (code-based + symbol)', () => {
+    const result = calc('50 EUR + $20')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/EUR/)
+  })
+
+  it('$20 + 56 EUR in GBP (mixed with conversion)', () => {
+    const result = calc('$20 + 56 EUR in GBP')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/GBP/)
+  })
+
+  it('100 USD + 50 GBP in EUR (code-based with conversion)', () => {
+    const result = calc('100 USD + 50 GBP in EUR')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/EUR/)
+  })
+
+  it('multiline: Cost + Discounted with code-based currency', () => {
+    const results = calcLines(['Cost: $20 + 56 EUR', 'Discounted: prev - 5%'])
+    expect(results[0]).toBeTruthy()
+    expect(results[0]).toMatch(/USD/)
+    expect(results[1]).toBeTruthy()
+  })
+})
+
 describe('Currency with Scales', () => {
   // Symbol prefix + scale suffix
   it('$2k = 2000 USD', () => {
