@@ -16,53 +16,7 @@
       </div>
 
       <!-- Center: Markdown formatting (desktop only) -->
-      <div class="hidden lg:flex flex-1 items-center justify-center gap-1 overflow-x-auto">
-        <button @click="$emit('apply-format', '**', '**')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="Bold">
-          <Icon name="mdi:format-bold" class="w-5 h-5 block" />
-        </button>
-        <button @click="$emit('apply-format', '*', '*')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="Italic">
-          <Icon name="mdi:format-italic" class="w-5 h-5 block" />
-        </button>
-        <button @click="$emit('apply-format', '~~', '~~')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="Strikethrough">
-          <Icon name="mdi:format-strikethrough" class="w-5 h-5 block" />
-        </button>
-        <button @click="$emit('apply-format', '# ', '')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="Heading">
-          <Icon name="mdi:format-header-1" class="w-5 h-5 block" />
-        </button>
-        <button @click="$emit('apply-format', '- ', '')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="List">
-          <Icon name="mdi:format-list-bulleted" class="w-5 h-5 block" />
-        </button>
-        <button @click="$emit('apply-format', '- [ ] ', '')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="Checklist">
-          <Icon name="mdi:checkbox-marked-outline" class="w-5 h-5 block" />
-        </button>
-        <button @click="$emit('apply-format', '> ', '')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="Quote">
-          <Icon name="mdi:format-quote-close" class="w-5 h-5 block" />
-        </button>
-        <button @click="$emit('apply-format', '`', '`')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="Code">
-          <Icon name="mdi:code-tags" class="w-5 h-5 block" />
-        </button>
-        <button @click="$emit('apply-format', '[', '](url)')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          title="Link">
-          <Icon name="mdi:link-variant" class="w-5 h-5 block" />
-        </button>
-      </div>
+      <FormattingToolbar class="hidden lg:flex flex-1" @apply-format="(before, after) => $emit('apply-format', before, after)" />
 
       <!-- Spacer on mobile to push right actions to the end -->
       <div class="flex-1 lg:hidden"></div>
