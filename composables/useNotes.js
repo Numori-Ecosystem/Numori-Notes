@@ -35,29 +35,82 @@ export const useNotes = () => {
 
   // Create a new note
   const createNote = (title = 'Untitled Note', description = '') => {
-    const defaultContent = title === 'Welcome' ? `# Welcome to Notes with Calculator!
+    const defaultContent = title === 'Welcome' ? `# Welcome to CalcNotes!
 
-This is a note-taking app with built-in calculator features.
+Write naturally. Results appear on the right.
 
-## Try some calculations:
-10 + 20
-price = 100
-tax = price * 20%
+## Quick Math
+2 + 3
+(10 + 5) * 2
+17 mod 5
+5 plus 3
+10 without 3
+
+## Variables
+price = $100
+tax = 8.5% of price
 total = price + tax
 
-## Markdown formatting works too:
-**Bold text**
-*Italic text*
-- List items
-- [ ] Todo items
+## Percentages
+200 + 15%
+200 - 15%
+50 as a % of 200
+20% of what is 60
 
-## More calculator examples:
+## Currencies
+$1000 in EUR
+€80 + $450 in GBP
+budget = $85k
+budget in EUR
+
+## Unit Conversions
 100 km in miles
-$50 + $30
+72 fahrenheit in celsius
+1 cup in ml
+5 lb in kg
+1 GB in MB
+
+## Dates & Time
+today
+tomorrow
+today + 2 weeks
+next month
+time in Tokyo
+fromunix(1446587186)
+
+## Sum & Average
+Rent: -€800
+Food: -€200
+Fun: -€100
+Monthly costs: sum
+
+## Math Functions
 sqrt(144)
 pi * 5^2
+log(1000)
+sin(45°)
+fact(5)
 
-Type naturally and see results on the right!` : ''
+## Dev Tools
+0xFF + 1
+255 in hex
+10 in bin
+12 & 10
+1 << 4
+12 pt in px
+
+## Scales
+revenue = €3M
+costs = €1.5M
+profit = revenue - costs
+
+## Labels & Prev
+Cost: $20 + $56
+Discounted: prev - 10%
+
+// Lines starting with // are comments
+// Lines starting with # are headers
+// Explore Templates for more ideas!` : ''
 
     return {
       id: Date.now().toString(),
