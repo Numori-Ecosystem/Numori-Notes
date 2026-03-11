@@ -138,6 +138,10 @@ const editorOptions = computed(() => ({
   hideCursorInOverviewRuler: true,
   overviewRulerBorder: false,
   automaticLayout: true,
+  // Workaround for Monaco bug on Firefox: accessibilitySupport "auto" breaks
+  // keyboard text replacement (first keystroke after selection is swallowed).
+  // See: https://github.com/microsoft/monaco-editor/issues/4892
+  accessibilitySupport: 'off',
 }))
 
 // Try to setup Monaco after mount
@@ -258,7 +262,7 @@ const setupMonaco = (monaco) => {
   }
 }
 
-// Watch for external content changes
+// Watch for external content changes (e.g. switching notes, inserting templates)
 watch(() => props.content, (newContent) => {
   if (localContent.value !== newContent) {
     localContent.value = newContent
