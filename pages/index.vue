@@ -11,7 +11,7 @@
       <div v-if="showAlphaWarning"
         class="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2.5 flex items-center justify-between gap-3 text-sm text-amber-800 dark:text-amber-200 overflow-hidden">
         <p class="flex-1 text-center">
-          ⚠️ This app is in very early alpha. Expect bugs, partially implemented features, and missing functionality.
+          ⚠️ This is very early alpha. Expect bugs, partially implemented features, and missing functionality.
         </p>
         <button @click="dismissAlphaWarning"
           class="flex-shrink-0 p-1 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/50 transition-colors"
