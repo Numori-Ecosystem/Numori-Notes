@@ -48,6 +48,10 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  showInline: {
+    type: Boolean,
+    default: false
+  },
   bordered: {
     type: Boolean,
     default: false
@@ -223,8 +227,12 @@ const onEditorLoad = (editor) => {
   })
 }
 
-// Re-apply decorations whenever displayLines changes (handles race with editor load)
+// Re-apply decorations whenever displayLines or showResults mode changes
 watch(displayLines, () => {
+  updateInlineDecorations()
+})
+
+watch(() => props.showInline, () => {
   updateInlineDecorations()
 })
 
@@ -246,7 +254,7 @@ const updateLines = (text) => {
   if (!text) {
     rawLines.value = []
     displayLines.value = []
-    if (decorationsCollection) decorationsCollection.clear()
+    if (decorationsCollection) decorationsCollection.set([])
     return
   }
   const lines = text.split('\n')
@@ -284,6 +292,12 @@ const injectInlineStyles = () => {
 // Update Monaco inline decorations from displayLines
 const updateInlineDecorations = () => {
   if (!monacoEditorInstance || !monacoInstance) return
+
+  // Only show inline decorations when enabled
+  if (!props.showInline) {
+    if (decorationsCollection) decorationsCollection.set([])
+    return
+  }
 
   const lines = displayLines.value
   const model = monacoEditorInstance.getModel()

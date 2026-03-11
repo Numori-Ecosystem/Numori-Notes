@@ -22,10 +22,10 @@
     </Transition>
 
     <!-- Mobile-friendly Toolbar -->
-    <AppHeader :current-note="currentNote" :show-results="showResults" :show-mobile-toolbar="showMobileToolbar"
+    <AppHeader :current-note="currentNote" :show-inline="showInlineResults" :show-sidebar-results="showResults" :show-mobile-toolbar="showMobileToolbar"
       @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
-      @toggle-results="showResults = !showResults" @toggle-mobile-toolbar="showMobileToolbar = !showMobileToolbar" />
+      @toggle-inline="showInlineResults = !showInlineResults" @toggle-sidebar-results="showResults = !showResults" @toggle-mobile-toolbar="showMobileToolbar = !showMobileToolbar" />
 
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
@@ -66,7 +66,7 @@
 
       <!-- Editor Area -->
       <main class="flex-1 overflow-hidden flex flex-col">
-        <NoteEditor v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-results="showResults"
+        <NoteEditor v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-results="showResults" :show-inline="showInlineResults"
           :locale-preferences="localePrefs.preferences"
           @update:content="updateContent"
           :placeholder="'Start typing... Try: 10 + 20, or use # for headers, // for comments'" />
@@ -119,6 +119,7 @@ const showTemplates = ref(false)
 const showLanguageModal = ref(false)
 const showLocaleSettings = ref(false)
 const showResults = ref(true)
+const showInlineResults = ref(false)
 const showMobileToolbar = ref(true)
 const editorRef = ref(null)
 const showAlphaWarning = ref(false)

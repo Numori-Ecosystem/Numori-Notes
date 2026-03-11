@@ -35,12 +35,24 @@
           <Icon name="mdi:format-text" class="w-5 h-5 block" :class="showMobileToolbar ? 'text-primary-500' : ''" />
         </button>
 
-        <!-- Toggle Results -->
-        <button @click="$emit('toggle-results')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
-          :title="showResults ? 'Hide results' : 'Show results'">
-          <Icon v-if="showResults" name="mdi:eye-off-outline" class="w-5 h-5 block" />
-          <Icon v-else name="mdi:eye-outline" class="w-5 h-5 block" />
+        <!-- Toggle inline results -->
+        <button @click="$emit('toggle-inline')"
+          class="p-2 rounded-lg transition-colors leading-none"
+          :class="showInline
+            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
+          title="Toggle inline results">
+          <Icon name="mdi:code-tags" class="w-5 h-5 block" />
+        </button>
+
+        <!-- Toggle sidebar results -->
+        <button @click="$emit('toggle-sidebar-results')"
+          class="p-2 rounded-lg transition-colors leading-none"
+          :class="showSidebarResults
+            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
+          title="Toggle sidebar results">
+          <Icon name="mdi:page-layout-sidebar-right" class="w-5 h-5 block" />
         </button>
       </div>
     </div>
@@ -53,7 +65,11 @@ defineProps({
     type: Object,
     default: null
   },
-  showResults: {
+  showInline: {
+    type: Boolean,
+    default: false
+  },
+  showSidebarResults: {
     type: Boolean,
     default: true
   },
@@ -67,7 +83,8 @@ defineEmits([
   'toggle-sidebar',
   'show-meta',
   'apply-format',
-  'toggle-results',
+  'toggle-inline',
+  'toggle-sidebar-results',
   'toggle-mobile-toolbar',
 ])
 </script>
