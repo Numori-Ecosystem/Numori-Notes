@@ -3,15 +3,15 @@
     <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
-      <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-end md:items-center justify-center z-50 md:p-4"
+      <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 md:p-4"
         @click="close">
         <Transition enter-active-class="transition ease-out duration-300"
-          enter-from-class="translate-y-full md:translate-y-0 md:opacity-0 md:scale-95"
-          enter-to-class="translate-y-0 md:opacity-100 md:scale-100"
+          enter-from-class="opacity-0 scale-95"
+          enter-to-class="opacity-100 scale-100"
           leave-active-class="transition ease-in duration-200"
-          leave-from-class="translate-y-0 md:opacity-100 md:scale-100"
-          leave-to-class="translate-y-full md:translate-y-0 md:opacity-0 md:scale-95">
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-t-xl md:rounded-lg max-w-5xl w-full h-[95vh] md:h-[90vh] overflow-hidden flex flex-col"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-95">
+          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-none md:rounded-lg max-w-5xl w-full h-screen md:h-[90vh] overflow-hidden flex flex-col"
             @click.stop>
       <!-- Header -->
       <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
