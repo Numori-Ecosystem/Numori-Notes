@@ -77,6 +77,7 @@ const DEFAULT_PREFERENCES = {
   editorLineHeight: 19,
   editorWordWrap: false,
   editorLineNumbers: 'on',
+  inlineResultAlign: 'left',
   // Customisation
   precisionMode: 'auto',
   decimalPlaces: 6,

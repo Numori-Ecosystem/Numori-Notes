@@ -225,6 +225,22 @@
                       ]" />
                     </button>
                   </div>
+
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-400">Inline Results Alignment</label>
+                      <p class="text-xs text-gray-500 dark:text-gray-400-muted">Align inline results to the right edge of the editor</p>
+                    </div>
+                    <button @click="preferences.inlineResultAlign = preferences.inlineResultAlign === 'right' ? 'left' : 'right'; onSettingChange()" :class="[
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                      preferences.inlineResultAlign === 'right' ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-700'
+                    ]">
+                      <span :class="[
+                        'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                        preferences.inlineResultAlign === 'right' ? 'translate-x-6' : 'translate-x-1'
+                      ]" />
+                    </button>
+                  </div>
                 </div>
 
                 <!-- ===== Customisation Tab ===== -->
@@ -410,6 +426,7 @@ const TAB_DEFAULTS = {
     editorLineHeight: 19,
     editorWordWrap: false,
     editorLineNumbers: 'on',
+    inlineResultAlign: 'left',
   },
   customisation: {
     precisionMode: 'auto',

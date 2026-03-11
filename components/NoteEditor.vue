@@ -216,6 +216,13 @@ const onEditorLoad = (editor) => {
       scrollTop.value = e.scrollTop
     })
 
+    // Re-render right-aligned decorations when editor is resized
+    editor.onDidLayoutChange(() => {
+      if (props.localePreferences?.inlineResultAlign === 'right' && props.showInline) {
+        updateInlineDecorations()
+      }
+    })
+
     // Set initial cursor position
     const position = editor.getPosition()
     if (position) {
@@ -233,6 +240,10 @@ watch(displayLines, () => {
 })
 
 watch(() => props.showInline, () => {
+  updateInlineDecorations()
+})
+
+watch(() => props.localePreferences?.inlineResultAlign, () => {
   updateInlineDecorations()
 })
 
@@ -311,6 +322,19 @@ const updateInlineDecorations = () => {
   }
   if (!modelLineCount || modelLineCount < 1) return
 
+  const alignRight = props.localePreferences?.inlineResultAlign === 'right'
+
+  // For right-alignment, calculate visible columns from editor layout
+  let targetCol = 0
+  if (alignRight) {
+    const layoutInfo = monacoEditorInstance.getLayoutInfo()
+    const charWidthPx = monacoEditorInstance.getOption(monacoInstance.editor.EditorOption.fontInfo).typicalHalfwidthCharacterWidth
+    if (layoutInfo && charWidthPx > 0) {
+      // contentWidth is the area where text is rendered (excludes line numbers, scrollbar, etc.)
+      targetCol = Math.floor(layoutInfo.contentWidth / charWidthPx)
+    }
+  }
+
   const maxLine = Math.min(lines.length, modelLineCount)
   const newDecorations = []
   for (let i = 0; i < maxLine; i++) {
@@ -325,9 +349,22 @@ const updateInlineDecorations = () => {
       continue
     }
 
-    const text = line.result
-      ? `  = ${line.result}`
-      : `  ⚠ ${line.error}`
+    const resultStr = line.result
+      ? `= ${line.result}`
+      : `⚠ ${line.error}`
+
+    let text
+    if (alignRight && targetCol > 0) {
+      // Pad so the result ends near the right edge of the visible area
+      // totalUsed = lineLength (existing text) + padding + resultStr.length
+      // We want totalUsed ≈ targetCol, so padding = targetCol - lineLength - resultStr.length
+      const padCount = Math.max(4, targetCol - lineLength - resultStr.length)
+      text = ' '.repeat(padCount) + resultStr
+    } else {
+      text = `  ${resultStr}`
+    }
+
+    const className = line.result ? 'calcnotes-inline-result' : 'calcnotes-inline-error'
 
     newDecorations.push({
       range: new monacoInstance.Range(lineNumber, lineLength + 1, lineNumber, lineLength + 1),
@@ -335,7 +372,7 @@ const updateInlineDecorations = () => {
         description: 'calcnotes-inline-result',
         after: {
           content: text,
-          inlineClassName: line.result ? 'calcnotes-inline-result' : 'calcnotes-inline-error',
+          inlineClassName: className,
         },
         showIfCollapsed: true,
       }
