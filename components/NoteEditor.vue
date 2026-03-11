@@ -320,14 +320,28 @@ const copyResult = async (result, index) => {
   if (!autoCopyResult.value) return
   try {
     await navigator.clipboard.writeText(result)
-    copiedIndex.value = index
-    clearTimeout(copiedTimeout)
-    copiedTimeout = setTimeout(() => {
-      copiedIndex.value = null
-    }, 800)
-  } catch (err) {
-    console.error('Failed to copy:', err)
+  } catch {
+    // WORKAROUND: Firefox does not support clipboard API on localhost over HTTP.
+    // TODO: Remove this fallback once Firefox improves localhost clipboard support.
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = result
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    } catch (fallbackErr) {
+      console.error('Failed to copy:', fallbackErr)
+      return
+    }
   }
+  copiedIndex.value = index
+  clearTimeout(copiedTimeout)
+  copiedTimeout = setTimeout(() => {
+    copiedIndex.value = null
+  }, 800)
 }
 
 // Watch for theme changes
