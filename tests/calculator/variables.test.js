@@ -69,3 +69,40 @@ describe('Percentages', () => {
   it('5% on what is 6 ≈ 5.71', () => { expect(parseFloat(calc('5% on what is 6'))).toBeCloseTo(5.714, 2) })
   it('5% off what is 6 ≈ 6.316', () => { expect(parseFloat(calc('5% off what is 6'))).toBeCloseTo(6.316, 2) })
 })
+
+describe('Exponent Precedence with Percentages', () => {
+  it('percentage variable ^ exponent binds before *', () => {
+    const results = calcLines(['rate = 110%', 'rate ^ 2'])
+    expect(parseFloat(results[1])).toBeCloseTo(1.21, 5)
+  })
+  it('value * percentage ^ exponent respects precedence', () => {
+    const results = calcLines(['rate = 110%', 'base = 100', 'base * rate ^ 2'])
+    expect(parseFloat(results[2])).toBeCloseTo(121, 1)
+  })
+  it('compound interest without parentheses', () => {
+    const results = calcLines(['interest = 110%', 'starting = 1000', 'years = 3', 'starting * interest ^ years'])
+    expect(parseFloat(results[3])).toBeCloseTo(1331, 0)
+  })
+  it('compound interest with parentheses gives same result', () => {
+    const results = calcLines(['interest = 110%', 'starting = 1000', 'years = 3', 'starting * (interest ^ years)'])
+    expect(parseFloat(results[3])).toBeCloseTo(1331, 0)
+  })
+  it('addition with percentage ^ exponent', () => {
+    const results = calcLines(['rate = 50%', '10 + rate ^ 2'])
+    expect(parseFloat(results[1])).toBeCloseTo(10.25, 5)
+  })
+  it('subtraction with percentage ^ exponent', () => {
+    const results = calcLines(['rate = 50%', '10 - rate ^ 2'])
+    expect(parseFloat(results[1])).toBeCloseTo(9.75, 5)
+  })
+  it('division with percentage ^ exponent', () => {
+    const results = calcLines(['rate = 200%', '8 / rate ^ 3'])
+    expect(parseFloat(results[1])).toBe(1)
+  })
+  it('percentage * and + without ^ still works', () => {
+    expect(calcNum('100 * 50%')).toBe(50)
+    expect(calcNum('100 + 20%')).toBe(120)
+    expect(calcNum('100 - 10%')).toBe(90)
+  })
+})
+

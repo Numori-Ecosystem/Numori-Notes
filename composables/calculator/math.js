@@ -38,10 +38,10 @@ export const handlePercentages = (expr) => {
   expression = expression.replace(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\([^)]+\)|\d+(?:\.\d+)?)/g, (_, p, v) => `((${p} / 100) * ${v})`)
   expression = expression.replace(/(\d+(?:\.\d+)?)\s*%\s*on\s*(\([^)]+\)|\d+(?:\.\d+)?)/g, (_, p, v) => `(${v} + (${v} * ${p} / 100))`)
   expression = expression.replace(/(\d+(?:\.\d+)?)\s*%\s*off\s*(\([^)]+\)|\d+(?:\.\d+)?)/g, (_, p, v) => `(${v} - (${v} * ${p} / 100))`)
-  expression = expression.replace(/(\([^)]+\)|\d+(?:\.\d+)?)\s*\+\s*(\d+(?:\.\d+)?)\s*%/g, (_, b, p) => `(${b} + (${b} * ${p} / 100))`)
-  expression = expression.replace(/(\([^)]+\)|\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*%/g, (_, b, p) => `(${b} - (${b} * ${p} / 100))`)
-  expression = expression.replace(/(\([^)]+\)|\d+(?:\.\d+)?)\s*\*\s*(\d+(?:\.\d+)?)\s*%/g, (_, b, p) => `(${b} * ${p} / 100)`)
-  expression = expression.replace(/(\([^)]+\)|\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*%/g, (_, b, p) => `(${b} / (${p} / 100))`)
+  expression = expression.replace(/(\([^)]+\)|\d+(?:\.\d+)?)\s*\+\s*(\d+(?:\.\d+)?)\s*%(?!\s*\^)/g, (_, b, p) => `(${b} + (${b} * ${p} / 100))`)
+  expression = expression.replace(/(\([^)]+\)|\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*%(?!\s*\^)/g, (_, b, p) => `(${b} - (${b} * ${p} / 100))`)
+  expression = expression.replace(/(\([^)]+\)|\d+(?:\.\d+)?)\s*\*\s*(\d+(?:\.\d+)?)\s*%(?!\s*\^)/g, (_, b, p) => `(${b} * ${p} / 100)`)
+  expression = expression.replace(/(\([^)]+\)|\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*%(?!\s*\^)/g, (_, b, p) => `(${b} / (${p} / 100))`)
 
   return expression
 }
