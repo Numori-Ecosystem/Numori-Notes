@@ -3,10 +3,15 @@
     <Transition name="modal">
       <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
         @click.self="$emit('close')">
-        <div class="bg-white dark:bg-gray-925 rounded-lg shadow-xl max-w-md w-full p-6">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-gray-400 mb-4">
-            Note Details
-          </h2>
+        <div class="bg-white dark:bg-gray-925 rounded-lg max-w-md w-full p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">
+              Note Details
+            </h2>
+            <button @click="$emit('close')" class="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+              <Icon name="mdi:close" class="block w-5 h-5" />
+            </button>
+          </div>
 
           <div class="space-y-4">
             <div>

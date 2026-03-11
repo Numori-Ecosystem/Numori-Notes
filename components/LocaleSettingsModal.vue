@@ -10,28 +10,21 @@
           leave-active-class="transition ease-in duration-150" leave-from-class="transform opacity-100 scale-100"
           leave-to-class="transform opacity-0 scale-95">
           <div v-if="isOpen" @click.stop
-            class="bg-white dark:bg-gray-925 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[85vh] flex flex-col">
+            class="bg-white dark:bg-gray-925 rounded-lg max-w-lg w-full overflow-hidden max-h-[85vh] flex flex-col">
             <!-- Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
-              <div class="flex items-center gap-3">
-                <div class="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-                  <Icon name="mdi:cog-outline" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                </div>
-                <div>
-                  <h2 class="text-xl font-bold text-gray-900 dark:text-gray-400">Settings</h2>
-                  <p class="text-sm text-gray-500 dark:text-gray-400-muted">
-                    Regional, formatting, and precision options
-                  </p>
-                </div>
+            <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-800">
+              <div class="flex items-center gap-2">
+                <Icon name="mdi:cog-outline" class="block w-5 h-5 text-primary-600 dark:text-primary-400" />
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">Settings</h2>
               </div>
               <button @click="closeModal"
-                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors">
-                <Icon name="mdi:close" class="w-5 h-5" />
+                class="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                <Icon name="mdi:close" class="block w-5 h-5" />
               </button>
             </div>
 
             <!-- Tabs -->
-            <div class="flex border-b border-gray-200 dark:border-gray-800 px-6">
+            <div class="flex border-b border-gray-200 dark:border-gray-800 px-4">
               <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
                 class="px-4 py-3 text-sm font-medium transition-colors relative"
                 :class="activeTab === tab.id

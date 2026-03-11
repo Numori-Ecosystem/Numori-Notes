@@ -3,15 +3,15 @@
     @click="close">
     <div class="bg-white dark:bg-gray-925 md:rounded-lg max-w-4xl w-full h-full md:h-[600px] overflow-hidden"
       @click.stop>
-      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-400">{{ $t('templates.title') }}</h2>
-        <button @click="close" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
-          <Icon name="mdi:close" class="w-6 h-6" />
+      <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-800">
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">{{ $t('templates.title') }}</h2>
+        <button @click="close" class="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+          <Icon name="mdi:close" class="block w-5 h-5" />
         </button>
       </div>
 
       <!-- Search bar -->
-      <div class="px-6 pt-4 pb-2">
+      <div class="px-4 pt-3 pb-2">
         <div class="relative">
           <Icon name="mdi:magnify"
             class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-400-muted" />
@@ -23,7 +23,7 @@
 
       <!-- Category tabs -->
       <div class="border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
-        <div class="flex px-6">
+        <div class="flex px-4">
           <button v-for="cat in consolidatedCategories" :key="cat.id" @click="selectCategory(cat.id)"
             class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors" :class="selectedCategory === cat.id
               ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400'
@@ -33,7 +33,7 @@
         </div>
       </div>
 
-      <div class="overflow-y-auto p-6 h-[calc(100%-240px)] md:h-auto md:max-h-[340px]">
+      <div class="overflow-y-auto p-4 h-[calc(100%-200px)] md:h-auto md:max-h-[380px]">
         <div v-if="filteredTemplates.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400-muted">
           {{ $t('templates.noResults') }}
         </div>

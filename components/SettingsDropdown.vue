@@ -26,13 +26,6 @@
             <span>Templates</span>
           </button>
 
-          <!-- Keyboard Shortcuts -->
-          <button @click="handleAction('shortcuts')"
-            class="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 active:bg-gray-200 dark:active:bg-gray-925 transition-colors cursor-pointer">
-            <Icon name="mdi:keyboard-outline" class="w-5 h-5" />
-            <span>Keyboard Shortcuts</span>
-          </button>
-
           <!-- Help -->
           <button @click="handleAction('help')"
             class="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 active:bg-gray-200 dark:active:bg-gray-925 transition-colors cursor-pointer">
@@ -42,31 +35,11 @@
 
           <div class="border-t border-gray-200 dark:border-gray-700"></div>
 
-          <!-- Theme Toggle -->
-          <button @click="toggleTheme"
-            class="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 active:bg-gray-200 dark:active:bg-gray-925 transition-colors cursor-pointer">
-            <Icon v-if="isDark" name="mdi:weather-sunny" class="w-5 h-5" />
-            <Icon v-else name="mdi:weather-night" class="w-5 h-5" />
-            <span>{{ isDark ? 'Light Mode' : 'Dark Mode' }}</span>
-          </button>
-
           <!-- Settings -->
           <button @click="handleAction('localeSettings')"
             class="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 active:bg-gray-200 dark:active:bg-gray-925 transition-colors cursor-pointer">
             <Icon name="mdi:cog-outline" class="w-5 h-5" />
             <span>Settings</span>
-          </button>
-
-          <!-- Language Switcher -->
-          <button @click="handleAction('language')"
-            class="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 active:bg-gray-200 dark:active:bg-gray-925 transition-colors cursor-pointer">
-            <div class="flex items-center gap-3">
-              <Icon name="mdi:translate" class="w-5 h-5" />
-              <span>Language</span>
-            </div>
-            <span class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400-muted">
-              {{ currentLocale.code.split('-')[0] }}
-            </span>
           </button>
         </div>
       </Transition>
@@ -79,25 +52,8 @@ const isOpen = ref(false)
 const buttonRef = ref(null)
 const dropdownStyle = ref({})
 
-// Theme
-const colorMode = useColorMode()
-const isDark = computed(() => colorMode.value === 'dark')
-
-const toggleTheme = () => {
-  colorMode.preference = isDark.value ? 'light' : 'dark'
-  isOpen.value = false
-}
-
-// Language
-const { $getLocale, $getLocales } = useI18n()
-const availableLocales = computed(() => $getLocales())
-const currentLocale = computed(() => {
-  const currentCode = $getLocale()
-  return availableLocales.value.find(l => l.code === currentCode) || availableLocales.value[0]
-})
-
 // Emits
-const emit = defineEmits(['templates', 'shortcuts', 'help', 'language', 'localeSettings'])
+const emit = defineEmits(['templates', 'help', 'localeSettings'])
 
 const handleAction = (action) => {
   emit(action)

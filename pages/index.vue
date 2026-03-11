@@ -16,7 +16,7 @@
     <!-- Mobile-friendly Toolbar -->
     <AppHeader :current-note="currentNote" :show-results="showResults" @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat" @toggle-results="showResults = !showResults"
-      @show-templates="showTemplates = true" @show-shortcuts="showShortcuts = true" @show-help="showHelp = true"
+      @show-templates="showTemplates = true" @show-help="showHelp = true"
       @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
 
     <!-- Main Content Area -->
@@ -52,7 +52,6 @@
       @save="updateMeta" @delete="confirmDelete" />
 
     <HelpModal :is-open="showHelp" @close="showHelp = false" />
-    <ShortcutsModal :is-open="showShortcuts" @close="showShortcuts = false" />
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
     <LocaleSettingsModal :is-open="showLocaleSettings"
@@ -73,7 +72,6 @@ const localePrefs = useLocalePreferences()
 const showSidebar = ref(true) // Default to true for better UX
 const showMetaModal = ref(false)
 const showHelp = ref(false)
-const showShortcuts = ref(false)
 const showTemplates = ref(false)
 const showLanguageModal = ref(false)
 const showLocaleSettings = ref(false)
