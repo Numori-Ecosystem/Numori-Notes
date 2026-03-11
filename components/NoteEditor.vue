@@ -31,12 +31,34 @@
             'text-right whitespace-nowrap leading-6 flex items-center justify-end gap-2',
             currentLine === index ? 'bg-primary-100 dark:bg-primary-900' : ''
           ]" :style="{ height: lineHeight + 'px' }">
-            <span v-if="line.result" @click="copyResult(line.result)"
+            <span v-if="line.result" @click="copyResult(line.result, index)"
               :class="[
-                'text-primary-600 dark:text-primary-400 text-lg hover:text-primary-700 dark:hover:text-primary-400 transition-colors pl-1',
+                'text-primary-600 dark:text-primary-400 text-lg hover:text-primary-700 dark:hover:text-primary-400 transition-colors pl-1 relative',
                 autoCopyResult ? 'cursor-pointer' : 'cursor-default'
-              ]">{{
-                line.result }}</span>
+              ]">
+              <Transition
+                enter-active-class="transition-opacity duration-150"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition-opacity duration-300"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0">
+                <span v-if="copiedIndex === index"
+                  :class="[
+                    'absolute left-1/2 -translate-x-1/2 px-2 py-0.5 text-xs font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 rounded shadow-sm whitespace-nowrap z-10',
+                    index <= 1 ? 'top-full mt-2' : 'bottom-full mb-2'
+                  ]">
+                  <!-- Arrow -->
+                  <span :class="[
+                    'absolute left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent',
+                    index <= 1
+                      ? 'bottom-full border-b-4 border-b-green-100 dark:border-b-green-900'
+                      : 'top-full border-t-4 border-t-green-100 dark:border-t-green-900'
+                  ]" />
+                  Copied
+                </span>
+              </Transition>
+              {{ line.result }}</span>
             <span v-else-if="line.error" class="text-error-500 dark:text-error-400 text-sm italic">{{ line.error
               }}</span>
           </div>
@@ -79,6 +101,8 @@ const currentLine = ref(0)
 const lineHeight = computed(() => props.localePreferences?.editorLineHeight ?? 19)
 const localContent = ref(props.content)
 const editorRef = ref(null)
+const copiedIndex = ref(null)
+let copiedTimeout = null
 
 const { evaluateLines } = useCalculator()
 const { registerCalcLanguage } = useMonacoCalcLanguage()
@@ -326,10 +350,15 @@ const reformatDisplay = () => {
   })
 }
 
-const copyResult = async (result) => {
+const copyResult = async (result, index) => {
   if (!autoCopyResult.value) return
   try {
     await navigator.clipboard.writeText(result)
+    copiedIndex.value = index
+    clearTimeout(copiedTimeout)
+    copiedTimeout = setTimeout(() => {
+      copiedIndex.value = null
+    }, 800)
   } catch (err) {
     console.error('Failed to copy:', err)
   }
