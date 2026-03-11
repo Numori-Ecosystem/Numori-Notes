@@ -4,9 +4,9 @@
       <!-- Left: Menu toggle & Title -->
       <div class="flex items-center gap-2">
         <button @click="$emit('toggle-sidebar')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors lg:hidden"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none lg:hidden"
           title="Toggle notes list">
-          <Icon name="mdi:menu" class="w-5 h-5" />
+          <Icon name="mdi:menu" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('show-meta')" class="text-left">
           <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-400 truncate max-w-[200px] sm:max-w-none">
@@ -18,49 +18,49 @@
       <!-- Center: Markdown formatting (desktop only) -->
       <div class="hidden lg:flex flex-1 items-center justify-center gap-1 overflow-x-auto">
         <button @click="$emit('apply-format', '**', '**')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="Bold">
-          <Icon name="mdi:format-bold" class="w-5 h-5" />
+          <Icon name="mdi:format-bold" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('apply-format', '*', '*')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="Italic">
-          <Icon name="mdi:format-italic" class="w-5 h-5" />
+          <Icon name="mdi:format-italic" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('apply-format', '~~', '~~')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="Strikethrough">
-          <Icon name="mdi:format-strikethrough" class="w-5 h-5" />
+          <Icon name="mdi:format-strikethrough" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('apply-format', '# ', '')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="Heading">
-          <Icon name="mdi:format-header-1" class="w-5 h-5" />
+          <Icon name="mdi:format-header-1" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('apply-format', '- ', '')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="List">
-          <Icon name="mdi:format-list-bulleted" class="w-5 h-5" />
+          <Icon name="mdi:format-list-bulleted" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('apply-format', '- [ ] ', '')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="Checklist">
-          <Icon name="mdi:checkbox-marked-outline" class="w-5 h-5" />
+          <Icon name="mdi:checkbox-marked-outline" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('apply-format', '> ', '')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="Quote">
-          <Icon name="mdi:format-quote-close" class="w-5 h-5" />
+          <Icon name="mdi:format-quote-close" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('apply-format', '`', '`')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="Code">
-          <Icon name="mdi:code-tags" class="w-5 h-5" />
+          <Icon name="mdi:code-tags" class="w-5 h-5 block" />
         </button>
         <button @click="$emit('apply-format', '[', '](url)')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           title="Link">
-          <Icon name="mdi:link-variant" class="w-5 h-5" />
+          <Icon name="mdi:link-variant" class="w-5 h-5 block" />
         </button>
       </div>
 
@@ -76,17 +76,17 @@
 
         <!-- Toggle Mobile Formatting Toolbar -->
         <button @click="$emit('toggle-mobile-toolbar')"
-          class="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           :title="showMobileToolbar ? 'Hide formatting toolbar' : 'Show formatting toolbar'">
-          <Icon name="mdi:format-text" class="w-5 h-5" :class="showMobileToolbar ? 'text-primary-500' : ''" />
+          <Icon name="mdi:format-text" class="w-5 h-5 block" :class="showMobileToolbar ? 'text-primary-500' : ''" />
         </button>
 
         <!-- Toggle Results -->
         <button @click="$emit('toggle-results')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
           :title="showResults ? 'Hide results' : 'Show results'">
-          <Icon v-if="showResults" name="mdi:eye-off-outline" class="w-5 h-5" />
-          <Icon v-else name="mdi:eye-outline" class="w-5 h-5" />
+          <Icon v-if="showResults" name="mdi:eye-off-outline" class="w-5 h-5 block" />
+          <Icon v-else name="mdi:eye-outline" class="w-5 h-5 block" />
         </button>
       </div>
     </div>
