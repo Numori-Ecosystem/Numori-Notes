@@ -31,7 +31,7 @@
     <div class="flex-1 flex overflow-hidden">
       <!-- Sidebar - Notes List -->
       <aside class="w-80 flex-shrink-0 hidden lg:block">
-        <NotesList :notes="notes" :current-note-id="currentNoteId" @new-note="addNote" @select-note="selectNote"
+        <MainSidebar :notes="notes" :current-note-id="currentNoteId" @new-note="addNote" @select-note="selectNote"
           @delete-note="confirmDelete" @edit-note="openEditModal"
           @show-templates="showTemplates = true" @show-help="showHelp = true"
           @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
@@ -56,7 +56,7 @@
           leave-from-class="translate-x-0"
           leave-to-class="-translate-x-full">
           <aside v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden">
-            <NotesList :notes="notes" :current-note-id="currentNoteId" @new-note="addNote" @select-note="selectNote"
+            <MainSidebar :notes="notes" :current-note-id="currentNoteId" @new-note="addNote" @select-note="selectNote"
               @delete-note="confirmDelete" @edit-note="openEditModal"
               @show-templates="showTemplates = true" @show-help="showHelp = true"
               @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
@@ -143,7 +143,7 @@
     <HelpModal :is-open="showHelp" @close="showHelp = false" />
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
-    <LocaleSettingsModal :is-open="showLocaleSettings"
+    <SettingsModal :is-open="showLocaleSettings"
       :preferences="localePrefs.preferences"
       :apply-preset="localePrefs.applyPreset"
       :set-preference="localePrefs.setPreference"
