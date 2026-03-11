@@ -79,6 +79,7 @@ let monacoEditorInstance = null
 let decorationsCollection = null
 let monacoInstance = null
 let inlineStylesInjected = false
+let updateDebounceTimer = null
 
 const { evaluateLines } = useCalculator()
 const { registerCalcLanguage } = useMonacoCalcLanguage()
@@ -136,6 +137,7 @@ onMounted(() => {
 })
 onUnmounted(() => {
   if (liveTimer) clearInterval(liveTimer)
+  if (updateDebounceTimer) clearTimeout(updateDebounceTimer)
 })
 
 // Editor options
@@ -234,9 +236,10 @@ const onEditorLoad = (editor) => {
   })
 }
 
-// Re-apply decorations whenever displayLines or showResults mode changes
+// Re-apply decorations whenever displayLines or showResults mode changes.
+// Use nextTick so Monaco's model has ingested any pending content change first.
 watch(displayLines, () => {
-  updateInlineDecorations()
+  nextTick(() => updateInlineDecorations())
 })
 
 watch(() => props.showInline, () => {
@@ -251,14 +254,18 @@ watch(() => props.localePreferences?.inlineResultAlign, () => {
 watch(() => props.content, (newContent) => {
   if (localContent.value !== newContent) {
     localContent.value = newContent
+    // Note switch: evaluate immediately (skip debounce) so results appear instantly
+    clearTimeout(updateDebounceTimer)
+    updateLines(newContent)
   }
-  updateLines(newContent)
+  // If content is the same (e.g. re-render), do nothing — localContent watcher won't fire.
 })
 
-// Watch local content and emit changes + update calculations
+// Watch local content and emit changes + debounce calculations while typing
 watch(localContent, (newContent) => {
   emit('update:content', newContent)
-  updateLines(newContent)
+  clearTimeout(updateDebounceTimer)
+  updateDebounceTimer = setTimeout(() => updateLines(newContent), 80)
 })
 
 const updateLines = (text) => {
