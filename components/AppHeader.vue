@@ -78,22 +78,6 @@
           <Icon v-if="showResults" name="mdi:eye-off-outline" class="w-5 h-5" />
           <Icon v-else name="mdi:eye-outline" class="w-5 h-5" />
         </button>
-
-        <!-- Language -->
-        <button @click="$emit('show-language')"
-          class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
-          title="Language">
-          <Icon name="mdi:translate" class="w-5 h-5" />
-        </button>
-
-        <!-- Theme Toggle -->
-        <ThemeSwitcher />
-
-        <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
-
-        <!-- Settings Dropdown -->
-        <SettingsDropdown @templates="$emit('show-templates')"
-          @help="$emit('show-help')" @locale-settings="$emit('show-locale-settings')" />
       </div>
     </div>
   </header>
@@ -116,10 +100,6 @@ defineEmits([
   'show-meta',
   'apply-format',
   'toggle-results',
-  'show-templates',
-  'show-help',
-  'show-language',
-  'show-locale-settings',
 ])
 </script>
 

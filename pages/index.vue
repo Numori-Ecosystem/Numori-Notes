@@ -15,9 +15,7 @@
 
     <!-- Mobile-friendly Toolbar -->
     <AppHeader :current-note="currentNote" :show-results="showResults" @toggle-sidebar="showSidebar = !showSidebar"
-      @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat" @toggle-results="showResults = !showResults"
-      @show-templates="showTemplates = true" @show-help="showHelp = true"
-      @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
+      @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat" @toggle-results="showResults = !showResults" />
 
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
@@ -27,7 +25,9 @@
         showSidebar && 'max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:z-20 max-lg:shadow-xl'
       ]">
         <NotesList :notes="notes" :current-note-id="currentNoteId" @new-note="addNote" @select-note="selectNote"
-          @delete-note="confirmDelete" @edit-note="openEditModal" />
+          @delete-note="confirmDelete" @edit-note="openEditModal"
+          @show-templates="showTemplates = true" @show-help="showHelp = true"
+          @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
       </aside>
 
       <!-- Overlay for mobile -->
