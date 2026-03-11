@@ -59,6 +59,10 @@ const props = defineProps({
   localePreferences: {
     type: Object,
     default: null
+  },
+  showMarkdownPreview: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -85,6 +89,151 @@ const { evaluateLines } = useCalculator()
 const { registerCalcLanguage } = useMonacoCalcLanguage()
 const colorMode = useColorMode()
 import { formatDisplay } from '~/composables/useDisplayFormatter'
+
+// --- Inline markdown rendering via Monaco decorations ---
+let mdDecorationCollection = null
+
+const updateMarkdownPreview = () => {
+  if (!monacoEditorInstance || !monacoInstance) return
+  const editor = monacoEditorInstance
+
+  if (mdDecorationCollection) mdDecorationCollection.set([])
+
+  if (!props.showMarkdownPreview) return
+
+  const model = editor.getModel()
+  if (!model) return
+
+  const lineCount = model.getLineCount()
+  const cursorLine = (editor.getPosition()?.lineNumber) ?? 0
+  const decorations = []
+
+  for (let ln = 1; ln <= lineCount; ln++) {
+    const text = model.getLineContent(ln)
+    const trimmed = text.trim()
+    if (!trimmed) continue
+
+    // Don't render the line the cursor is on — let user see raw source
+    if (ln === cursorLine) continue
+
+    // # Headers — hide the `# ` prefix, style the rest
+    const headerMatch = trimmed.match(/^(#{1,6})\s(.+)$/)
+    if (headerMatch) {
+      const hashes = headerMatch[1]
+      const prefixLen = text.indexOf(hashes) + hashes.length + 1 // includes the space
+      decorations.push({
+        range: new monacoInstance.Range(ln, 1, ln, prefixLen + 1),
+        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-header-prefix' }
+      })
+      decorations.push({
+        range: new monacoInstance.Range(ln, prefixLen + 1, ln, model.getLineMaxColumn(ln)),
+        options: { inlineClassName: `calcnotes-md-h${hashes.length}`, description: 'md-header-text' }
+      })
+      continue
+    }
+
+    // // Comments — hide the `// ` prefix, style as prose
+    if (trimmed.startsWith('//')) {
+      const slashIdx = text.indexOf('//')
+      const afterSlash = text.substring(slashIdx + 2)
+      const spaceAfter = afterSlash.startsWith(' ') ? 1 : 0
+      const prefixEnd = slashIdx + 2 + spaceAfter
+      decorations.push({
+        range: new monacoInstance.Range(ln, 1, ln, prefixEnd + 1),
+        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-comment-prefix' }
+      })
+      decorations.push({
+        range: new monacoInstance.Range(ln, prefixEnd + 1, ln, model.getLineMaxColumn(ln)),
+        options: { inlineClassName: 'calcnotes-md-comment', description: 'md-comment-text' }
+      })
+      continue
+    }
+
+    // - [x] / - [ ] Checkboxes — hide the prefix, show a checkbox glyph
+    const checkMatch = trimmed.match(/^- \[([ x])\]\s(.+)$/)
+    if (checkMatch) {
+      const checked = checkMatch[1] === 'x'
+      const prefixStr = checked ? '- [x] ' : '- [ ] '
+      const prefixStart = text.indexOf(prefixStr)
+      const prefixEnd = prefixStart + prefixStr.length
+      decorations.push({
+        range: new monacoInstance.Range(ln, 1, ln, prefixEnd + 1),
+        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-check-prefix' }
+      })
+      decorations.push({
+        range: new monacoInstance.Range(ln, prefixEnd + 1, ln, model.getLineMaxColumn(ln)),
+        options: {
+          inlineClassName: checked ? 'calcnotes-md-checked' : 'calcnotes-md-unchecked',
+          description: 'md-check-text',
+          before: {
+            content: checked ? '\u2611\u2009' : '\u2610\u2009',
+            inlineClassName: 'calcnotes-md-check-icon',
+          }
+        }
+      })
+      continue
+    }
+
+    // - List items — hide the `- `, show a bullet
+    const listMatch = trimmed.match(/^- (.+)$/)
+    if (listMatch) {
+      const dashIdx = text.indexOf('- ')
+      decorations.push({
+        range: new monacoInstance.Range(ln, 1, ln, dashIdx + 3),
+        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-list-prefix' }
+      })
+      decorations.push({
+        range: new monacoInstance.Range(ln, dashIdx + 3, ln, model.getLineMaxColumn(ln)),
+        options: {
+          inlineClassName: 'calcnotes-md-list-item',
+          description: 'md-list-text',
+          before: {
+            content: '\u2022\u2009',
+            inlineClassName: 'calcnotes-md-bullet',
+          }
+        }
+      })
+      continue
+    }
+
+    // > Blockquotes — hide the `> `, style with left border feel
+    const quoteMatch = trimmed.match(/^>\s?(.+)$/)
+    if (quoteMatch) {
+      const gtIdx = text.indexOf('>')
+      const afterGt = text.substring(gtIdx + 1)
+      const spaceAfterGt = afterGt.startsWith(' ') ? 1 : 0
+      const prefixEnd = gtIdx + 1 + spaceAfterGt
+      decorations.push({
+        range: new monacoInstance.Range(ln, 1, ln, prefixEnd + 1),
+        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-quote-prefix' }
+      })
+      decorations.push({
+        range: new monacoInstance.Range(ln, prefixEnd + 1, ln, model.getLineMaxColumn(ln)),
+        options: {
+          inlineClassName: 'calcnotes-md-quote',
+          description: 'md-quote-text',
+          before: {
+            content: '\u2503\u2009',
+            inlineClassName: 'calcnotes-md-quote-bar',
+          }
+        }
+      })
+      continue
+    }
+  }
+
+  if (mdDecorationCollection) {
+    mdDecorationCollection.set(decorations)
+  } else {
+    mdDecorationCollection = editor.createDecorationsCollection(decorations)
+  }
+}
+
+// When cursor moves, re-evaluate which line to reveal raw
+watch(currentLine, () => {
+  if (!props.showMarkdownPreview || !monacoEditorInstance) return
+  nextTick(() => updateMarkdownPreview())
+})
 
 const FONT_FAMILY_MAP = {
   'system': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
@@ -233,6 +382,7 @@ const onEditorLoad = (editor) => {
 
     // Apply real decorations
     updateInlineDecorations()
+    updateMarkdownPreview()
   })
 }
 
@@ -248,6 +398,17 @@ watch(() => props.showInline, () => {
 
 watch(() => props.localePreferences?.inlineResultAlign, () => {
   updateInlineDecorations()
+})
+
+// Re-render markdown preview when toggle or content changes
+watch(() => props.showMarkdownPreview, () => {
+  nextTick(() => updateMarkdownPreview())
+})
+
+watch(displayLines, () => {
+  nextTick(() => {
+    if (props.showMarkdownPreview) updateMarkdownPreview()
+  })
 })
 
 // Watch for external content changes (e.g. switching notes, inserting templates)
@@ -293,7 +454,7 @@ const reformatDisplay = () => {
   })
 }
 
-// Inject CSS for inline result decorations (once)
+// Inject CSS for inline result decorations and markdown preview (once)
 const injectInlineStyles = () => {
   if (inlineStylesInjected) return
   inlineStylesInjected = true
@@ -303,6 +464,23 @@ const injectInlineStyles = () => {
     .vs-dark .calcnotes-inline-result { color: #4fc1ff; }
     .calcnotes-inline-error { color: #f44336; font-style: italic; opacity: 0.75; }
     .vs-dark .calcnotes-inline-error { color: #ef5350; }
+    .calcnotes-md-hidden-syntax { font-size: 0 !important; letter-spacing: 0 !important; width: 0 !important; }
+    .calcnotes-md-h1 { font-size: 1.7em !important; font-weight: 700 !important; }
+    .calcnotes-md-h2 { font-size: 1.4em !important; font-weight: 600 !important; }
+    .calcnotes-md-h3 { font-size: 1.2em !important; font-weight: 600 !important; }
+    .calcnotes-md-h4 { font-size: 1.1em !important; font-weight: 600 !important; }
+    .calcnotes-md-h5 { font-size: 1.05em !important; font-weight: 600 !important; }
+    .calcnotes-md-h6 { font-size: 1em !important; font-weight: 600 !important; }
+    .calcnotes-md-comment { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; color: #444 !important; }
+    .vs-dark .calcnotes-md-comment { color: #bbb !important; }
+    .calcnotes-md-list-item { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
+    .calcnotes-md-bullet { opacity: 0.6; }
+    .calcnotes-md-checked { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; text-decoration: line-through !important; opacity: 0.6 !important; }
+    .calcnotes-md-unchecked { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
+    .calcnotes-md-check-icon { font-style: normal !important; }
+    .calcnotes-md-quote { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: italic !important; opacity: 0.85 !important; }
+    .calcnotes-md-quote-bar { color: #007acc !important; font-style: normal !important; }
+    .vs-dark .calcnotes-md-quote-bar { color: #4fc1ff !important; }
   `
   document.head.appendChild(style)
 }

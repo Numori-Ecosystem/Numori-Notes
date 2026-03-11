@@ -22,10 +22,11 @@
     </Transition>
 
     <!-- Mobile-friendly Toolbar -->
-    <AppHeader :current-note="currentNote" :show-inline="showInlineResults" :show-sidebar-results="showResults" :show-mobile-toolbar="showMobileToolbar"
+    <AppHeader :current-note="currentNote" :show-inline="showInlineResults" :show-sidebar-results="showResults" :show-mobile-toolbar="showMobileToolbar" :show-markdown-preview="showMarkdownPreview"
       @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
-      @toggle-inline="showInlineResults = !showInlineResults" @toggle-sidebar-results="showResults = !showResults" @toggle-mobile-toolbar="showMobileToolbar = !showMobileToolbar" />
+      @toggle-inline="showInlineResults = !showInlineResults" @toggle-sidebar-results="showResults = !showResults" @toggle-mobile-toolbar="showMobileToolbar = !showMobileToolbar"
+      @toggle-markdown-preview="showMarkdownPreview = !showMarkdownPreview" />
 
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
@@ -68,6 +69,7 @@
       <main class="flex-1 overflow-hidden flex flex-col">
         <NoteEditor v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-results="showResults" :show-inline="showInlineResults"
           :locale-preferences="localePrefs.preferences"
+          :show-markdown-preview="showMarkdownPreview"
           @update:content="updateContent"
           :placeholder="'Start typing... Try: 10 + 20, or use # for headers, // for comments'" />
         <div v-else class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
@@ -121,6 +123,7 @@ const showLocaleSettings = ref(false)
 const showResults = ref(true)
 const showInlineResults = ref(false)
 const showMobileToolbar = ref(true)
+const showMarkdownPreview = ref(false)
 const editorRef = ref(null)
 const showAlphaWarning = ref(false)
 
