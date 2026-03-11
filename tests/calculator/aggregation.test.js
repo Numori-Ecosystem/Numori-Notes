@@ -42,6 +42,54 @@ describe('Sum', () => {
   })
 })
 
+describe('Sum with Negative Values', () => {
+  it('sum with negative numbers', () => {
+    const results = calcLines(['100', '-20', '-30', 'sum'])
+    expect(parseFloat(results[3])).toBe(50)
+  })
+  it('sum with negative currency (budget scenario)', () => {
+    const results = calcLines([
+      'Salary: €1457',
+      'Food: -€200',
+      'Fuel: -€100',
+      'Car insurance: -€60',
+      'Ho: -€30',
+      'Fun: -€100',
+      'sum',
+    ])
+    expect(parseFloat(results[6])).toBe(967)
+    expect(results[6]).toMatch(/EUR/)
+  })
+  it('sum with all negative currency values', () => {
+    const results = calcLines(['-€100', '-€200', '-€50', 'sum'])
+    expect(parseFloat(results[3])).toBe(-350)
+    expect(results[3]).toMatch(/EUR/)
+  })
+  it('sum with mixed positive and negative currency', () => {
+    const results = calcLines(['€500', '-€150', '€200', '-€50', 'sum'])
+    expect(parseFloat(results[4])).toBe(500)
+    expect(results[4]).toMatch(/EUR/)
+  })
+  it('sum with negative GBP values', () => {
+    const results = calcLines(['Income: £2000', 'Rent: -£800', 'Bills: -£200', 'sum'])
+    expect(parseFloat(results[3])).toBe(1000)
+    expect(results[3]).toMatch(/GBP/)
+  })
+  it('sum with negative USD values', () => {
+    const results = calcLines(['$1000', '-$300', '-$200', 'sum'])
+    expect(parseFloat(results[3])).toBe(500)
+    expect(results[3]).toMatch(/USD/)
+  })
+  it('average with negative values', () => {
+    const results = calcLines(['100', '-50', '50', 'average'])
+    expect(parseFloat(results[3])).toBeCloseTo(33.33, 0)
+  })
+  it('average with negative currency values', () => {
+    const results = calcLines(['€300', '-€100', '€200', 'average'])
+    expect(parseFloat(results[3])).toBeCloseTo(133.33, 0)
+  })
+})
+
 describe('Average', () => {
   it('average of lines above', () => {
     const results = calcLines(['10', '20', '30', 'average'])

@@ -3,6 +3,94 @@ import { unitConversions, variables } from './constants'
 import { SCALE_SUFFIX, SCALED_NUM_RE, applyScale } from './scales'
 import { evaluateMath } from './math'
 
+// Build a set of all known single-word unit keys for spaceless normalization.
+// Multi-word units (e.g., "miles per gallon", "sq ft") are excluded since they
+// can't appear glued to a number without a space.
+const _buildUnitSet = () => {
+  const units = new Set()
+  for (const [category, map] of Object.entries(unitConversions)) {
+    for (const key of Object.keys(map)) {
+      // Only single-word keys (no spaces, no slashes)
+      if (/^[a-zA-Z_°]+$/.test(key)) {
+        units.add(key.toLowerCase())
+      }
+    }
+  }
+  return units
+}
+const KNOWN_UNITS_LOWER = _buildUnitSet()
+
+// Single-letter units that are safe to normalize (won't conflict with scales/hex/etc.)
+// Excluded: k (scale), M (scale), c (too ambiguous), f (too ambiguous), e (Euler's number)
+const SAFE_SINGLE_CHAR_UNITS = new Set(['l', 'g', 's', 'h', 'm'])
+
+// Case-sensitive units that must match exactly (data units like KB, MB, GB, etc.)
+const CASE_SENSITIVE_UNITS = new Set()
+for (const key of Object.keys(unitConversions.data)) {
+  if (/^[A-Z][a-zA-Z]+$/.test(key)) CASE_SENSITIVE_UNITS.add(key)
+}
+
+// Insert a space between a number and a glued unit suffix.
+// "100km" → "100 km", "5kg" → "5 kg", "60mph" → "60 mph"
+// Preserves hex/bin/oct literals (0xFF, 0b1010, 0o777), scale suffixes (2k, 3M),
+// and compound unit names like l/100km.
+export const normalizeUnitSpacing = (input) => {
+  // First, protect l/100km-style patterns from being split
+  // Replace them with placeholders, normalize, then restore
+  const protectedPatterns = []
+  let protected_ = input.replace(/\b([a-zA-Z]+\/\d+[a-zA-Z]+)\b/g, (match) => {
+    const idx = protectedPatterns.length
+    protectedPatterns.push(match)
+    return `__PROTECTED_${idx}__`
+  })
+
+  // Match digit(s) immediately followed by letters (no space between)
+  protected_ = protected_.replace(/(\d)([a-zA-Z])/g, (match, digit, letter, offset) => {
+    // Don't touch hex/bin/oct prefixes: 0x, 0b, 0o
+    if (digit === '0' && (letter === 'x' || letter === 'b' || letter === 'o')) {
+      return match
+    }
+    // Extract the full letter sequence following this position
+    const rest = protected_.slice(offset + 1) // everything from the letter onward
+    const wordMatch = rest.match(/^([a-zA-Z_°][a-zA-Z0-9_°]*)/)
+    if (!wordMatch) return match
+
+    const candidate = wordMatch[1]
+
+    // Skip single-letter candidates that conflict with scale suffixes (k, K, M)
+    if (candidate === 'k' || candidate === 'K' || candidate === 'M') {
+      return match
+    }
+
+    // Check case-sensitive data units first (GB, MB, KB, TB, etc.)
+    if (CASE_SENSITIVE_UNITS.has(candidate)) {
+      return digit + ' ' + letter
+    }
+
+    // For single-character candidates, only normalize safe ones (case-sensitive)
+    if (candidate.length === 1) {
+      if (SAFE_SINGLE_CHAR_UNITS.has(candidate)) {
+        return digit + ' ' + letter
+      }
+      return match
+    }
+
+    // Check if the candidate (lowercase) is a known unit (2+ chars)
+    if (KNOWN_UNITS_LOWER.has(candidate.toLowerCase())) {
+      return digit + ' ' + letter
+    }
+
+    return match
+  })
+
+  // Restore protected patterns
+  for (let i = 0; i < protectedPatterns.length; i++) {
+    protected_ = protected_.replace(`__PROTECTED_${i}__`, protectedPatterns[i])
+  }
+
+  return protected_
+}
+
 export const findUnitCategory = (unitName) => {
   const lower = unitName.toLowerCase()
 
@@ -108,9 +196,12 @@ export const convertFuelEconomy = (value, fromUnit, toUnit) => {
 // Parse a unit expression that may contain arithmetic (e.g., "1 km + 500 m")
 // Returns value in base unit of the given category, or null
 export const parseUnitExpression = (expr, category) => {
+  // Normalize spacing: "100km" → "100 km"
+  const normalized = normalizeUnitSpacing(expr)
+
   // Try compound units first: "1 meter 20 cm"
   const compoundPattern = /(\d+(?:\.\d+)?)\s+([\w]+(?:\s+[\w]+)?)\s+(\d+(?:\.\d+)?)\s+([\w]+(?:\s+[\w]+)?)/i
-  const compoundMatch = expr.match(compoundPattern)
+  const compoundMatch = normalized.match(compoundPattern)
   if (compoundMatch) {
     const val1 = parseFloat(compoundMatch[1])
     const unit1 = compoundMatch[2].trim()
@@ -125,7 +216,7 @@ export const parseUnitExpression = (expr, category) => {
 
   // Try simple "N unit" first (with optional scale: "2k km", "1.5M meters")
   const simpleRe = new RegExp(`^${SCALED_NUM_RE}\\s+(.+)$`)
-  const simpleMatch = expr.match(simpleRe)
+  const simpleMatch = normalized.match(simpleRe)
   if (simpleMatch) {
     const value = applyScale(simpleMatch[1], simpleMatch[2])
     const unitStr = simpleMatch[3].trim()
@@ -136,7 +227,7 @@ export const parseUnitExpression = (expr, category) => {
   }
 
   // Try arithmetic: "1 km + 500 m", "2 ft - 3 inches"
-  const parts = expr.split(/\s*([+-])\s*/)
+  const parts = normalized.split(/\s*([+-])\s*/)
   if (parts.length >= 3) {
     let total = null
     let op = '+'
@@ -203,7 +294,8 @@ export const isCSSBridgeConversion = (sourceExpr, targetUnit) => {
   const lengthUnits = Object.keys(unitConversions.length)
   const targetLower = targetUnit.toLowerCase()
 
-  const sourceUnit = sourceExpr.match(/\d+(?:\.\d+)?\s+(.+)/)?.[1]?.trim()?.toLowerCase()
+  const normalizedSource = normalizeUnitSpacing(sourceExpr)
+  const sourceUnit = normalizedSource.match(/\d+(?:\.\d+)?\s+(.+)/)?.[1]?.trim()?.toLowerCase()
   if (!sourceUnit) return false
 
   return (cssUnits.includes(targetLower) && lengthUnits.includes(sourceUnit)) ||
@@ -214,8 +306,9 @@ export const handleCSSBridge = (sourceExpr, targetUnit) => {
   const ppi = variables.value._ppi || 96 // default 96 ppi
   const targetLower = targetUnit.toLowerCase()
 
+  const normalizedSource = normalizeUnitSpacing(sourceExpr)
   const srcRe = new RegExp(`^${SCALED_NUM_RE}\\s+(.+)$`)
-  const srcMatch = sourceExpr.match(srcRe)
+  const srcMatch = normalizedSource.match(srcRe)
   if (!srcMatch) return null
 
   const value = applyScale(srcMatch[1], srcMatch[2])
@@ -242,8 +335,11 @@ export const handleCSSBridge = (sourceExpr, targetUnit) => {
 export const handleUnitExpression = (input) => {
   const noResult = { value: 0, unit: null, hasUnit: false, isConverted: false }
 
+  // Normalize spacing: "100km" → "100 km", "60mph" → "60 mph"
+  let normalized = normalizeUnitSpacing(input)
+
   // Normalize square/cubic prefixes in input
-  let normalized = input
+  normalized = normalized
     .replace(/\bsquare\s+/gi, 'square ')
     .replace(/\bcubic\s+/gi, 'cubic ')
     .replace(/\bsq\s+/gi, 'sq ')
