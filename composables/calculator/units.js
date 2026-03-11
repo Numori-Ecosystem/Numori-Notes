@@ -6,6 +6,12 @@ import { evaluateMath } from './math'
 export const findUnitCategory = (unitName) => {
   const lower = unitName.toLowerCase()
 
+  // Check for fuel economy compound units first (before "per" gets misinterpreted)
+  // Match patterns like "miles per gallon", "km per litre", "l/100km", "mpg", etc.
+  if (unitConversions.fueleconomy[lower] !== undefined) {
+    return { category: 'fueleconomy', unit: lower, factor: unitConversions.fueleconomy[lower] }
+  }
+
   // Check for square/cubic prefixes first
   const sqMatch = lower.match(/^(sq|square)\s+(.+)$/)
   if (sqMatch) {
@@ -67,6 +73,36 @@ export const convertTemperature = (value, fromUnit, toUnit) => {
   if (to === 'C') return celsius
   if (to === 'F') return celsius * 9 / 5 + 32
   if (to === 'K') return celsius + 273.15
+}
+
+// Fuel economy conversion: base unit is kpl (km per litre)
+// l/100km is inverse: l/100km = 100 / kpl, kpl = 100 / (l/100km)
+export const convertFuelEconomy = (value, fromUnit, toUnit) => {
+  const fromFactor = unitConversions.fueleconomy[fromUnit.toLowerCase()]
+  const toFactor = unitConversions.fueleconomy[toUnit.toLowerCase()]
+  if (fromFactor === undefined || toFactor === undefined) return null
+
+  const isFromInverse = fromFactor === -1 // l/100km
+  const isToInverse = toFactor === -1     // l/100km
+
+  // Convert source value to kpl (base)
+  let kpl
+  if (isFromInverse) {
+    // l/100km → kpl: kpl = 100 / value
+    kpl = 100 / value
+  } else {
+    // Normal unit → kpl: kpl = value * factor
+    kpl = value * fromFactor
+  }
+
+  // Convert kpl to target
+  if (isToInverse) {
+    // kpl → l/100km: l/100km = 100 / kpl
+    return 100 / kpl
+  } else {
+    // kpl → normal unit: value = kpl / factor
+    return kpl / toFactor
+  }
 }
 
 // Parse a unit expression that may contain arithmetic (e.g., "1 km + 500 m")
@@ -222,6 +258,32 @@ export const handleUnitExpression = (input) => {
 
     const targetInfo = findUnitCategory(targetUnitStr)
 
+    // Check if source is a variable with unit metadata (e.g., "mileage in kpl")
+    const varName = sourceExpr.toLowerCase()
+    for (const [vName, vVal] of Object.entries(variables.value)) {
+      if (vName.toLowerCase() === varName && typeof vVal === 'object' && vVal.unit) {
+        const srcUnitInfo = findUnitCategory(vVal.unit)
+        if (srcUnitInfo) {
+          // Fuel economy variable conversion
+          if (srcUnitInfo.category === 'fueleconomy' && unitConversions.fueleconomy[targetUnitStr.toLowerCase()] !== undefined) {
+            const result = convertFuelEconomy(vVal.value, vVal.unit, targetUnitStr)
+            if (result !== null) return { value: result, unit: targetUnitStr, category: 'fueleconomy', hasUnit: true, isConverted: true }
+          }
+          // Temperature variable conversion
+          if (srcUnitInfo.category === 'temperature' && unitConversions.temperature[targetUnitStr.toLowerCase()]) {
+            const result = convertTemperature(vVal.value, vVal.unit, targetUnitStr)
+            if (result !== null) return { value: result, unit: targetUnitStr, category: 'temperature', hasUnit: true, isConverted: true }
+          }
+          // General unit variable conversion (same category)
+          if (targetInfo && targetInfo.category === srcUnitInfo.category) {
+            const baseValue = vVal.value * srcUnitInfo.factor
+            const result = baseValue / targetInfo.factor
+            return { value: result, unit: targetUnitStr, category: targetInfo.category, hasUnit: true, isConverted: true }
+          }
+        }
+      }
+    }
+
     // Temperature special case
     if (unitConversions.temperature[targetUnitStr.toLowerCase()]) {
       const srcTempRe = new RegExp(`^${SCALED_NUM_RE}\\s+(.+)$`)
@@ -231,21 +293,40 @@ export const handleUnitExpression = (input) => {
         const srcUnit = srcMatch[3].trim()
         if (unitConversions.temperature[srcUnit.toLowerCase()]) {
           const result = convertTemperature(value, srcUnit, targetUnitStr)
-          if (result !== null) return { value: result, unit: targetUnitStr, hasUnit: true, isConverted: true }
+          if (result !== null) return { value: result, unit: targetUnitStr, category: 'temperature', hasUnit: true, isConverted: true }
+        }
+      }
+    }
+
+    // Fuel economy special case (needs special inverse handling for l/100km)
+    if (unitConversions.fueleconomy[targetUnitStr.toLowerCase()] !== undefined) {
+      const srcFuelRe = new RegExp(`^${SCALED_NUM_RE}\\s+(.+)$`)
+      const srcMatch = sourceExpr.match(srcFuelRe)
+      if (srcMatch) {
+        const value = applyScale(srcMatch[1], srcMatch[2])
+        const srcUnit = srcMatch[3].trim()
+        if (unitConversions.fueleconomy[srcUnit.toLowerCase()] !== undefined) {
+          const result = convertFuelEconomy(value, srcUnit, targetUnitStr)
+          if (result !== null) return { value: result, unit: targetUnitStr, category: 'fueleconomy', hasUnit: true, isConverted: true }
         }
       }
     }
 
     if (targetInfo) {
-      if (targetInfo.category === 'css' || isCSSBridgeConversion(sourceExpr, targetUnitStr)) {
+      // Fuel economy uses special conversion (not simple factor division)
+      if (targetInfo.category === 'fueleconomy') {
+        // Already handled above, skip general path
+      } else if (targetInfo.category === 'css' || isCSSBridgeConversion(sourceExpr, targetUnitStr)) {
         const bridgeResult = handleCSSBridge(sourceExpr, targetUnitStr)
         if (bridgeResult) return bridgeResult
       }
 
-      const sourceValue = parseUnitExpression(sourceExpr, targetInfo.category)
-      if (sourceValue !== null) {
-        const result = sourceValue / targetInfo.factor
-        return { value: result, unit: targetUnitStr, hasUnit: true, isConverted: true }
+      if (targetInfo.category !== 'fueleconomy') {
+        const sourceValue = parseUnitExpression(sourceExpr, targetInfo.category)
+        if (sourceValue !== null) {
+          const result = sourceValue / targetInfo.factor
+          return { value: result, unit: targetUnitStr, category: targetInfo.category, hasUnit: true, isConverted: true }
+        }
       }
     }
 
@@ -265,7 +346,7 @@ export const handleUnitExpression = (input) => {
     const unitStr = simpleMatch[3].trim()
     const unitInfo = findUnitCategory(unitStr)
     if (unitInfo) {
-      return { value, unit: unitStr, hasUnit: true, isConverted: false }
+      return { value, unit: unitStr, category: unitInfo.category, hasUnit: true, isConverted: false }
     }
   }
 

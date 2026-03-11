@@ -83,7 +83,7 @@
 
         <!-- Settings Dropdown -->
         <SettingsDropdown @templates="$emit('show-templates')" @shortcuts="$emit('show-shortcuts')"
-          @help="$emit('show-help')" @language="$emit('show-language')" />
+          @help="$emit('show-help')" @language="$emit('show-language')" @locale-settings="$emit('show-locale-settings')" />
       </div>
     </div>
   </header>
@@ -109,7 +109,8 @@ defineEmits([
   'show-templates',
   'show-shortcuts',
   'show-help',
-  'show-language'
+  'show-language',
+  'show-locale-settings'
 ])
 </script>
 

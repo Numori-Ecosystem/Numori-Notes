@@ -17,7 +17,7 @@
     <AppHeader :current-note="currentNote" :show-results="showResults" @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat" @toggle-results="showResults = !showResults"
       @show-templates="showTemplates = true" @show-shortcuts="showShortcuts = true" @show-help="showHelp = true"
-      @show-language="showLanguageModal = true" />
+      @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
 
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
@@ -54,11 +54,20 @@
     <ShortcutsModal :is-open="showShortcuts" @close="showShortcuts = false" />
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
+    <LocaleSettingsModal :is-open="showLocaleSettings"
+      :preferences="localePrefs.preferences"
+      :apply-preset="localePrefs.applyPreset"
+      :set-preference="localePrefs.setPreference"
+      :get-active-preset="localePrefs.getActivePreset"
+      :save="localePrefs.save"
+      :reset="localePrefs.reset"
+      @close="showLocaleSettings = false" />
   </div>
 </template>
 
 <script setup>
 const { notes, currentNoteId, currentNote, addNote, deleteNote, updateNoteContent, updateNoteMeta } = useNotes()
+const localePrefs = useLocalePreferences()
 
 const showSidebar = ref(true) // Default to true for better UX
 const showMetaModal = ref(false)
@@ -66,6 +75,7 @@ const showHelp = ref(false)
 const showShortcuts = ref(false)
 const showTemplates = ref(false)
 const showLanguageModal = ref(false)
+const showLocaleSettings = ref(false)
 const showResults = ref(true)
 const editorRef = ref(null)
 const showAlphaWarning = ref(false)

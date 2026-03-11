@@ -1,7 +1,7 @@
 // Core calculator composable — orchestrates all modules
 import { variables, previousResult, exchangeRates, ratesFetched, currencyMap, unitConversions } from './constants'
 import { evaluateMath, handleFunctions, formatResult } from './math'
-import { handleUnitExpression } from './units'
+import { handleUnitExpression, findUnitCategory, convertFuelEconomy } from './units'
 import { handleCurrencyExpression, fetchExchangeRates } from './currency'
 import { handleTimezoneExpression, handleDateExpression } from './datetime'
 import { calculateSum, calculateAverage, detectSumCurrency, calculateSumWithCurrency } from './aggregation'
@@ -9,6 +9,64 @@ import { calculateSum, calculateAverage, detectSumCurrency, calculateSumWithCurr
 // Auto-fetch rates once (non-blocking)
 if (typeof window !== 'undefined') {
   fetchExchangeRates()
+}
+
+// Dimensional analysis: distance / fuel_economy → volume
+// e.g., 100 km / 60 mpl → litres
+const computeDimensionalDivision = (leftVar, rightVar) => {
+  const leftInfo = findUnitCategory(leftVar.unit)
+  const rightInfo = findUnitCategory(rightVar.unit)
+  if (!leftInfo || !rightInfo) return null
+
+  // distance / fuel_economy = volume
+  if (leftInfo.category === 'length' && rightInfo.category === 'fueleconomy') {
+    // Convert distance to km (base for fuel economy is kpl = km per litre)
+    const distanceKm = leftVar.value * leftInfo.factor / 1000 // factor gives meters, /1000 for km
+    // Convert fuel economy to kpl (base)
+    const fuelFactor = unitConversions.fueleconomy[rightVar.unit.toLowerCase()]
+    if (fuelFactor === undefined) return null
+
+    let kpl
+    if (fuelFactor === -1) {
+      // l/100km: kpl = 100 / value
+      kpl = 100 / rightVar.value
+    } else {
+      kpl = rightVar.value * fuelFactor
+    }
+
+    // fuel = distance_km / kpl → litres
+    const litres = distanceKm / kpl
+
+    // Determine display unit based on fuel economy unit
+    const feUnit = rightVar.unit.toLowerCase()
+    let displayUnit = 'l'
+    let displayValue = litres
+    if (feUnit === 'mpg' || feUnit === 'miles per gallon' || feUnit === 'kpg' || feUnit === 'km per gallon') {
+      // US gallons
+      displayUnit = 'gal'
+      displayValue = litres / 3.78541
+    } else if (feUnit === 'mpg_uk' || feUnit === 'miles per uk gallon' || feUnit === 'kpg_uk' || feUnit === 'km per uk gallon') {
+      // UK gallons
+      displayUnit = 'gal'
+      displayValue = litres / 4.54609
+    }
+
+    return {
+      value: displayValue,
+      display: `${formatResult(displayValue)} ${displayUnit}`,
+      unit: displayUnit,
+      category: 'volume',
+    }
+  }
+
+  return null
+}
+
+// Dimensional multiplication — placeholder for future compound unit math
+const computeDimensionalMultiplication = (leftVar, rightVar) => {
+  // fuel_economy * distance doesn't make physical sense for fuel consumption
+  // but we can handle rate * time = distance, etc. in the future
+  return null
 }
 
 export const useCalculator = () => {
@@ -83,6 +141,9 @@ export const useCalculator = () => {
           const lastPart = parts[parts.length - 1]
           if (exchangeRates.value[lastPart]) {
             variables.value[varName] = { value: result.value, currency: lastPart }
+          } else if (result.unit) {
+            // Store unit metadata for unit-aware variables
+            variables.value[varName] = { value: result.value, unit: result.unit, category: result.category || null }
           } else {
             variables.value[varName] = result.value
           }
@@ -192,7 +253,9 @@ export const useCalculator = () => {
     if (unitResult.isConverted || unitResult.hasUnit) {
       return {
         value: unitResult.value,
-        display: unitResult.unit ? `${formatResult(unitResult.value)} ${unitResult.unit}` : formatResult(unitResult.value)
+        display: unitResult.unit ? `${formatResult(unitResult.value)} ${unitResult.unit}` : formatResult(unitResult.value),
+        unit: unitResult.unit || null,
+        category: unitResult.category || null,
       }
     }
 
@@ -202,6 +265,29 @@ export const useCalculator = () => {
       return {
         value: currencyResult.value,
         display: currencyResult.currency ? `${formatResult(currencyResult.value)} ${currencyResult.currency}` : formatResult(currencyResult.value)
+      }
+    }
+
+    // Dimensional analysis: distance / fuel_economy = volume
+    // Detect expressions like "varA / varB" where vars have unit metadata
+    const divMatch = cleanInput.match(/^([a-zA-Z_]\w*)\s*\/\s*([a-zA-Z_]\w*)$/)
+    if (divMatch) {
+      const leftVar = variables.value[divMatch[1]]
+      const rightVar = variables.value[divMatch[2]]
+      if (leftVar && rightVar && typeof leftVar === 'object' && typeof rightVar === 'object' && leftVar.unit && rightVar.unit) {
+        const dimResult = computeDimensionalDivision(leftVar, rightVar)
+        if (dimResult) return dimResult
+      }
+    }
+
+    // Also handle "varA * varB" for dimensional multiplication
+    const mulMatch = cleanInput.match(/^([a-zA-Z_]\w*)\s*\*\s*([a-zA-Z_]\w*)$/)
+    if (mulMatch) {
+      const leftVar = variables.value[mulMatch[1]]
+      const rightVar = variables.value[mulMatch[2]]
+      if (leftVar && rightVar && typeof leftVar === 'object' && typeof rightVar === 'object' && leftVar.unit && rightVar.unit) {
+        const dimResult = computeDimensionalMultiplication(leftVar, rightVar)
+        if (dimResult) return dimResult
       }
     }
 

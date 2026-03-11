@@ -165,6 +165,23 @@ export const unitConversions = {
     'radian': 1, 'radians': 1, 'rad': 1,
     'degree': Math.PI / 180, 'degrees': Math.PI / 180, '°': Math.PI / 180,
   },
+  // Fuel economy: stored as km per litre (kpl) as base unit
+  // Conversion logic is special (inverse for l/100km), handled in units.js
+  fueleconomy: {
+    // km per litre (base)
+    'kpl': 1, 'km per litre': 1, 'km per liter': 1, 'kmpl': 1,
+    // miles per US gallon: 1 mpg = 1.609344 / 3.78541 kpl ≈ 0.425144 kpl
+    'mpg': 1.609344 / 3.78541, 'miles per gallon': 1.609344 / 3.78541,
+    // miles per litre: 1 mpl = 1.609344 kpl
+    'mpl': 1.609344, 'miles per litre': 1.609344, 'miles per liter': 1.609344,
+    // km per US gallon: 1 kpg = 1 / 3.78541 kpl ≈ 0.264172 kpl
+    'kpg': 1 / 3.78541, 'km per gallon': 1 / 3.78541,
+    // UK gallon variants: UK gallon = 4.54609 L
+    'mpg_uk': 1.609344 / 4.54609, 'miles per uk gallon': 1.609344 / 4.54609,
+    'kpg_uk': 1 / 4.54609, 'km per uk gallon': 1 / 4.54609,
+    // l/100km is inverse — handled specially in units.js
+    'l/100km': -1, 'litres per 100km': -1, 'liters per 100km': -1,
+  },
 }
 
 // Scales for big numbers
