@@ -67,12 +67,18 @@
               <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
                 <p>{{ $t('help.basics.desc') }}</p>
                 <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                  <div>10 + 20 <span class="text-primary-600 dark:text-primary-400">= 30</span></div>
-                  <div>100 * 1.5 <span class="text-primary-600 dark:text-primary-400">= 150</span></div>
-                  <div>50 minus 10 <span class="text-primary-600 dark:text-primary-400">= 40</span></div>
-                  <div>20 times 5 <span class="text-primary-600 dark:text-primary-400">= 100</span></div>
-                  <div>2 ^ 8 <span class="text-primary-600 dark:text-primary-400">= 256</span></div>
+                  <div>2 + 3 <span class="text-primary-600 dark:text-primary-400">= 5</span></div>
+                  <div>10 - 4 <span class="text-primary-600 dark:text-primary-400">= 6</span></div>
+                  <div>6 * 7 <span class="text-primary-600 dark:text-primary-400">= 42</span></div>
+                  <div>20 / 4 <span class="text-primary-600 dark:text-primary-400">= 5</span></div>
+                  <div>2 ^ 10 <span class="text-primary-600 dark:text-primary-400">= 1024</span></div>
                   <div>17 mod 5 <span class="text-primary-600 dark:text-primary-400">= 2</span></div>
+                  <div>(2 + 3) * 4 <span class="text-primary-600 dark:text-primary-400">= 20</span></div>
+                </div>
+                <p class="mt-2">Implicit multiplication:</p>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                  <div>6 (3) <span class="text-primary-600 dark:text-primary-400">= 18</span></div>
+                  <div>(2)(3) <span class="text-primary-600 dark:text-primary-400">= 6</span></div>
                 </div>
               </div>
             </section>
@@ -81,18 +87,43 @@
             <section :id="'help-operators'">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">Operators</h3>
               <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
+                <p>Use symbols or natural language:</p>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Addition:</span> +, plus, and, with</div>
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Subtraction:</span> -, minus, subtract, without</div>
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Multiplication:</span> *, times, multiplied by, mul</div>
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Division:</span> /, divide, divide by</div>
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Exponent:</span> ^</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Modulo:</span> mod, %</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Bitwise AND:</span> &amp;</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Bitwise OR:</span> |</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Bitwise XOR:</span> xor</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Modulo:</span> mod</div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1 mt-2">
+                  <div>5 plus 3 <span class="text-primary-600 dark:text-primary-400">= 8</span></div>
+                  <div>10 minus 3 <span class="text-primary-600 dark:text-primary-400">= 7</span></div>
+                  <div>8 times 9 <span class="text-primary-600 dark:text-primary-400">= 72</span></div>
+                  <div>20 divide by 4 <span class="text-primary-600 dark:text-primary-400">= 5</span></div>
+                  <div>10 without 3 <span class="text-primary-600 dark:text-primary-400">= 7</span></div>
+                  <div>8 multiplied by 9 <span class="text-primary-600 dark:text-primary-400">= 72</span></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Bitwise -->
+            <section :id="'help-bitwise'">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">Bitwise Operations</h3>
+              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">AND:</span> &amp;</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">OR:</span> |</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">XOR:</span> xor</div>
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Left Shift:</span> &lt;&lt;</div>
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">Right Shift:</span> &gt;&gt;</div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1 mt-2">
+                  <div>12 &amp; 10 <span class="text-primary-600 dark:text-primary-400">= 8</span></div>
+                  <div>12 | 10 <span class="text-primary-600 dark:text-primary-400">= 14</span></div>
+                  <div>12 xor 10 <span class="text-primary-600 dark:text-primary-400">= 6</span></div>
+                  <div>1 &lt;&lt; 4 <span class="text-primary-600 dark:text-primary-400">= 16</span></div>
+                  <div>16 &gt;&gt; 2 <span class="text-primary-600 dark:text-primary-400">= 4</span></div>
                 </div>
               </div>
             </section>
@@ -103,9 +134,57 @@
               <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
                 <p>{{ $t('help.variables.desc') }}</p>
                 <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                  <div>price = 100 <span class="text-primary-600 dark:text-primary-400">= 100</span></div>
-                  <div>tax = price * 20% <span class="text-primary-600 dark:text-primary-400">= 20</span></div>
-                  <div>total = price + tax <span class="text-primary-600 dark:text-primary-400">= 120</span></div>
+                  <div>x = 10 <span class="text-primary-600 dark:text-primary-400">= 10</span></div>
+                  <div>x + 5 <span class="text-primary-600 dark:text-primary-400">= 15</span></div>
+                  <div class="mt-2">a = 10 <span class="text-primary-600 dark:text-primary-400">= 10</span></div>
+                  <div>b = 20 <span class="text-primary-600 dark:text-primary-400">= 20</span></div>
+                  <div>a + b <span class="text-primary-600 dark:text-primary-400">= 30</span></div>
+                  <div class="mt-2">my_var = 42 <span class="text-primary-600 dark:text-primary-400">= 42</span></div>
+                  <div>v2 = 100 <span class="text-primary-600 dark:text-primary-400">= 100</span></div>
+                </div>
+                <p class="text-xs italic mt-2">Variable names support letters, numbers, and underscores.</p>
+              </div>
+            </section>
+
+            <!-- Prev & Special Keywords -->
+            <section :id="'help-special'">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">{{ $t('help.special.title') }}</h3>
+              <div class="space-y-3 text-sm text-gray-700 dark:text-gray-400">
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">prev — Previous Result</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>20 + 56 <span class="text-primary-600 dark:text-primary-400">= 76</span></div>
+                    <div>prev - 5 <span class="text-primary-600 dark:text-primary-400">= 71</span></div>
+                    <div>prev - 5% <span class="text-primary-600 dark:text-primary-400">= 67.45</span></div>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">sum — Sum Lines Above</p>
+                  <p class="text-xs mb-2">Sums all numeric lines above until an empty line or header.</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>10 <span class="text-primary-600 dark:text-primary-400">= 10</span></div>
+                    <div>15 <span class="text-primary-600 dark:text-primary-400">= 15</span></div>
+                    <div>25 <span class="text-primary-600 dark:text-primary-400">= 25</span></div>
+                    <div>sum <span class="text-primary-600 dark:text-primary-400">= 50</span></div>
+                    <div class="mt-2 text-gray-500">// With labels and currency</div>
+                    <div>Salary: €1457 <span class="text-primary-600 dark:text-primary-400">= 1457 EUR</span></div>
+                    <div>Food: -€200 <span class="text-primary-600 dark:text-primary-400">= -200 EUR</span></div>
+                    <div>Fuel: -€100 <span class="text-primary-600 dark:text-primary-400">= -100 EUR</span></div>
+                    <div>sum <span class="text-primary-600 dark:text-primary-400">= 1157 EUR</span></div>
+                    <div class="mt-2 text-gray-500">// Sum with operations</div>
+                    <div>100 <span class="text-primary-600 dark:text-primary-400">= 100</span></div>
+                    <div>200 <span class="text-primary-600 dark:text-primary-400">= 200</span></div>
+                    <div>sum - 10% <span class="text-primary-600 dark:text-primary-400">= 270</span></div>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">average / avg — Average Lines Above</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>10 <span class="text-primary-600 dark:text-primary-400">= 10</span></div>
+                    <div>20 <span class="text-primary-600 dark:text-primary-400">= 20</span></div>
+                    <div>30 <span class="text-primary-600 dark:text-primary-400">= 30</span></div>
+                    <div>average <span class="text-primary-600 dark:text-primary-400">= 20</span></div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -114,50 +193,76 @@
             <section :id="'help-percentages'">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">{{ $t('help.percentages.title') }}</h3>
               <div class="space-y-3 text-sm text-gray-700 dark:text-gray-400">
-                <p class="font-medium">Percentages work consistently across all operators:</p>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Contextual (Addition &amp; Subtraction)</p>
-                  <p class="text-xs mb-2">Apply percentage to base, then add/subtract:</p>
+                  <p class="text-xs mb-2">Percentage is applied to the base value, then added/subtracted:</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>100 + 20% <span class="text-primary-600 dark:text-primary-400">= 120</span> <span class="text-gray-500 dark:text-gray-400-muted">// Add 20% of 100</span></div>
-                    <div>100 - 15% <span class="text-primary-600 dark:text-primary-400">= 85</span> <span class="text-gray-500 dark:text-gray-400-muted">// Subtract 15% of 100</span></div>
-                    <div>200 + 10% <span class="text-primary-600 dark:text-primary-400">= 220</span> <span class="text-gray-500 dark:text-gray-400-muted">// Add 10% of 200</span></div>
-                    <div>200 - 10% <span class="text-primary-600 dark:text-primary-400">= 180</span> <span class="text-gray-500 dark:text-gray-400-muted">// Subtract 10% of 200</span></div>
+                    <div>100 + 20% <span class="text-primary-600 dark:text-primary-400">= 120</span></div>
+                    <div>100 - 15% <span class="text-primary-600 dark:text-primary-400">= 85</span></div>
                   </div>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Literal (Multiplication &amp; Division)</p>
-                  <p class="text-xs mb-2">Treat percentage as decimal (standard calculator):</p>
+                  <p class="text-xs mb-2">Percentage is treated as a decimal:</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>100 * 5% <span class="text-primary-600 dark:text-primary-400">= 5</span> <span class="text-gray-500 dark:text-gray-400-muted">// 100 × 0.05</span></div>
-                    <div>100 / 5% <span class="text-primary-600 dark:text-primary-400">= 2000</span> <span class="text-gray-500 dark:text-gray-400-muted">// 100 ÷ 0.05</span></div>
-                    <div>200 * 10% <span class="text-primary-600 dark:text-primary-400">= 20</span> <span class="text-gray-500 dark:text-gray-400-muted">// 200 × 0.10</span></div>
+                    <div>100 * 5% <span class="text-primary-600 dark:text-primary-400">= 5</span> <span class="text-gray-500">// 100 × 0.05</span></div>
+                    <div>100 / 5% <span class="text-primary-600 dark:text-primary-400">= 2000</span> <span class="text-gray-500">// 100 ÷ 0.05</span></div>
                   </div>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Explicit Keywords</p>
-                  <p class="text-xs mb-2">Use keywords for clarity:</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>20% of 100 <span class="text-primary-600 dark:text-primary-400">= 20</span> <span class="text-gray-500 dark:text-gray-400-muted">// Calculate percentage</span></div>
-                    <div>10% on 200 <span class="text-primary-600 dark:text-primary-400">= 220</span> <span class="text-gray-500 dark:text-gray-400-muted">// Add percentage</span></div>
-                    <div>10% off 50 <span class="text-primary-600 dark:text-primary-400">= 45</span> <span class="text-gray-500 dark:text-gray-400-muted">// Subtract percentage</span></div>
+                    <div>20% of 100 <span class="text-primary-600 dark:text-primary-400">= 20</span></div>
+                    <div>5% on 30 <span class="text-primary-600 dark:text-primary-400">= 31.5</span> <span class="text-gray-500">// add 5%</span></div>
+                    <div>6% off 40 <span class="text-primary-600 dark:text-primary-400">= 37.6</span> <span class="text-gray-500">// subtract 6%</span></div>
                   </div>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Real-World Examples</p>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Reverse Percentages</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div class="text-gray-500 dark:text-gray-400-muted">// Shopping discount</div>
-                    <div>price = $100</div>
-                    <div>final = price - 20% <span class="text-primary-600 dark:text-primary-400">= 80 USD</span></div>
-                    <div class="mt-2 text-gray-500 dark:text-gray-400-muted">// Tax calculation</div>
-                    <div>subtotal = $100</div>
-                    <div>tax = 8.5% of subtotal <span class="text-primary-600 dark:text-primary-400">= 8.5 USD</span></div>
-                    <div>total = subtotal + tax <span class="text-primary-600 dark:text-primary-400">= 108.5 USD</span></div>
-                    <div class="mt-2 text-gray-500 dark:text-gray-400-muted">// Tip calculation</div>
-                    <div>bill = $85</div>
-                    <div>tip = 18% of bill <span class="text-primary-600 dark:text-primary-400">= 15.3 USD</span></div>
-                    <div>total = bill + 18% <span class="text-primary-600 dark:text-primary-400">= 100.3 USD</span></div>
+                    <div>50 as a % of 100 <span class="text-primary-600 dark:text-primary-400">= 50%</span></div>
+                    <div>70 as a % on 20 <span class="text-primary-600 dark:text-primary-400">= 250%</span></div>
+                    <div>5% of what is 6 <span class="text-primary-600 dark:text-primary-400">= 120</span></div>
+                    <div>5% on what is 6 <span class="text-primary-600 dark:text-primary-400">= 5.71</span></div>
                   </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Percentage Exponentiation (Compound Interest)</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>interest = 110% <span class="text-primary-600 dark:text-primary-400">= 1.1</span></div>
+                    <div>starting = 1000 <span class="text-primary-600 dark:text-primary-400">= 1000</span></div>
+                    <div>years = 3 <span class="text-primary-600 dark:text-primary-400">= 3</span></div>
+                    <div>starting * interest ^ years <span class="text-primary-600 dark:text-primary-400">= 1331</span></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Scales -->
+            <section :id="'help-scales'">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">Scales</h3>
+              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
+                <p>Use shorthand for large numbers:</p>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">k</span> / thousand = 10³</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">M</span> / million = 10⁶</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">billion</span> = 10⁹</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">trillion</span> = 10¹²</div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1 mt-2">
+                  <div>5k <span class="text-primary-600 dark:text-primary-400">= 5000</span></div>
+                  <div>2M <span class="text-primary-600 dark:text-primary-400">= 2000000</span></div>
+                  <div>1 billion <span class="text-primary-600 dark:text-primary-400">= 1000000000</span></div>
+                  <div>1.5M - 500k <span class="text-primary-600 dark:text-primary-400">= 1000000</span></div>
+                  <div>2k + 500 <span class="text-primary-600 dark:text-primary-400">= 2500</span></div>
+                  <div class="mt-2 text-gray-500">// With units</div>
+                  <div>2k meters in km <span class="text-primary-600 dark:text-primary-400">= 2 km</span></div>
+                  <div>500k bytes in MB <span class="text-primary-600 dark:text-primary-400">= 0.5 MB</span></div>
+                  <div class="mt-2 text-gray-500">// With currency</div>
+                  <div>$2k <span class="text-primary-600 dark:text-primary-400">= 2000 USD</span></div>
+                  <div>€3M <span class="text-primary-600 dark:text-primary-400">= 3000000 EUR</span></div>
+                  <div>£1 million <span class="text-primary-600 dark:text-primary-400">= 1000000 GBP</span></div>
+                  <div>$2k in EUR <span class="text-primary-600 dark:text-primary-400">= 1740 EUR</span></div>
                 </div>
               </div>
             </section>
@@ -165,20 +270,46 @@
             <!-- Currency -->
             <section :id="'help-currency'">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">{{ $t('help.currency.title') }}</h3>
-              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
+              <div class="space-y-3 text-sm text-gray-700 dark:text-gray-400">
                 <p>{{ $t('help.currency.desc') }}</p>
-                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                  <div>$100 + $50 <span class="text-primary-600 dark:text-primary-400">= 150 USD</span></div>
-                  <div>€200 - €75 <span class="text-primary-600 dark:text-primary-400">= 125 EUR</span></div>
-                  <div>£50 * 2 <span class="text-primary-600 dark:text-primary-400">= 100 GBP</span></div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Symbol &amp; Code Formats</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>$100 <span class="text-primary-600 dark:text-primary-400">= 100 USD</span></div>
+                    <div>€50 <span class="text-primary-600 dark:text-primary-400">= 50 EUR</span></div>
+                    <div>£100 <span class="text-primary-600 dark:text-primary-400">= 100 GBP</span></div>
+                    <div>100 USD <span class="text-primary-600 dark:text-primary-400">= 100 USD</span></div>
+                    <div>56 EUR <span class="text-primary-600 dark:text-primary-400">= 56 EUR</span></div>
+                  </div>
                 </div>
-                <p class="mt-3 font-semibold">Currency Conversion:</p>
-                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                  <div>$100 in EUR <span class="text-primary-600 dark:text-primary-400">= 92 EUR</span></div>
-                  <div>£50 to USD <span class="text-primary-600 dark:text-primary-400">= 63.29 USD</span></div>
-                  <div>€100 as GBP <span class="text-primary-600 dark:text-primary-400">= 85.87 GBP</span></div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Conversion</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>$100 in EUR <span class="text-primary-600 dark:text-primary-400">= 87 EUR</span></div>
+                    <div>100 USD in GBP <span class="text-primary-600 dark:text-primary-400">= 75 GBP</span></div>
+                    <div>$30 in euro <span class="text-primary-600 dark:text-primary-400">= 26.1 EUR</span></div>
+                  </div>
                 </div>
-                <p class="mt-3 text-xs">Supported: USD ($), EUR (€), GBP (£), JPY (¥), INR (₹), RUB (₽), CAD, AUD, CHF, CNY</p>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Mixed Currency Arithmetic</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>$30 + €20 <span class="text-primary-600 dark:text-primary-400">= 52.98 USD</span></div>
+                    <div>$20 + 56 EUR <span class="text-primary-600 dark:text-primary-400">= 68.72 USD</span></div>
+                    <div>$100 + €50 in GBP <span class="text-primary-600 dark:text-primary-400">= 118.5 GBP</span></div>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Variables with Currency</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>v = $20 <span class="text-primary-600 dark:text-primary-400">= 20 USD</span></div>
+                    <div>v + $10 <span class="text-primary-600 dark:text-primary-400">= 30 USD</span></div>
+                    <div>v times 7 <span class="text-primary-600 dark:text-primary-400">= 140 USD</span></div>
+                    <div class="mt-2">a = €100 <span class="text-primary-600 dark:text-primary-400">= 100 EUR</span></div>
+                    <div>a in GBP <span class="text-primary-600 dark:text-primary-400">= 86.21 GBP</span></div>
+                  </div>
+                </div>
+                <p class="text-xs mt-2">Supported symbols: $ € £ ¥ ₹ ₽ ₩ ₺ ₿ and 50+ ISO codes (USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY, BRL, etc.)</p>
+                <p class="text-xs">Common names also work: euro, pound, yen, won, rupee, franc, yuan, bitcoin</p>
               </div>
             </section>
 
@@ -186,79 +317,138 @@
             <section :id="'help-units'">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">{{ $t('help.units.title') }}</h3>
               <div class="space-y-3 text-sm text-gray-700 dark:text-gray-400">
+                <p>{{ $t('help.units.desc') }} Units work with or without spaces (e.g., 100km or 100 km).</p>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Length</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>100 cm in meters <span class="text-primary-600 dark:text-primary-400">= 1 meters</span></div>
-                    <div>5 feet to inches <span class="text-primary-600 dark:text-primary-400">= 60 inches</span></div>
-                    <div>10 km in miles <span class="text-primary-600 dark:text-primary-400">= 6.21 miles</span></div>
+                    <div>1 km in m <span class="text-primary-600 dark:text-primary-400">= 1000 m</span></div>
+                    <div>1 mile in km <span class="text-primary-600 dark:text-primary-400">= 1.609 km</span></div>
+                    <div>1 foot in cm <span class="text-primary-600 dark:text-primary-400">= 30.48 cm</span></div>
+                    <div>1 inch in cm <span class="text-primary-600 dark:text-primary-400">= 2.54 cm</span></div>
+                    <div>1 yard in m <span class="text-primary-600 dark:text-primary-400">= 0.9144 m</span></div>
+                    <div>1 km + 500 m in m <span class="text-primary-600 dark:text-primary-400">= 1500 m</span></div>
                   </div>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Weight</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>100 kg in lbs <span class="text-primary-600 dark:text-primary-400">= 220.46 lbs</span></div>
-                    <div>5 pounds to kg <span class="text-primary-600 dark:text-primary-400">= 2.27 kg</span></div>
-                    <div>2 stone in kg <span class="text-primary-600 dark:text-primary-400">= 12.7 kg</span></div>
+                    <div>1 kg in lb <span class="text-primary-600 dark:text-primary-400">= 2.205 lb</span></div>
+                    <div>1 oz in g <span class="text-primary-600 dark:text-primary-400">= 28.35 g</span></div>
+                    <div>1 tonne in kg <span class="text-primary-600 dark:text-primary-400">= 1000 kg</span></div>
+                    <div>1 stone in lb <span class="text-primary-600 dark:text-primary-400">= 14 lb</span></div>
                   </div>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Volume</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>2 liters in gallons <span class="text-primary-600 dark:text-primary-400">= 0.528 gallons</span></div>
-                    <div>500 ml to cups <span class="text-primary-600 dark:text-primary-400">= 2.11 cups</span></div>
-                    <div>1 gallon in liters <span class="text-primary-600 dark:text-primary-400">= 3.79 liters</span></div>
-                  </div>
-                </div>
-                <div>
-                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Area</p>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>100 m2 in ft2 <span class="text-primary-600 dark:text-primary-400">= 1076.39 ft2</span></div>
-                    <div>1 acre in m2 <span class="text-primary-600 dark:text-primary-400">= 4046.86 m2</span></div>
-                    <div>5 km2 in hectares <span class="text-primary-600 dark:text-primary-400">= 500 hectares</span></div>
+                    <div>1 gallon in liters <span class="text-primary-600 dark:text-primary-400">= 3.785 liters</span></div>
+                    <div>1 cup in ml <span class="text-primary-600 dark:text-primary-400">= 237 ml</span></div>
+                    <div>1 tablespoon in ml <span class="text-primary-600 dark:text-primary-400">= 14.79 ml</span></div>
+                    <div>1 teaspoon in ml <span class="text-primary-600 dark:text-primary-400">= 4.93 ml</span></div>
+                    <div>1 pint in ml <span class="text-primary-600 dark:text-primary-400">= 473 ml</span></div>
+                    <div>1 cbm in liters <span class="text-primary-600 dark:text-primary-400">= 1000 liters</span></div>
                   </div>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Temperature</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>0 celsius in fahrenheit <span class="text-primary-600 dark:text-primary-400">= 32 fahrenheit</span></div>
                     <div>100 celsius in fahrenheit <span class="text-primary-600 dark:text-primary-400">= 212 fahrenheit</span></div>
-                    <div>32 fahrenheit to celsius <span class="text-primary-600 dark:text-primary-400">= 0 celsius</span></div>
-                    <div>273 kelvin in celsius <span class="text-primary-600 dark:text-primary-400">= -0.15 celsius</span></div>
+                    <div>32 fahrenheit in celsius <span class="text-primary-600 dark:text-primary-400">= 0 celsius</span></div>
+                    <div>0 celsius in kelvin <span class="text-primary-600 dark:text-primary-400">= 273.15 kelvin</span></div>
                   </div>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Time</p>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Area</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>3600 seconds in hours <span class="text-primary-600 dark:text-primary-400">= 1 hours</span></div>
-                    <div>2 weeks in days <span class="text-primary-600 dark:text-primary-400">= 14 days</span></div>
-                    <div>365 days in years <span class="text-primary-600 dark:text-primary-400">= 1 years</span></div>
+                    <div>1 acre in sqm <span class="text-primary-600 dark:text-primary-400">= 4046.86 sqm</span></div>
+                    <div>1 hectare in acres <span class="text-primary-600 dark:text-primary-400">= 2.471 acres</span></div>
+                    <div>1 sqft in sqm <span class="text-primary-600 dark:text-primary-400">= 0.0929 sqm</span></div>
                   </div>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Speed</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>100 km/h in mph <span class="text-primary-600 dark:text-primary-400">= 62.14 mph</span></div>
-                    <div>60 mph to m/s <span class="text-primary-600 dark:text-primary-400">= 26.82 m/s</span></div>
-                    <div>20 knots in km/h <span class="text-primary-600 dark:text-primary-400">= 37.04 km/h</span></div>
+                    <div>100 kph in mph <span class="text-primary-600 dark:text-primary-400">= 62.14 mph</span></div>
+                    <div>60 mph in kph <span class="text-primary-600 dark:text-primary-400">= 96.56 kph</span></div>
+                    <div>1 knot in kph <span class="text-primary-600 dark:text-primary-400">= 1.852 kph</span></div>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Time</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>1 hour in minutes <span class="text-primary-600 dark:text-primary-400">= 60 minutes</span></div>
+                    <div>1 day in hours <span class="text-primary-600 dark:text-primary-400">= 24 hours</span></div>
+                    <div>1 week in days <span class="text-primary-600 dark:text-primary-400">= 7 days</span></div>
+                    <div>1 year in days <span class="text-primary-600 dark:text-primary-400">= 365 days</span></div>
                   </div>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Data</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>100 MB in GB <span class="text-primary-600 dark:text-primary-400">= 0.1 GB</span></div>
+                    <div>1 GB in MB <span class="text-primary-600 dark:text-primary-400">= 1000 MB</span></div>
+                    <div>1 TB in GB <span class="text-primary-600 dark:text-primary-400">= 1000 GB</span></div>
                     <div>1 GiB in MiB <span class="text-primary-600 dark:text-primary-400">= 1024 MiB</span></div>
-                    <div>8 bits in bytes <span class="text-primary-600 dark:text-primary-400">= 1 bytes</span></div>
+                    <div>1 byte in bits <span class="text-primary-600 dark:text-primary-400">= 8 bits</span></div>
+                    <div>1 KiB in bytes <span class="text-primary-600 dark:text-primary-400">= 1024 bytes</span></div>
                   </div>
-                  <p class="text-xs italic mt-2">Note: KB/MB/GB use 1000, KiB/MiB/GiB use 1024</p>
+                  <p class="text-xs italic mt-2">KB/MB/GB use 1000 (SI). KiB/MiB/GiB use 1024 (binary).</p>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">CSS Units</p>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Angular</p>
                   <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                    <div>16 px in em <span class="text-primary-600 dark:text-primary-400">= 1 em</span></div>
-                    <div>2 em in px <span class="text-primary-600 dark:text-primary-400">= 32 px</span></div>
-                    <div>12 pt in px <span class="text-primary-600 dark:text-primary-400">= 16 px</span></div>
+                    <div>180 degrees in radians <span class="text-primary-600 dark:text-primary-400">= 3.1416 radians</span></div>
+                    <div>90° in radians <span class="text-primary-600 dark:text-primary-400">= 1.5708 radians</span></div>
                   </div>
-                  <p class="text-xs italic mt-2">Note: 1em = 16px (default), 1pt = 1.333px</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Fuel Economy -->
+            <section :id="'help-fuel'">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">Fuel Economy</h3>
+              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
+                <p>Convert between fuel economy units and calculate fuel consumption.</p>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">mpg</span> — miles per gallon (US)</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">kpl</span> — km per litre</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">mpl</span> — miles per litre</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">kpg</span> — km per gallon</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">l/100km</span> — litres per 100km</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">mpg_uk</span> — miles per UK gallon</div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1 mt-2">
+                  <div>30 mpg in kpl <span class="text-primary-600 dark:text-primary-400">= 12.75 kpl</span></div>
+                  <div>30 mpg in l/100km <span class="text-primary-600 dark:text-primary-400">= 7.84 l/100km</span></div>
+                  <div>8 l/100km in mpg <span class="text-primary-600 dark:text-primary-400">= 29.4 mpg</span></div>
+                  <div>12 kpl in mpg <span class="text-primary-600 dark:text-primary-400">= 28.25 mpg</span></div>
+                  <div>30 mpg in mpg_uk <span class="text-primary-600 dark:text-primary-400">= 36.03 mpg_uk</span></div>
+                  <div class="mt-2 text-gray-500">// Long-form also works</div>
+                  <div>30 miles per gallon in km per litre <span class="text-primary-600 dark:text-primary-400">= 12.75 kpl</span></div>
+                  <div class="mt-2 text-gray-500">// Fuel consumption calculation</div>
+                  <div>distance = 100 miles</div>
+                  <div>mileage = 30 mpg</div>
+                  <div>fuel = distance / mileage <span class="text-primary-600 dark:text-primary-400">= 3.33 gallons</span></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- CSS Units -->
+            <section :id="'help-css'">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">CSS Units</h3>
+              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
+                <p>Convert between CSS units. Default: 1em = 16px, 1pt = 1.333px.</p>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                  <div>12 pt in px <span class="text-primary-600 dark:text-primary-400">= 16 px</span></div>
+                  <div>1 em in px <span class="text-primary-600 dark:text-primary-400">= 16 px</span></div>
+                  <div>1 rem in px <span class="text-primary-600 dark:text-primary-400">= 16 px</span></div>
+                  <div>1 inch in px <span class="text-primary-600 dark:text-primary-400">= 96 px</span></div>
+                  <div class="mt-2 text-gray-500">// Custom em size</div>
+                  <div>em = 20</div>
+                  <div>1.2 em in px <span class="text-primary-600 dark:text-primary-400">= 24 px</span></div>
+                  <div class="mt-2 text-gray-500">// Custom PPI (e.g., Retina display)</div>
+                  <div>ppi = 326</div>
+                  <div>1 cm in px <span class="text-primary-600 dark:text-primary-400">= 128 px</span></div>
                 </div>
               </div>
             </section>
@@ -275,37 +465,85 @@
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">T (tera) = 10¹²</div>
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">m (milli) = 10⁻³</div>
                   <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">μ (micro) = 10⁻⁶</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">n (nano) = 10⁻⁹</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">p (pico) = 10⁻¹²</div>
                 </div>
-                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1 mt-3">
-                  <div>100 km <span class="text-gray-500">// kilometer</span></div>
-                  <div>500 MB <span class="text-gray-500">// megabyte</span></div>
-                  <div>2 Gm in km <span class="text-gray-500">// gigameter to kilometer</span></div>
-                  <div>50 mm in cm <span class="text-gray-500">// millimeter to centimeter</span></div>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1 mt-2">
+                  <div>1 km in m <span class="text-primary-600 dark:text-primary-400">= 1000 m</span></div>
+                  <div>1 mg in g <span class="text-primary-600 dark:text-primary-400">= 0.001 g</span></div>
+                  <div>1 MB in bytes <span class="text-primary-600 dark:text-primary-400">= 1000000 bytes</span></div>
+                  <div>1 kilogram in grams <span class="text-primary-600 dark:text-primary-400">= 1000 grams</span></div>
+                  <div>1 millimeter in meters <span class="text-primary-600 dark:text-primary-400">= 0.001 meters</span></div>
                 </div>
-                <p class="text-xs italic mt-2">Note: SI prefixes are case-sensitive. Use MB for megabytes, not mB.</p>
+              </div>
+            </section>
+
+            <!-- Number Formats -->
+            <section :id="'help-numformats'">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">Number Formats</h3>
+              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
+                <p>Work with binary, hexadecimal, octal, and scientific notation.</p>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                  <div class="text-gray-500">// Binary (0b prefix)</div>
+                  <div>0b1010 <span class="text-primary-600 dark:text-primary-400">= 10</span></div>
+                  <div>0b1010 + 0b0101 <span class="text-primary-600 dark:text-primary-400">= 15</span></div>
+                  <div>10 in bin <span class="text-primary-600 dark:text-primary-400">= 1010</span></div>
+                  <div class="mt-2 text-gray-500">// Hexadecimal (0x prefix)</div>
+                  <div>0xFF <span class="text-primary-600 dark:text-primary-400">= 255</span></div>
+                  <div>0xFF + 1 <span class="text-primary-600 dark:text-primary-400">= 256</span></div>
+                  <div>255 in hex <span class="text-primary-600 dark:text-primary-400">= FF</span></div>
+                  <div class="mt-2 text-gray-500">// Octal (0o prefix)</div>
+                  <div>0o1435343 <span class="text-primary-600 dark:text-primary-400">= 407267</span></div>
+                  <div>8 in oct <span class="text-primary-600 dark:text-primary-400">= 10</span></div>
+                  <div class="mt-2 text-gray-500">// Scientific notation</div>
+                  <div>5300 in sci <span class="text-primary-600 dark:text-primary-400">= 5.3 × 10³</span></div>
+                </div>
               </div>
             </section>
 
             <!-- Functions -->
             <section :id="'help-functions'">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">{{ $t('help.functions.title') }}</h3>
-              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
+              <div class="space-y-3 text-sm text-gray-700 dark:text-gray-400">
                 <p>{{ $t('help.functions.desc') }}</p>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">sqrt(16) = 4</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">cbrt(8) = 2</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">abs(-5) = 5</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">round(3.7) = 4</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">ceil(3.2) = 4</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">floor(3.8) = 3</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">sin(45°) = 0.707</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">cos(90°) = 0</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">tan(45°) = 1</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">log(100) = 2</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">ln(10) = 2.303</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">fact(5) = 120</div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Basic Functions</p>
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">sqrt(16) = 4</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">cbrt(8) = 2</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">abs(-4) = 4</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">fact(5) = 120</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">round(3.55) = 4</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">ceil(3.76) = 4</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">floor(2.56) = 2</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">log(100) = 2</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">ln(e) = 1</div>
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">fromunix(0) = 1970-01-01</div>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Roots &amp; Logarithms</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>root 2 (8) <span class="text-primary-600 dark:text-primary-400">= 2.83</span> <span class="text-gray-500">// square root of 8</span></div>
+                    <div>root 3 (27) <span class="text-primary-600 dark:text-primary-400">= 3</span> <span class="text-gray-500">// cube root</span></div>
+                    <div>log 2 (10) <span class="text-primary-600 dark:text-primary-400">= 3.32</span> <span class="text-gray-500">// log base 2</span></div>
+                    <div>log 10 (1000) <span class="text-primary-600 dark:text-primary-400">= 3</span> <span class="text-gray-500">// log base 10</span></div>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Trigonometry</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div class="text-gray-500">// Use ° for degrees</div>
+                    <div>sin(45°) <span class="text-primary-600 dark:text-primary-400">= 0.7071</span></div>
+                    <div>cos(60°) <span class="text-primary-600 dark:text-primary-400">= 0.5</span></div>
+                    <div>tan(45°) <span class="text-primary-600 dark:text-primary-400">= 1</span></div>
+                    <div class="mt-2 text-gray-500">// Inverse trig (returns radians)</div>
+                    <div>arcsin(1) <span class="text-primary-600 dark:text-primary-400">= 1.5708</span> <span class="text-gray-500">// π/2</span></div>
+                    <div>arccos(0) <span class="text-primary-600 dark:text-primary-400">= 1.5708</span></div>
+                    <div>arctan(1) <span class="text-primary-600 dark:text-primary-400">= 0.7854</span> <span class="text-gray-500">// π/4</span></div>
+                    <div class="mt-2 text-gray-500">// Hyperbolic</div>
+                    <div>sinh(1) <span class="text-primary-600 dark:text-primary-400">= 1.1752</span></div>
+                    <div>cosh(1) <span class="text-primary-600 dark:text-primary-400">= 1.5431</span></div>
+                    <div>tanh(1) <span class="text-primary-600 dark:text-primary-400">= 0.7616</span></div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -315,23 +553,14 @@
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">{{ $t('help.constants.title') }}</h3>
               <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
                 <div class="grid grid-cols-2 gap-2 text-xs">
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">pi = 3.14159...</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">e = 2.71828...</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">tau = 6.28318...</div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded">phi = 1.61803...</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">pi</span> = 3.14159...</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">e</span> = 2.71828...</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">tau</span> = 6.28318... (2π)</div>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded"><span class="font-semibold">phi</span> = 1.61803... (golden ratio)</div>
                 </div>
-              </div>
-            </section>
-
-            <!-- Special Keywords -->
-            <section :id="'help-special'">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">{{ $t('help.special.title') }}</h3>
-              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
-                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                  <div>prev <span class="text-gray-500">// Previous result</span></div>
-                  <div>sum <span class="text-gray-500">// Sum all lines above</span></div>
-                  <div>average <span class="text-gray-500">// Average all lines above</span></div>
-                  <div>sum in USD <span class="text-gray-500">// Sum with currency conversion</span></div>
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1 mt-2">
+                  <div>pi * 2 <span class="text-primary-600 dark:text-primary-400">= 6.2832</span></div>
+                  <div>e ^ 2 <span class="text-primary-600 dark:text-primary-400">= 7.389</span></div>
                 </div>
               </div>
             </section>
@@ -339,28 +568,48 @@
             <!-- Date & Time -->
             <section :id="'help-datetime'">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">Date &amp; Time</h3>
-              <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
-                <p>Get current date/time and perform date arithmetic.</p>
-                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                  <div class="font-semibold text-gray-600 dark:text-gray-400-muted">Current:</div>
-                  <div>now <span class="text-gray-500">// Current date and time</span></div>
-                  <div>today <span class="text-gray-500">// Today at midnight</span></div>
-                  <div class="font-semibold text-gray-600 dark:text-gray-400-muted mt-2">Shortcuts:</div>
-                  <div>yesterday <span class="text-gray-500">// Yesterday</span></div>
-                  <div>tomorrow <span class="text-gray-500">// Tomorrow</span></div>
-                  <div>next week <span class="text-gray-500">// 7 days from now</span></div>
-                  <div>last week <span class="text-gray-500">// 7 days ago</span></div>
-                  <div>next month <span class="text-gray-500">// Next month</span></div>
-                  <div>last month <span class="text-gray-500">// Last month</span></div>
-                  <div>next year <span class="text-gray-500">// Next year</span></div>
-                  <div>last year <span class="text-gray-500">// Last year</span></div>
-                  <div class="font-semibold text-gray-600 dark:text-gray-400-muted mt-2">Arithmetic:</div>
-                  <div>today + 2 weeks <span class="text-gray-500">// Date arithmetic</span></div>
-                  <div>tomorrow + 3 days <span class="text-gray-500">// Combine shortcuts</span></div>
-                  <div>yesterday - 1 month <span class="text-gray-500">// Subtract time</span></div>
-                  <div>fromunix(1446587186) <span class="text-gray-500">// Convert Unix timestamp</span></div>
+              <div class="space-y-3 text-sm text-gray-700 dark:text-gray-400">
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Date Keywords</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>now <span class="text-gray-500">// Current date and time</span></div>
+                    <div>today <span class="text-gray-500">// Today at midnight</span></div>
+                    <div>yesterday <span class="text-gray-500">// Yesterday</span></div>
+                    <div>tomorrow <span class="text-gray-500">// Tomorrow</span></div>
+                    <div>next week <span class="text-gray-500">// 7 days from now</span></div>
+                    <div>last week <span class="text-gray-500">// 7 days ago</span></div>
+                    <div>next month <span class="text-gray-500">// Next month</span></div>
+                    <div>last month <span class="text-gray-500">// Last month</span></div>
+                    <div>next year <span class="text-gray-500">// Next year</span></div>
+                    <div>last year <span class="text-gray-500">// Last year</span></div>
+                  </div>
                 </div>
-                <p class="text-xs italic mt-2">Supported units: second, minute, hour, day, week, month, year</p>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Date Arithmetic</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>today + 3 days <span class="text-gray-500">// 3 days from now</span></div>
+                    <div>today - 1 week <span class="text-gray-500">// 1 week ago</span></div>
+                    <div>today + 2 months <span class="text-gray-500">// 2 months from now</span></div>
+                    <div>2 hours + 30 minutes <span class="text-gray-500">// Duration math</span></div>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Timezone Conversion</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>PST time <span class="text-gray-500">// Current time in PST</span></div>
+                    <div>time in Madrid <span class="text-gray-500">// Current time in Madrid</span></div>
+                    <div>time in Tokyo <span class="text-gray-500">// Current time in Tokyo</span></div>
+                    <div>2:30 pm HKT in Berlin <span class="text-gray-500">// Convert between zones</span></div>
+                  </div>
+                  <p class="text-xs italic mt-2">Supported zones: PST, EST, GMT, UTC, CET, IST, JST, HKT, AEST, and more. Cities: New York, London, Paris, Tokyo, Sydney, etc.</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-gray-400 mb-2">Unix Timestamps</p>
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                    <div>fromunix(1446587186) <span class="text-gray-500">// Nov 3, 2015</span></div>
+                    <div>fromunix(0) <span class="text-gray-500">// Jan 1, 1970 (epoch)</span></div>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -369,11 +618,13 @@
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-400 mb-3">{{ $t('help.formatting.title') }}</h3>
               <div class="space-y-2 text-sm text-gray-700 dark:text-gray-400">
                 <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
-                  <div># Header <span class="text-gray-500">// Large bold text</span></div>
-                  <div>// Comment <span class="text-gray-500">// Italic gray text</span></div>
-                  <div>Label: <span class="text-gray-500">// Bold label</span></div>
-                  <div>Price: $100 * 2 <span class="text-gray-500">// Label with calculation</span></div>
+                  <div># Header <span class="text-gray-500">// Large bold text, no result</span></div>
+                  <div>// Comment <span class="text-gray-500">// Italic gray text, no result</span></div>
+                  <div>Label: <span class="text-gray-500">// Bold label, no result</span></div>
+                  <div>Price: $100 * 2 <span class="text-primary-600 dark:text-primary-400">= 200 USD</span> <span class="text-gray-500">// Label with calculation</span></div>
+                  <div>$275 for the "Model 227" <span class="text-primary-600 dark:text-primary-400">= 275 USD</span> <span class="text-gray-500">// Inline comment with quotes</span></div>
                 </div>
+                <p class="text-xs italic mt-2">Empty lines separate sum/average calculations into groups.</p>
               </div>
             </section>
 
@@ -462,6 +713,13 @@
                         <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">today + 2 weeks</kbd>
                       </div>
                     </div>
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+                      <span class="text-sm text-gray-700 dark:text-gray-400">Number format</span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
+                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">255 in hex</kbd>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -479,6 +737,8 @@
                   <li>• Use parentheses () to group operations: (10 + 20) * 2</li>
                   <li>• Variables work across lines: price = 100, then use "price" later</li>
                   <li>• Empty lines separate sum/average calculations</li>
+                  <li>• Units work with or without spaces: 100km or 100 km</li>
+                  <li>• Use scales with currency: $2k, €3M, £1 million</li>
                 </ul>
               </div>
             </section>
@@ -507,14 +767,19 @@ const contentRef = ref(null)
 const sections = [
   { id: 'basics', label: 'Basics' },
   { id: 'operators', label: 'Operators' },
+  { id: 'bitwise', label: 'Bitwise' },
   { id: 'variables', label: 'Variables' },
+  { id: 'special', label: 'Special Keywords' },
   { id: 'percentages', label: 'Percentages' },
+  { id: 'scales', label: 'Scales' },
   { id: 'currency', label: 'Currency' },
   { id: 'units', label: 'Units' },
+  { id: 'fuel', label: 'Fuel Economy' },
+  { id: 'css', label: 'CSS Units' },
   { id: 'si', label: 'SI Prefixes' },
+  { id: 'numformats', label: 'Number Formats' },
   { id: 'functions', label: 'Functions' },
   { id: 'constants', label: 'Constants' },
-  { id: 'special', label: 'Special Keywords' },
   { id: 'datetime', label: 'Date & Time' },
   { id: 'formatting', label: 'Formatting' },
   { id: 'shortcuts', label: 'Shortcuts' },
@@ -526,7 +791,6 @@ const scrollTo = (id) => {
   if (el) {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
-  // Close index on mobile after clicking
   if (window.innerWidth < 768) {
     showIndex.value = false
   }
@@ -545,7 +809,6 @@ const onScroll = () => {
   activeSection.value = current
 }
 
-// Hide index on mobile by default
 onMounted(() => {
   if (window.innerWidth < 768) {
     showIndex.value = false
