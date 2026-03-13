@@ -79,7 +79,7 @@
 
         <!-- Content -->
         <div ref="contentRef" class="flex-1 overflow-y-auto p-6 scroll-smooth" @scroll="onScroll">
-          <div class="max-w-3xl mx-auto space-y-12">
+          <div class="max-w-3xl mx-auto space-y-12" :style="{ paddingBottom: scrollPadding + 'px' }">
 
             <!-- No results -->
             <div v-if="searchQuery && filteredSectionIds.size === 0" class="text-center py-12 text-gray-400 dark:text-gray-500">
@@ -791,6 +791,16 @@ const activeSection = ref('basics')
 const contentRef = ref(null)
 const searchQuery = ref('')
 const searchInputRef = ref(null)
+const scrollPadding = ref(0)
+
+const updateScrollPadding = () => {
+  const container = contentRef.value
+  if (!container) return
+  const allSections = container.querySelectorAll('section[id^="help-"]')
+  const last = allSections[allSections.length - 1]
+  if (!last) return
+  scrollPadding.value = Math.max(0, container.clientHeight - last.offsetHeight - 80)
+}
 
 const sections = [
   { id: 'basics', label: 'Basics', keywords: 'basics arithmetic add subtract multiply divide exponent modulo implicit multiplication' },
@@ -836,6 +846,11 @@ watch(searchQuery, () => {
   if (contentRef.value) {
     contentRef.value.scrollTop = 0
   }
+  nextTick(() => updateScrollPadding())
+})
+
+watch(() => props.isOpen, (open) => {
+  if (open) nextTick(() => updateScrollPadding())
 })
 
 const scrollTo = (id) => {
@@ -865,6 +880,7 @@ onMounted(() => {
   if (window.innerWidth < 768) {
     showIndex.value = false
   }
+  nextTick(() => updateScrollPadding())
 })
 
 const close = () => {

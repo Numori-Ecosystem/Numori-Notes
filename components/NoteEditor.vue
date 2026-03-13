@@ -235,6 +235,14 @@ const editorLineNumbers = computed(() => {
   const val = props.localePreferences?.editorLineNumbers
   return ['on', 'off', 'relative', 'interval'].includes(val) ? val : 'on'
 })
+const editorCursorStyle = computed(() => {
+  const val = props.localePreferences?.editorCursorStyle
+  return ['line', 'block', 'underline', 'line-thin', 'block-outline', 'underline-thin'].includes(val) ? val : 'line'
+})
+const editorCursorBlinking = computed(() => {
+  const val = props.localePreferences?.editorCursorBlinking
+  return ['blink', 'smooth', 'phase', 'expand', 'solid'].includes(val) ? val : 'blink'
+})
 const autoCopyResult = computed(() => props.localePreferences?.autoCopyResult !== false)
 
 // Re-format display when locale preferences change (no recalculation)
@@ -277,16 +285,27 @@ const editorOptions = computed(() => ({
   theme: colorMode.value === 'dark' ? 'vs-dark' : 'vs',
   fontSize: editorFontSize.value,
   fontFamily: editorFontFamily.value,
+  fontLigatures: props.localePreferences?.editorLigatures ?? false,
   lineHeight: lineHeight.value,
-  minimap: { enabled: false },
+  minimap: { enabled: props.localePreferences?.editorMinimap ?? false },
   scrollBeyondLastLine: true,
   wordWrap: editorWordWrap.value,
   lineNumbers: editorLineNumbers.value,
-  glyphMargin: true,
-  folding: true,
+  cursorStyle: editorCursorStyle.value,
+  cursorBlinking: editorCursorBlinking.value,
+  cursorSmoothCaretAnimation: props.localePreferences?.editorCursorSmoothCaret ? 'on' : 'off',
+  smoothScrolling: props.localePreferences?.editorSmoothScrolling ?? false,
+  glyphMargin: props.localePreferences?.editorGlyphMargin ?? true,
+  folding: props.localePreferences?.editorFolding ?? true,
+  stickyScroll: { enabled: props.localePreferences?.editorStickyScroll ?? false },
+  renderWhitespace: props.localePreferences?.editorRenderWhitespace ?? 'none',
+  autoClosingBrackets: props.localePreferences?.editorAutoClosingBrackets ?? 'always',
+  autoClosingQuotes: props.localePreferences?.editorAutoClosingQuotes ?? 'always',
+  bracketPairColorization: { enabled: props.localePreferences?.editorBracketPairColorization ?? true },
+  tabSize: props.localePreferences?.editorTabSize ?? 2,
+  renderLineHighlight: props.localePreferences?.editorRenderLineHighlight ?? 'line',
   lineDecorationsWidth: 0,
   lineNumbersMinChars: 0,
-  renderLineHighlight: 'line',
   scrollbar: {
     vertical: 'visible',
     horizontal: 'visible',
@@ -298,9 +317,6 @@ const editorOptions = computed(() => ({
   hideCursorInOverviewRuler: true,
   overviewRulerBorder: false,
   automaticLayout: true,
-  // Workaround for Monaco bug on Firefox: accessibilitySupport "auto" breaks
-  // keyboard text replacement (first keystroke after selection is swallowed).
-  // See: https://github.com/microsoft/monaco-editor/issues/4892
   accessibilitySupport: 'off',
 }))
 

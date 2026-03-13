@@ -71,12 +71,31 @@ const DEFAULT_PREFERENCES = {
   dateFormat: 'DD/MM/YYYY',
   numberFormat: 'comma_dot',
   timeFormat: '24h',
-  // Editor
+  // Editor — Typography
   editorFontSize: 16,
   editorFontFamily: 'system',
   editorLineHeight: 19,
+  editorLigatures: false,
+  // Editor — Layout
   editorWordWrap: false,
   editorLineNumbers: 'on',
+  editorMinimap: false,
+  editorStickyScroll: false,
+  editorFolding: true,
+  editorGlyphMargin: true,
+  editorRenderWhitespace: 'none',
+  // Editor — Cursor
+  editorCursorStyle: 'line',
+  editorCursorBlinking: 'blink',
+  editorCursorSmoothCaret: false,
+  editorSmoothScrolling: false,
+  // Editor — Behaviour
+  editorAutoClosingBrackets: 'always',
+  editorAutoClosingQuotes: 'always',
+  editorBracketPairColorization: true,
+  editorTabSize: 2,
+  editorRenderLineHighlight: 'line',
+  // Editor — Results
   inlineResultAlign: 'left',
   // Customisation
   precisionMode: 'auto',
