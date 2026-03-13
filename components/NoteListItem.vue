@@ -17,6 +17,12 @@
         <p v-if="note.description" class="text-sm text-gray-600 dark:text-gray-500 truncate mt-1">
           {{ note.description }}
         </p>
+        <div v-if="note.tags && note.tags.length" class="flex flex-wrap gap-1 mt-1.5">
+          <span v-for="tag in note.tags" :key="tag"
+            class="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+            {{ tag }}
+          </span>
+        </div>
         <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
           {{ formatDate(note.updatedAt) }}
         </p>

@@ -45,7 +45,7 @@
     <div class="flex-1 flex overflow-hidden">
       <!-- Sidebar - Notes List -->
       <aside class="w-80 flex-shrink-0 hidden lg:block">
-        <MainSidebar :notes="notes" :current-note-id="currentNoteId" @new-note="addNote" @select-note="selectNote"
+        <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" @new-note="addNote" @select-note="selectNote"
           @delete-note="confirmDelete" @edit-note="openEditModal"
           @show-help="showHelp = true"
           @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
@@ -70,7 +70,7 @@
           leave-from-class="translate-x-0"
           leave-to-class="-translate-x-full">
           <aside v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden">
-            <MainSidebar :notes="notes" :current-note-id="currentNoteId" @new-note="addNote" @select-note="selectNote"
+            <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" @new-note="addNote" @select-note="selectNote"
               @delete-note="confirmDelete" @edit-note="openEditModal"
               @show-help="showHelp = true"
               @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
@@ -117,7 +117,10 @@
 
     <!-- Modals -->
     <NoteMetaModal :is-open="showMetaModal" :title="currentNote?.title || ''"
-      :description="currentNote?.description || ''" :note-id="currentNote?.id" @close="showMetaModal = false"
+      :description="currentNote?.description || ''"
+      :tags="currentNote?.tags || []"
+      :all-tags="allTags"
+      :note-id="currentNote?.id" @close="showMetaModal = false"
       @save="updateMeta" @delete="confirmDelete" />
 
     <HelpModal :is-open="showHelp" @close="showHelp = false" />
@@ -139,7 +142,7 @@
 </template>
 
 <script setup>
-const { notes, currentNoteId, currentNote, addNote, deleteNote, updateNoteContent, updateNoteMeta } = useNotes()
+const { notes, currentNoteId, currentNote, allTags, addNote, deleteNote, updateNoteContent, updateNoteMeta } = useNotes()
 const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
 const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()
@@ -193,9 +196,9 @@ const updateContent = (content) => {
   }
 }
 
-const updateMeta = ({ title, description }) => {
+const updateMeta = ({ title, description, tags }) => {
   if (currentNote.value) {
-    updateNoteMeta(currentNote.value.id, { title, description })
+    updateNoteMeta(currentNote.value.id, { title, description, tags })
   }
 }
 

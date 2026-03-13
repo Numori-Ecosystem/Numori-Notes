@@ -33,6 +33,15 @@ export const useNotes = () => {
     }
   }
 
+  // Get all unique tags across notes
+  const allTags = computed(() => {
+    const tagSet = new Set()
+    notes.value.forEach(n => {
+      if (n.tags) n.tags.forEach(t => tagSet.add(t))
+    })
+    return [...tagSet].sort()
+  })
+
   // Create a new note
   const createNote = (title = 'Untitled Note', description = '') => {
     const defaultContent = title === 'Welcome' ? `# Welcome to CalcNotes!
@@ -116,6 +125,7 @@ Discounted: prev - 10%
       id: Date.now().toString(),
       title,
       description,
+      tags: [],
       content: defaultContent,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -157,11 +167,12 @@ Discounted: prev - 10%
   }
 
   // Update note metadata
-  const updateNoteMeta = (id, { title, description }) => {
+  const updateNoteMeta = (id, { title, description, tags }) => {
     const note = notes.value.find(n => n.id === id)
     if (note) {
       if (title !== undefined) note.title = title
       if (description !== undefined) note.description = description
+      if (tags !== undefined) note.tags = tags
       note.updatedAt = new Date().toISOString()
       saveNotes()
     }
@@ -181,6 +192,7 @@ Discounted: prev - 10%
     notes,
     currentNoteId,
     currentNote,
+    allTags,
     addNote,
     deleteNote,
     updateNoteContent,

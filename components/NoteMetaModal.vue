@@ -32,6 +32,39 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none resize-none"
                 placeholder="Add a description..." />
             </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
+                Tags
+              </label>
+              <div class="flex flex-wrap gap-1.5 mb-2" v-if="localTags.length">
+                <span v-for="(tag, i) in localTags" :key="i"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+                  {{ tag }}
+                  <button @click="removeTag(i)" type="button"
+                    class="hover:text-primary-900 dark:hover:text-primary-100 transition-colors">
+                    <Icon name="mdi:close" class="w-3 h-3" />
+                  </button>
+                </span>
+              </div>
+              <div class="relative">
+                <input v-model="tagInput" type="text"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                  placeholder="e.g. work, ideas, urgent"
+                  @keydown.enter.prevent="addTags"
+                  @keydown.backspace="tagInput === '' && localTags.length && removeTag(localTags.length - 1)"
+                  @input="onTagInput" />
+                <div v-if="tagSuggestions.length" class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-32 overflow-y-auto">
+                  <button v-for="s in tagSuggestions" :key="s" @mousedown.prevent="selectSuggestion(s)"
+                    class="w-full text-left px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    {{ s }}
+                  </button>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                Press Enter to add. Separate multiple tags with commas.
+              </p>
+            </div>
           </div>
 
           <div class="flex justify-between gap-2 mt-6">
@@ -58,41 +91,64 @@
 
 <script setup>
 const props = defineProps({
-  isOpen: {
-    type: Boolean,
-    default: false
-  },
-  title: {
-    type: String,
-    default: ''
-  },
-  description: {
-    type: String,
-    default: ''
-  },
-  noteId: {
-    type: String,
-    default: null
-  }
+  isOpen: { type: Boolean, default: false },
+  title: { type: String, default: '' },
+  description: { type: String, default: '' },
+  tags: { type: Array, default: () => [] },
+  allTags: { type: Array, default: () => [] },
+  noteId: { type: String, default: null }
 })
 
 const emit = defineEmits(['close', 'save', 'delete'])
 
 const localTitle = ref(props.title)
 const localDescription = ref(props.description)
+const localTags = ref([...props.tags])
+const tagInput = ref('')
+const tagSuggestions = ref([])
 
-watch(() => props.title, (newVal) => {
-  localTitle.value = newVal
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    localTitle.value = props.title
+    localDescription.value = props.description
+    localTags.value = [...props.tags]
+    tagInput.value = ''
+    tagSuggestions.value = []
+  }
 })
 
-watch(() => props.description, (newVal) => {
-  localDescription.value = newVal
-})
+const addTags = () => {
+  tagInput.value.split(',')
+    .map(t => t.trim().toLowerCase())
+    .filter(t => t && !localTags.value.includes(t))
+    .forEach(t => localTags.value.push(t))
+  tagInput.value = ''
+  tagSuggestions.value = []
+}
+
+const removeTag = (index) => {
+  localTags.value.splice(index, 1)
+}
+
+const selectSuggestion = (tag) => {
+  if (!localTags.value.includes(tag)) {
+    localTags.value.push(tag)
+  }
+  tagInput.value = ''
+  tagSuggestions.value = []
+}
+
+const onTagInput = () => {
+  const q = tagInput.value.trim().toLowerCase()
+  if (!q) { tagSuggestions.value = []; return }
+  tagSuggestions.value = props.allTags.filter(t => t.includes(q) && !localTags.value.includes(t))
+}
 
 const save = () => {
   emit('save', {
     title: localTitle.value,
-    description: localDescription.value
+    description: localDescription.value,
+    tags: [...localTags.value]
   })
   emit('close')
 }
