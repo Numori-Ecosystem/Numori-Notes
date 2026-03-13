@@ -20,7 +20,7 @@
               <div class="flex items-center gap-2">
                 <div class="relative">
                   <Icon name="mdi:magnify" class="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  <input ref="searchInputRef" v-model="searchQuery" type="text" placeholder="Search settings..."
+                  <input v-model="searchQuery" type="text" placeholder="Search settings..."
                     class="w-40 md:w-56 pl-7 pr-7 py-1 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                     @keydown.escape="searchQuery = ''" />
                   <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
@@ -65,7 +65,7 @@
                   </div>
 
                   <!-- ===== Locales ===== -->
-                  <section v-show="isSectionVisible('locales')" id="settings-locales" class="settings-section">
+                  <section v-show="isSectionVisible('locales')" id="settings-locales" :class="sectionClass">
                     <div class="flex items-center gap-2 mb-1">
                       <Icon name="mdi:earth" class="w-5 h-5 text-primary-500 dark:text-primary-400" />
                       <h3 class="text-base font-semibold text-gray-900 dark:text-gray-200">Locales</h3>
@@ -74,7 +74,7 @@
                     <div class="space-y-5 pl-1">
                       <!-- Preset -->
                       <div>
-                        <label class="settings-label">Preset</label>
+                        <label :class="labelClass">Preset</label>
                         <div class="grid grid-cols-3 gap-2">
                           <button v-for="(_preset, name) in presets" :key="name" @click="selectPreset(name)"
                             class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 border-2"
@@ -88,14 +88,14 @@
                       </div>
                       <!-- Language -->
                       <div>
-                        <label class="settings-label">Language</label>
+                        <label :class="labelClass">Language</label>
                         <select :value="currentLocaleCode" @change="changeLocale($event.target.value)" :class="selectClass">
                           <option v-for="locale in availableLocales" :key="locale.code" :value="locale.code">{{ getLanguageEmoji(locale.code) }} {{ locale.name }}</option>
                         </select>
                       </div>
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label class="settings-label">Volume</label>
+                          <label :class="labelClass">Volume</label>
                           <select v-model="preferences.volume" @change="onSettingChange" :class="selectClass">
                             <option value="litre">Litres</option>
                             <option value="us_gallon">US Gallons</option>
@@ -103,7 +103,7 @@
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Fuel Economy</label>
+                          <label :class="labelClass">Fuel Economy</label>
                           <select v-model="preferences.fuelEconomy" @change="onSettingChange" :class="selectClass">
                             <option value="mpg">Miles per gallon (US)</option>
                             <option value="mpg_uk">Miles per gallon (UK)</option>
@@ -114,14 +114,14 @@
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Distance</label>
+                          <label :class="labelClass">Distance</label>
                           <select v-model="preferences.distance" @change="onSettingChange" :class="selectClass">
                             <option value="km">Kilometres</option>
                             <option value="miles">Miles</option>
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Temperature</label>
+                          <label :class="labelClass">Temperature</label>
                           <select v-model="preferences.temperature" @change="onSettingChange" :class="selectClass">
                             <option value="celsius">Celsius (°C)</option>
                             <option value="fahrenheit">Fahrenheit (°F)</option>
@@ -131,7 +131,7 @@
                       </div>
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label class="settings-label">Date Format</label>
+                          <label :class="labelClass">Date Format</label>
                           <select v-model="preferences.dateFormat" @change="onSettingChange" :class="selectClass">
                             <option value="DD/MM/YYYY">DD/MM/YYYY (31/12/2025)</option>
                             <option value="MM/DD/YYYY">MM/DD/YYYY (12/31/2025)</option>
@@ -141,14 +141,14 @@
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Time Format</label>
+                          <label :class="labelClass">Time Format</label>
                           <select v-model="preferences.timeFormat" @change="onSettingChange" :class="selectClass">
                             <option value="12h">12-hour (3:30 PM)</option>
                             <option value="24h">24-hour (15:30)</option>
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Number Format</label>
+                          <label :class="labelClass">Number Format</label>
                           <select v-model="preferences.numberFormat" @change="onSettingChange" :class="selectClass">
                             <option value="comma_dot">1,000.00 (US/UK)</option>
                             <option value="dot_comma">1.000,00 (DE/ES)</option>
@@ -160,7 +160,7 @@
                   </section>
 
                   <!-- ===== Editor — Typography ===== -->
-                  <section v-show="isSectionVisible('typography')" id="settings-typography" class="settings-section">
+                  <section v-show="isSectionVisible('typography')" id="settings-typography" :class="sectionClass">
                     <div class="flex items-center gap-2 mb-1">
                       <Icon name="mdi:format-font" class="w-5 h-5 text-primary-500 dark:text-primary-400" />
                       <h3 class="text-base font-semibold text-gray-900 dark:text-gray-200">Typography</h3>
@@ -169,7 +169,7 @@
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label class="settings-label">Font Family</label>
+                          <label :class="labelClass">Font Family</label>
                           <select v-model="preferences.editorFontFamily" @change="onSettingChange" :class="selectClass">
                             <option value="system">System Default</option>
                             <option value="fira-code">Fira Code</option>
@@ -178,23 +178,23 @@
                             <option value="cascadia-code">Cascadia Code</option>
                             <option value="ibm-plex-mono">IBM Plex Mono</option>
                           </select>
-                          <p class="settings-hint">Custom fonts must be installed on your system</p>
+                          <p :class="hintClass">Custom fonts must be installed on your system</p>
                         </div>
                         <div>
-                          <label class="settings-label">Font Size: {{ preferences.editorFontSize }}px</label>
+                          <label :class="labelClass">Font Size: {{ preferences.editorFontSize }}px</label>
                           <input type="range" min="10" max="28" step="1" v-model.number="preferences.editorFontSize" @input="onSettingChange" class="w-full accent-primary-500" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>10px</span><span>28px</span></div>
                         </div>
                         <div>
-                          <label class="settings-label">Line Height: {{ preferences.editorLineHeight }}px</label>
+                          <label :class="labelClass">Line Height: {{ preferences.editorLineHeight }}px</label>
                           <input type="range" min="14" max="36" step="1" v-model.number="preferences.editorLineHeight" @input="onSettingChange" class="w-full accent-primary-500" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>14px</span><span>36px</span></div>
                         </div>
                       </div>
                       <div class="flex items-center justify-between">
                         <div>
-                          <label class="settings-label-inline">Font Ligatures</label>
-                          <p class="settings-hint">Enable ligatures for supported fonts (e.g. Fira Code)</p>
+                          <label :class="labelInlineClass">Font Ligatures</label>
+                          <p :class="hintClass">Enable ligatures for supported fonts (e.g. Fira Code)</p>
                         </div>
                         <button @click="preferences.editorLigatures = !preferences.editorLigatures; onSettingChange()" :class="toggleClass(preferences.editorLigatures)">
                           <span :class="toggleDot(preferences.editorLigatures)" />
@@ -204,7 +204,7 @@
                   </section>
 
                   <!-- ===== Editor — Layout ===== -->
-                  <section v-show="isSectionVisible('layout')" id="settings-layout" class="settings-section">
+                  <section v-show="isSectionVisible('layout')" id="settings-layout" :class="sectionClass">
                     <div class="flex items-center gap-2 mb-1">
                       <Icon name="mdi:page-layout-body" class="w-5 h-5 text-primary-500 dark:text-primary-400" />
                       <h3 class="text-base font-semibold text-gray-900 dark:text-gray-200">Layout</h3>
@@ -213,7 +213,7 @@
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label class="settings-label">Line Numbers</label>
+                          <label :class="labelClass">Line Numbers</label>
                           <select v-model="preferences.editorLineNumbers" @change="onSettingChange" :class="selectClass">
                             <option value="on">Absolute</option>
                             <option value="relative">Relative</option>
@@ -222,7 +222,7 @@
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Render Whitespace</label>
+                          <label :class="labelClass">Render Whitespace</label>
                           <select v-model="preferences.editorRenderWhitespace" @change="onSettingChange" :class="selectClass">
                             <option value="none">None</option>
                             <option value="boundary">Boundary</option>
@@ -230,10 +230,10 @@
                             <option value="trailing">Trailing</option>
                             <option value="all">All</option>
                           </select>
-                          <p class="settings-hint">Show dots for spaces and arrows for tabs</p>
+                          <p :class="hintClass">Show dots for spaces and arrows for tabs</p>
                         </div>
                         <div>
-                          <label class="settings-label">Line Highlight</label>
+                          <label :class="labelClass">Line Highlight</label>
                           <select v-model="preferences.editorRenderLineHighlight" @change="onSettingChange" :class="selectClass">
                             <option value="none">None</option>
                             <option value="gutter">Gutter only</option>
@@ -245,8 +245,8 @@
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Word Wrap</label>
-                            <p class="settings-hint">Wrap long lines to fit the editor width</p>
+                            <label :class="labelInlineClass">Word Wrap</label>
+                            <p :class="hintClass">Wrap long lines to fit the editor width</p>
                           </div>
                           <button @click="preferences.editorWordWrap = !preferences.editorWordWrap; onSettingChange()" :class="toggleClass(preferences.editorWordWrap)">
                             <span :class="toggleDot(preferences.editorWordWrap)" />
@@ -254,8 +254,8 @@
                         </div>
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Minimap</label>
-                            <p class="settings-hint">Show a miniature overview of the document</p>
+                            <label :class="labelInlineClass">Minimap</label>
+                            <p :class="hintClass">Show a miniature overview of the document</p>
                           </div>
                           <button @click="preferences.editorMinimap = !preferences.editorMinimap; onSettingChange()" :class="toggleClass(preferences.editorMinimap)">
                             <span :class="toggleDot(preferences.editorMinimap)" />
@@ -263,8 +263,8 @@
                         </div>
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Code Folding</label>
-                            <p class="settings-hint">Allow collapsing code regions</p>
+                            <label :class="labelInlineClass">Code Folding</label>
+                            <p :class="hintClass">Allow collapsing code regions</p>
                           </div>
                           <button @click="preferences.editorFolding = !preferences.editorFolding; onSettingChange()" :class="toggleClass(preferences.editorFolding)">
                             <span :class="toggleDot(preferences.editorFolding)" />
@@ -272,8 +272,8 @@
                         </div>
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Glyph Margin</label>
-                            <p class="settings-hint">Show the glyph margin on the left side</p>
+                            <label :class="labelInlineClass">Glyph Margin</label>
+                            <p :class="hintClass">Show the glyph margin on the left side</p>
                           </div>
                           <button @click="preferences.editorGlyphMargin = !preferences.editorGlyphMargin; onSettingChange()" :class="toggleClass(preferences.editorGlyphMargin)">
                             <span :class="toggleDot(preferences.editorGlyphMargin)" />
@@ -281,8 +281,8 @@
                         </div>
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Sticky Scroll</label>
-                            <p class="settings-hint">Pin parent scopes at the top while scrolling</p>
+                            <label :class="labelInlineClass">Sticky Scroll</label>
+                            <p :class="hintClass">Pin parent scopes at the top while scrolling</p>
                           </div>
                           <button @click="preferences.editorStickyScroll = !preferences.editorStickyScroll; onSettingChange()" :class="toggleClass(preferences.editorStickyScroll)">
                             <span :class="toggleDot(preferences.editorStickyScroll)" />
@@ -293,7 +293,7 @@
                   </section>
 
                   <!-- ===== Editor — Cursor ===== -->
-                  <section v-show="isSectionVisible('cursor')" id="settings-cursor" class="settings-section">
+                  <section v-show="isSectionVisible('cursor')" id="settings-cursor" :class="sectionClass">
                     <div class="flex items-center gap-2 mb-1">
                       <Icon name="mdi:cursor-text" class="w-5 h-5 text-primary-500 dark:text-primary-400" />
                       <h3 class="text-base font-semibold text-gray-900 dark:text-gray-200">Cursor &amp; Scrolling</h3>
@@ -302,7 +302,7 @@
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label class="settings-label">Cursor Style</label>
+                          <label :class="labelClass">Cursor Style</label>
                           <select v-model="preferences.editorCursorStyle" @change="onSettingChange" :class="selectClass">
                             <option value="line">Line</option>
                             <option value="line-thin">Line (thin)</option>
@@ -313,7 +313,7 @@
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Cursor Animation</label>
+                          <label :class="labelClass">Cursor Animation</label>
                           <select v-model="preferences.editorCursorBlinking" @change="onSettingChange" :class="selectClass">
                             <option value="blink">Blink</option>
                             <option value="smooth">Smooth</option>
@@ -326,8 +326,8 @@
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Smooth Caret Animation</label>
-                            <p class="settings-hint">Animate the cursor when moving between positions</p>
+                            <label :class="labelInlineClass">Smooth Caret Animation</label>
+                            <p :class="hintClass">Animate the cursor when moving between positions</p>
                           </div>
                           <button @click="preferences.editorCursorSmoothCaret = !preferences.editorCursorSmoothCaret; onSettingChange()" :class="toggleClass(preferences.editorCursorSmoothCaret)">
                             <span :class="toggleDot(preferences.editorCursorSmoothCaret)" />
@@ -335,8 +335,8 @@
                         </div>
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Smooth Scrolling</label>
-                            <p class="settings-hint">Animate scrolling instead of jumping</p>
+                            <label :class="labelInlineClass">Smooth Scrolling</label>
+                            <p :class="hintClass">Animate scrolling instead of jumping</p>
                           </div>
                           <button @click="preferences.editorSmoothScrolling = !preferences.editorSmoothScrolling; onSettingChange()" :class="toggleClass(preferences.editorSmoothScrolling)">
                             <span :class="toggleDot(preferences.editorSmoothScrolling)" />
@@ -347,7 +347,7 @@
                   </section>
 
                   <!-- ===== Editor — Behaviour ===== -->
-                  <section v-show="isSectionVisible('behaviour')" id="settings-behaviour" class="settings-section">
+                  <section v-show="isSectionVisible('behaviour')" id="settings-behaviour" :class="sectionClass">
                     <div class="flex items-center gap-2 mb-1">
                       <Icon name="mdi:cog-outline" class="w-5 h-5 text-primary-500 dark:text-primary-400" />
                       <h3 class="text-base font-semibold text-gray-900 dark:text-gray-200">Behaviour</h3>
@@ -356,7 +356,7 @@
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label class="settings-label">Auto-close Brackets</label>
+                          <label :class="labelClass">Auto-close Brackets</label>
                           <select v-model="preferences.editorAutoClosingBrackets" @change="onSettingChange" :class="selectClass">
                             <option value="always">Always</option>
                             <option value="languageDefined">Language defined</option>
@@ -365,7 +365,7 @@
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Auto-close Quotes</label>
+                          <label :class="labelClass">Auto-close Quotes</label>
                           <select v-model="preferences.editorAutoClosingQuotes" @change="onSettingChange" :class="selectClass">
                             <option value="always">Always</option>
                             <option value="languageDefined">Language defined</option>
@@ -374,15 +374,15 @@
                           </select>
                         </div>
                         <div>
-                          <label class="settings-label">Tab Size: {{ preferences.editorTabSize }} spaces</label>
+                          <label :class="labelClass">Tab Size: {{ preferences.editorTabSize }} spaces</label>
                           <input type="range" min="1" max="8" step="1" v-model.number="preferences.editorTabSize" @input="onSettingChange" class="w-full accent-primary-500" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>1</span><span>8</span></div>
                         </div>
                       </div>
                       <div class="flex items-center justify-between">
                         <div>
-                          <label class="settings-label-inline">Bracket Pair Colorization</label>
-                          <p class="settings-hint">Colour matching brackets for easier reading</p>
+                          <label :class="labelInlineClass">Bracket Pair Colorization</label>
+                          <p :class="hintClass">Colour matching brackets for easier reading</p>
                         </div>
                         <button @click="preferences.editorBracketPairColorization = !preferences.editorBracketPairColorization; onSettingChange()" :class="toggleClass(preferences.editorBracketPairColorization)">
                           <span :class="toggleDot(preferences.editorBracketPairColorization)" />
@@ -392,7 +392,7 @@
                   </section>
 
                   <!-- ===== Results & Display ===== -->
-                  <section v-show="isSectionVisible('results')" id="settings-results" class="settings-section">
+                  <section v-show="isSectionVisible('results')" id="settings-results" :class="sectionClass">
                     <div class="flex items-center gap-2 mb-1">
                       <Icon name="mdi:calculator-variant-outline" class="w-5 h-5 text-primary-500 dark:text-primary-400" />
                       <h3 class="text-base font-semibold text-gray-900 dark:text-gray-200">Results &amp; Display</h3>
@@ -401,7 +401,7 @@
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label class="settings-label">Precision Mode</label>
+                          <label :class="labelClass">Precision Mode</label>
                           <select v-model="preferences.precisionMode" @change="onSettingChange" :class="selectClass">
                             <option value="auto">Auto (smart formatting)</option>
                             <option value="decimals">Fixed decimal places</option>
@@ -409,12 +409,12 @@
                           </select>
                         </div>
                         <div v-if="preferences.precisionMode === 'decimals'">
-                          <label class="settings-label">Decimal Places: {{ preferences.decimalPlaces }}</label>
+                          <label :class="labelClass">Decimal Places: {{ preferences.decimalPlaces }}</label>
                           <input type="range" min="0" max="15" step="1" v-model.number="preferences.decimalPlaces" @input="onSettingChange" class="w-full accent-primary-500" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>15</span></div>
                         </div>
                         <div v-if="preferences.precisionMode === 'significant'">
-                          <label class="settings-label">Significant Figures: {{ preferences.significantFigures }}</label>
+                          <label :class="labelClass">Significant Figures: {{ preferences.significantFigures }}</label>
                           <input type="range" min="1" max="15" step="1" v-model.number="preferences.significantFigures" @input="onSettingChange" class="w-full accent-primary-500" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>1</span><span>15</span></div>
                         </div>
@@ -422,8 +422,8 @@
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Inline Results Alignment</label>
-                            <p class="settings-hint">Align inline results to the right edge of the editor</p>
+                            <label :class="labelInlineClass">Inline Results Alignment</label>
+                            <p :class="hintClass">Align inline results to the right edge of the editor</p>
                           </div>
                           <button @click="preferences.inlineResultAlign = preferences.inlineResultAlign === 'right' ? 'left' : 'right'; onSettingChange()" :class="toggleClass(preferences.inlineResultAlign === 'right')">
                             <span :class="toggleDot(preferences.inlineResultAlign === 'right')" />
@@ -431,15 +431,15 @@
                         </div>
                         <div class="flex items-center justify-between">
                           <div>
-                            <label class="settings-label-inline">Auto-copy Results</label>
-                            <p class="settings-hint">Copy result to clipboard when clicked</p>
+                            <label :class="labelInlineClass">Auto-copy Results</label>
+                            <p :class="hintClass">Copy result to clipboard when clicked</p>
                           </div>
                           <button @click="preferences.autoCopyResult = !preferences.autoCopyResult; onSettingChange()" :class="toggleClass(preferences.autoCopyResult)">
                             <span :class="toggleDot(preferences.autoCopyResult)" />
                           </button>
                         </div>
                         <div v-if="preferences.autoCopyResult">
-                          <label class="settings-label">Copy Animation</label>
+                          <label :class="labelClass">Copy Animation</label>
                           <select v-model="preferences.copyAnimationStyle" @change="onSettingChange" :class="selectClass">
                             <option value="float-up">Float up</option>
                             <option value="fade">Fade in/out</option>
@@ -449,14 +449,14 @@
                             <option value="glow">Glow pulse</option>
                             <option value="none">None</option>
                           </select>
-                          <p class="settings-hint">Animation style for the "Copied" feedback toast</p>
+                          <p :class="hintClass">Animation style for the "Copied" feedback toast</p>
                         </div>
                       </div>
                     </div>
                   </section>
 
                   <!-- ===== General ===== -->
-                  <section v-show="isSectionVisible('general')" id="settings-general" class="settings-section">
+                  <section v-show="isSectionVisible('general')" id="settings-general" :class="sectionClass">
                     <div class="flex items-center gap-2 mb-1">
                       <Icon name="mdi:tune-variant" class="w-5 h-5 text-primary-500 dark:text-primary-400" />
                       <h3 class="text-base font-semibold text-gray-900 dark:text-gray-200">General</h3>
@@ -465,8 +465,8 @@
                     <div class="space-y-4 pl-1">
                       <div class="flex items-center justify-between">
                         <div>
-                          <label class="settings-label-inline">Hide Alpha Warning</label>
-                          <p class="settings-hint">Permanently dismiss the alpha warning banner</p>
+                          <label :class="labelInlineClass">Hide Alpha Warning</label>
+                          <p :class="hintClass">Permanently dismiss the alpha warning banner</p>
                         </div>
                         <button @click="preferences.dismissAlphaWarning = !preferences.dismissAlphaWarning; onSettingChange()" :class="toggleClass(preferences.dismissAlphaWarning)">
                           <span :class="toggleDot(preferences.dismissAlphaWarning)" />
@@ -474,8 +474,8 @@
                       </div>
                       <div class="flex items-center justify-between">
                         <div>
-                          <label class="settings-label-inline">Welcome Wizard</label>
-                          <p class="settings-hint">Show the first-time setup wizard again</p>
+                          <label :class="labelInlineClass">Welcome Wizard</label>
+                          <p :class="hintClass">Show the first-time setup wizard again</p>
                         </div>
                         <button @click="emit('relaunch-wizard')"
                           class="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -522,19 +522,22 @@ const showIndex = ref(true)
 const activeSection = ref('locales')
 const contentRef = ref(null)
 const searchQuery = ref('')
-const searchInputRef = ref(null)
 const scrollPadding = ref(0)
 
 const updateScrollPadding = () => {
   const container = contentRef.value
   if (!container) return
-  const allSections = container.querySelectorAll('.settings-section')
+  const allSections = container.querySelectorAll('section[id^="settings-"]')
   const last = allSections[allSections.length - 1]
   if (!last) return
   scrollPadding.value = Math.max(0, container.clientHeight - last.offsetHeight - 80)
 }
 
 const selectClass = 'w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500'
+const sectionClass = 'pb-8 border-b border-gray-200 dark:border-gray-800 last:border-b-0'
+const labelClass = 'block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1'
+const labelInlineClass = 'block text-sm font-medium text-gray-700 dark:text-gray-400'
+const hintClass = 'text-xs text-gray-500 dark:text-gray-500 mt-0.5'
 
 const toggleClass = (active) => [
   'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
@@ -634,20 +637,3 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.settings-section {
-  @apply pb-8 border-b border-gray-200 dark:border-gray-800;
-}
-.settings-section:last-child {
-  @apply border-b-0;
-}
-.settings-label {
-  @apply block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1;
-}
-.settings-label-inline {
-  @apply block text-sm font-medium text-gray-700 dark:text-gray-400;
-}
-.settings-hint {
-  @apply text-xs text-gray-500 dark:text-gray-500 mt-0.5;
-}
-</style>
