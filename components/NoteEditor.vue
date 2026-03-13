@@ -384,22 +384,37 @@ const onEditorLoad = (editor) => {
       copyResult(line.result, lineIndex)
 
       // Show a small "Copied" toast near the click
-      const editorDom = editor.getDomNode()
-      if (editorDom) {
-        const animStyle = props.localePreferences?.copyAnimationStyle || 'float-up'
-        const toast = document.createElement('div')
-        toast.className = `calcnotes-inline-copied-toast calcnotes-toast-${animStyle}`
-        toast.textContent = 'Copied'
-        const rect = editorDom.getBoundingClientRect()
-        toast.style.left = `${e.event.posx - rect.left}px`
-        toast.style.top = lineIndex <= 1
-          ? `${e.event.posy - rect.top + 8}px`
-          : `${e.event.posy - rect.top - 24}px`
-        editorDom.style.position = 'relative'
-        editorDom.appendChild(toast)
-        setTimeout(() => toast.remove(), 850)
-      }
+      showCopiedToast(editor, e.event.posx, e.event.posy, lineIndex)
     })
+
+    // Touch-to-copy on inline result decorations (touchscreens)
+    const editorDom = editor.getDomNode()
+    if (editorDom) {
+      editorDom.addEventListener('touchend', (e) => {
+        if (!props.showInline || !autoCopyResult.value) return
+        const touch = e.changedTouches?.[0]
+        if (!touch) return
+
+        const el = document.elementFromPoint(touch.clientX, touch.clientY)
+        if (!el || !el.classList.contains('calcnotes-inline-result')) return
+
+        // Walk up to find the view-line and determine line number
+        const viewLine = el.closest('.view-line')
+        if (!viewLine) return
+        const allViewLines = Array.from(editorDom.querySelectorAll('.view-line'))
+        const topAttr = viewLine.style.top
+        // Monaco sets top style on view-lines; derive line number from position
+        const editorScrollTop = editor.getScrollTop()
+        const topPx = parseFloat(topAttr) || 0
+        const lineIndex = Math.round((topPx + editorScrollTop) / lineHeight.value)
+        const line = displayLines.value[lineIndex]
+        if (!line?.result) return
+
+        e.preventDefault()
+        copyResult(line.result, lineIndex)
+        showCopiedToast(editor, touch.clientX, touch.clientY, lineIndex)
+      }, { passive: false })
+    }
 
     // Set initial cursor position
     const position = editor.getPosition()
@@ -681,6 +696,23 @@ const updateInlineDecorations = () => {
   } else {
     decorationsCollection = monacoEditorInstance.createDecorationsCollection(newDecorations)
   }
+}
+
+const showCopiedToast = (editor, posx, posy, lineIndex) => {
+  const editorDom = editor.getDomNode()
+  if (!editorDom) return
+  const animStyle = props.localePreferences?.copyAnimationStyle || 'float-up'
+  const toast = document.createElement('div')
+  toast.className = `calcnotes-inline-copied-toast calcnotes-toast-${animStyle}`
+  toast.textContent = 'Copied'
+  const rect = editorDom.getBoundingClientRect()
+  toast.style.left = `${posx - rect.left}px`
+  toast.style.top = lineIndex <= 1
+    ? `${posy - rect.top + 8}px`
+    : `${posy - rect.top - 24}px`
+  editorDom.style.position = 'relative'
+  editorDom.appendChild(toast)
+  setTimeout(() => toast.remove(), 850)
 }
 
 const copyResult = async (result, index) => {
