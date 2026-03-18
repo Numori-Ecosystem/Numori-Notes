@@ -1,5 +1,5 @@
 // Currency parsing, conversion, and exchange rate fetching
-import { currencyMap, exchangeRates, ratesFetched, variables } from './constants'
+import { currencyMap, exchangeRates, ratesFetched, variables, previousResult, previousResultCurrency } from './constants'
 import { SCALE_SUFFIX, SCALED_NUM_RE, applyScale } from './scales'
 import { evaluateMath } from './math'
 
@@ -148,6 +148,12 @@ export const handleCurrencyExpression = (input) => {
         }
       }
 
+      // Also treat 'prev' as a currency variable if it has currency metadata
+      if (/\bprev\b/i.test(sourceExpr) && previousResult.value !== null && previousResultCurrency.value) {
+        hasCurrencyVars = true
+        cvarsInSource.push({ name: 'prev', value: previousResult.value, currency: previousResultCurrency.value })
+      }
+
       const hasCodeCurrencies = findCodeCurrencyMatches(sourceExpr).length > 0
 
       if (hasCurrencySymbols || hasCurrencyVars || hasCodeCurrencies) {
@@ -216,6 +222,11 @@ export const handleCurrencyExpression = (input) => {
         currencyVarsInExpr.push({ name: varName, value: varVal.value, currency: varVal.currency })
       }
     }
+  }
+
+  // Also treat 'prev' as a currency variable if it has currency metadata
+  if (/\bprev\b/i.test(input) && previousResult.value !== null && previousResultCurrency.value) {
+    currencyVarsInExpr.push({ name: 'prev', value: previousResult.value, currency: previousResultCurrency.value })
   }
 
   const symbolMatches = []

@@ -13,6 +13,7 @@ export const constants = {
 // Shared reactive state
 export const variables = ref({})
 export const previousResult = ref(null)
+export const previousResultCurrency = ref(null)
 
 // Currency symbols and codes mapping
 export const currencyMap = {

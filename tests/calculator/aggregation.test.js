@@ -166,3 +166,64 @@ describe('Edge Cases', () => {
     expect(results[3]).toMatch(/EUR/)
   })
 })
+
+describe('Prev with currency context', () => {
+  it('total-prev after sum and labeled currency line', () => {
+    const results = calcLines([
+      'Salary: £2585',
+      'TPS: £186.77',
+      'total = sum',
+      'April: £433.97',
+      'total-prev'
+    ])
+    // total = 2585 + 186.77 = 2771.77
+    expect(parseFloat(results[2])).toBeCloseTo(2771.77, 2)
+    // prev = 433.97 (April), total - prev = 2337.80
+    expect(parseFloat(results[4])).toBeCloseTo(2337.80, 2)
+    expect(results[4]).toMatch(/GBP/)
+  })
+
+  it('prev carries correct value after plain number line', () => {
+    const results = calcLines([
+      '100',
+      '50',
+      'prev + 10'
+    ])
+    // prev = 50, so 50 + 10 = 60
+    expect(parseFloat(results[2])).toBe(60)
+  })
+
+  it('prev carries correct currency value in EUR context', () => {
+    const results = calcLines([
+      'budget = €1000',
+      'Groceries: €200',
+      'budget - prev'
+    ])
+    // prev = 200 (EUR), budget = 1000 (EUR), result = 800 EUR
+    expect(parseFloat(results[2])).toBeCloseTo(800, 2)
+    expect(results[2]).toMatch(/EUR/)
+  })
+
+  it('prev after sum used in subtraction with currency var', () => {
+    const results = calcLines([
+      'Income: £3000',
+      'Bonus: £500',
+      'total = sum',
+      'Rent: £1200',
+      'total - prev'
+    ])
+    // total = 3500, prev = 1200, result = 2300
+    expect(parseFloat(results[4])).toBeCloseTo(2300, 2)
+    expect(results[4]).toMatch(/GBP/)
+  })
+
+  it('prev works correctly across currency and non-currency lines', () => {
+    const results = calcLines([
+      '£500',
+      '100',
+      'prev * 2'
+    ])
+    // prev = 100 (no currency), so 100 * 2 = 200
+    expect(parseFloat(results[2])).toBe(200)
+  })
+})

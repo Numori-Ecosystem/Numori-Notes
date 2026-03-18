@@ -1,5 +1,5 @@
 // Core calculator composable — orchestrates all modules
-import { variables, previousResult, exchangeRates, ratesFetched, currencyMap, unitConversions } from './constants'
+import { variables, previousResult, previousResultCurrency, exchangeRates, ratesFetched, currencyMap, unitConversions } from './constants'
 import { evaluateMath, handleFunctions, formatResult } from './math'
 import { handleUnitExpression, findUnitCategory, convertFuelEconomy } from './units'
 import { handleCurrencyExpression, fetchExchangeRates } from './currency'
@@ -74,6 +74,7 @@ export const useCalculator = () => {
   const evaluateLines = (inputLines) => {
     variables.value = {}
     previousResult.value = null
+    previousResultCurrency.value = null
     const results = []
     inputLines.forEach((input, index) => {
       const line = { input: input.trim(), result: null, error: null, type: 'calculation' }
@@ -99,6 +100,7 @@ export const useCalculator = () => {
         line.result = result.display
         if (result.liveTime) { line.liveTime = true; line.iana = result.iana || null }
         previousResult.value = result.value
+        previousResultCurrency.value = result.currency || null
       } catch (error) { /* silent */ }
       return
     }
@@ -111,6 +113,7 @@ export const useCalculator = () => {
       line.result = result.display
       if (result.liveTime) { line.liveTime = true; line.iana = result.iana || null }
       previousResult.value = result.value
+      previousResultCurrency.value = result.currency || null
     } catch (error) { /* silent */ }
   }
 
@@ -170,7 +173,7 @@ export const useCalculator = () => {
       const currency = detectSumCurrency(index, allResults)
       if (currency) {
         const sum = calculateSumWithCurrency(index, allResults, currency)
-        return { value: sum, display: `${formatResult(sum)} ${currency}` }
+        return { value: sum, display: `${formatResult(sum)} ${currency}`, currency }
       }
       const sum = calculateSum(index, allResults)
       return { value: sum, display: formatResult(sum) }
@@ -184,7 +187,7 @@ export const useCalculator = () => {
         const targetCurrency = currencyMap[targetStr.toLowerCase()] || targetStr.toUpperCase()
         if (exchangeRates.value[targetCurrency]) {
           const sum = calculateSumWithCurrency(index, allResults, targetCurrency)
-          return { value: sum, display: `${formatResult(sum)} ${targetCurrency}` }
+          return { value: sum, display: `${formatResult(sum)} ${targetCurrency}`, currency: targetCurrency }
         }
         const sum = calculateSum(index, allResults)
         return { value: sum, display: `${formatResult(sum)} ${targetStr}` }
@@ -266,7 +269,8 @@ export const useCalculator = () => {
     if (currencyResult.isConverted || currencyResult.hasCurrency) {
       return {
         value: currencyResult.value,
-        display: currencyResult.currency ? `${formatResult(currencyResult.value)} ${currencyResult.currency}` : formatResult(currencyResult.value)
+        display: currencyResult.currency ? `${formatResult(currencyResult.value)} ${currencyResult.currency}` : formatResult(currencyResult.value),
+        currency: currencyResult.currency || null,
       }
     }
 
@@ -302,6 +306,7 @@ export const useCalculator = () => {
   const clearAll = () => {
     variables.value = {}
     previousResult.value = null
+    previousResultCurrency.value = null
   }
 
   return { evaluateLines, clearAll, fetchExchangeRates, ratesFetched, exchangeRates }
