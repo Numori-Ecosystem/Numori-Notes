@@ -39,7 +39,8 @@
       @file-export-all="handleExportAll"
       @file-import="handleImport"
       @file-copy="handleCopy"
-      @file-print="handlePrint" />
+      @file-print="handlePrint"
+      @file-about="showAbout = true" />
 
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
@@ -125,6 +126,7 @@
       @save="updateMeta" @delete="confirmDelete" />
 
     <HelpModal :is-open="showHelp" @close="showHelp = false" />
+    <AboutModal :is-open="showAbout" @close="showAbout = false" />
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
     <SettingsModal :is-open="showLocaleSettings"
@@ -162,6 +164,7 @@ const showHelp = ref(false)
 const showTemplates = ref(false)
 const showLanguageModal = ref(false)
 const showLocaleSettings = ref(false)
+const showAbout = ref(false)
 const showInlineResults = ref(true)
 const showMobileToolbar = ref(true)
 const showMarkdownPreview = ref(false)

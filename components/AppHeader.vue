@@ -16,7 +16,8 @@
           @export-all="$emit('file-export-all')"
           @import="$emit('file-import')"
           @copy="$emit('file-copy')"
-          @print="$emit('file-print')" />
+          @print="$emit('file-print')"
+          @about="$emit('file-about')" />
 
         <button @click="$emit('show-meta')" class="text-left">
           <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-400 truncate max-w-[200px] sm:max-w-none">
@@ -109,6 +110,7 @@ defineEmits([
   'file-import',
   'file-copy',
   'file-print',
+  'file-about',
 ])
 </script>
 

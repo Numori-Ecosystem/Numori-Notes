@@ -45,6 +45,10 @@
         <DropdownItem icon="mdi:code-json" label="Export as JSON" :disabled="!hasNote" @click="action('export-json')" />
         <DropdownItem icon="mdi:database-export" label="Export All Notes" @click="action('export-all')" />
         <DropdownItem icon="mdi:upload" label="Import Notes…" @click="action('import')" />
+
+        <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+
+        <DropdownItem icon="mdi:information-outline" label="About" @click="action('about')" />
       </div>
     </Transition>
   </div>
@@ -71,6 +75,7 @@ const emit = defineEmits([
   'import',
   'copy',
   'print',
+  'about',
 ])
 
 const open = ref(false)
