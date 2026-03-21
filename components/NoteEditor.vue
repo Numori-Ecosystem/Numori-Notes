@@ -1,11 +1,9 @@
 <template>
   <div class="h-full flex">
-    <!-- Monaco Editor -->
     <div :class="[
       'flex-1 overflow-hidden transition-all duration-200 ease-in-out relative',
       bordered ? 'border border-gray-200 dark:border-gray-700 rounded-lg' : ''
     ]">
-      <!-- Loading overlay while Monaco initialises -->
       <Transition
         enter-active-class="transition-opacity duration-150"
         enter-from-class="opacity-0"
@@ -30,214 +28,59 @@
             <span class="text-sm">Loading editor…</span>
           </div>
         </template>
-        <MonacoEditor ref="editorRef" v-model="localContent" :options="editorOptions" lang="calcnotes" class="h-full" @load="onEditorLoad" />
+        <NuxtCodeMirror
+          ref="editorRef"
+          v-model="localContent"
+          :extensions="cmExtensions"
+          :theme="cmThemeMode"
+          :basic-setup="cmBasicSetup"
+          height="100%"
+          class="h-full"
+          :placeholder="placeholder"
+          @onCreateEditor="onEditorCreate"
+        />
       </ClientOnly>
     </div>
   </div>
 </template>
 
 <script setup>
+import { EditorView, Decoration, WidgetType, keymap as cmKeymap } from '@codemirror/view'
+import { StateField, StateEffect, Compartment, EditorSelection } from '@codemirror/state'
+import { calcnotesLanguage, calcnotesLightTheme, calcnotesDarkTheme } from '~/composables/useCalcLanguage'
+import { formatDisplay } from '~/composables/useDisplayFormatter'
+
 const props = defineProps({
-  content: {
-    type: String,
-    default: ''
-  },
-  placeholder: {
-    type: String,
-    default: 'Start typing... (e.g., 10 + 20)'
-  },
-  showResults: {
-    type: Boolean,
-    default: false
-  },
-  showInline: {
-    type: Boolean,
-    default: true
-  },
-  bordered: {
-    type: Boolean,
-    default: false
-  },
-  localePreferences: {
-    type: Object,
-    default: null
-  },
-  showMarkdownPreview: {
-    type: Boolean,
-    default: false
-  },
-  shortcutHandlers: {
-    type: Object,
-    default: null
-  }
+  content: { type: String, default: '' },
+  placeholder: { type: String, default: 'Start typing... (e.g., 10 + 20)' },
+  showResults: { type: Boolean, default: false },
+  showInline: { type: Boolean, default: true },
+  bordered: { type: Boolean, default: false },
+  localePreferences: { type: Object, default: null },
+  showMarkdownPreview: { type: Boolean, default: false },
+  shortcutHandlers: { type: Object, default: null }
 })
 
 const emit = defineEmits(['update:content'])
 
 const displayLines = ref([])
-const rawLines = ref([])     // cached raw calculator output (never locale-formatted)
+const rawLines = ref([])
 const currentLine = ref(0)
 const lineHeight = computed(() => props.localePreferences?.editorLineHeight ?? 19)
 const localContent = ref(props.content)
 const editorRef = ref(null)
-
-// Inline result decorations
-let monacoEditorInstance = null
-let decorationsCollection = null
-let monacoInstance = null
-let inlineStylesInjected = false
 const editorReady = ref(false)
+let editorView = null
+let inlineStylesInjected = false
 
 const { evaluateLines } = useCalculator()
-const { registerCalcLanguage } = useMonacoCalcLanguage()
 const colorMode = useColorMode()
-import { formatDisplay } from '~/composables/useDisplayFormatter'
 
-// --- Inline markdown rendering via Monaco decorations ---
-let mdDecorationCollection = null
+// --- Compartments for dynamic reconfiguration ---
+const themeCompartment = new Compartment()
+const fontThemeCompartment = new Compartment()
 
-const updateMarkdownPreview = () => {
-  if (!monacoEditorInstance || !monacoInstance) return
-  const editor = monacoEditorInstance
-
-  if (mdDecorationCollection) mdDecorationCollection.set([])
-
-  if (!props.showMarkdownPreview) return
-
-  const model = editor.getModel()
-  if (!model) return
-
-  const lineCount = model.getLineCount()
-  const cursorLine = (editor.getPosition()?.lineNumber) ?? 0
-  const decorations = []
-
-  for (let ln = 1; ln <= lineCount; ln++) {
-    const text = model.getLineContent(ln)
-    const trimmed = text.trim()
-    if (!trimmed) continue
-
-    // Don't render the line the cursor is on — let user see raw source
-    if (ln === cursorLine) continue
-
-    // # Headers — hide the `# ` prefix, style the rest
-    const headerMatch = trimmed.match(/^(#{1,6})\s(.+)$/)
-    if (headerMatch) {
-      const hashes = headerMatch[1]
-      const prefixLen = text.indexOf(hashes) + hashes.length + 1 // includes the space
-      decorations.push({
-        range: new monacoInstance.Range(ln, 1, ln, prefixLen + 1),
-        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-header-prefix' }
-      })
-      decorations.push({
-        range: new monacoInstance.Range(ln, prefixLen + 1, ln, model.getLineMaxColumn(ln)),
-        options: { inlineClassName: `calcnotes-md-h${hashes.length}`, description: 'md-header-text' }
-      })
-      continue
-    }
-
-    // // Comments — hide the `// ` prefix, style as prose
-    if (trimmed.startsWith('//')) {
-      const slashIdx = text.indexOf('//')
-      const afterSlash = text.substring(slashIdx + 2)
-      const spaceAfter = afterSlash.startsWith(' ') ? 1 : 0
-      const prefixEnd = slashIdx + 2 + spaceAfter
-      decorations.push({
-        range: new monacoInstance.Range(ln, 1, ln, prefixEnd + 1),
-        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-comment-prefix' }
-      })
-      decorations.push({
-        range: new monacoInstance.Range(ln, prefixEnd + 1, ln, model.getLineMaxColumn(ln)),
-        options: { inlineClassName: 'calcnotes-md-comment', description: 'md-comment-text' }
-      })
-      continue
-    }
-
-    // - [x] / - [ ] Checkboxes — hide the prefix, show a checkbox glyph
-    const checkMatch = trimmed.match(/^- \[([ x])\]\s(.+)$/)
-    if (checkMatch) {
-      const checked = checkMatch[1] === 'x'
-      const prefixStr = checked ? '- [x] ' : '- [ ] '
-      const prefixStart = text.indexOf(prefixStr)
-      const prefixEnd = prefixStart + prefixStr.length
-      decorations.push({
-        range: new monacoInstance.Range(ln, 1, ln, prefixEnd + 1),
-        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-check-prefix' }
-      })
-      decorations.push({
-        range: new monacoInstance.Range(ln, prefixEnd + 1, ln, model.getLineMaxColumn(ln)),
-        options: {
-          inlineClassName: checked ? 'calcnotes-md-checked' : 'calcnotes-md-unchecked',
-          description: 'md-check-text',
-          before: {
-            content: checked ? '\u2611\u2009' : '\u2610\u2009',
-            inlineClassName: 'calcnotes-md-check-icon',
-          }
-        }
-      })
-      continue
-    }
-
-    // - List items — hide the `- `, show a bullet
-    const listMatch = trimmed.match(/^- (.+)$/)
-    if (listMatch) {
-      const dashIdx = text.indexOf('- ')
-      decorations.push({
-        range: new monacoInstance.Range(ln, 1, ln, dashIdx + 3),
-        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-list-prefix' }
-      })
-      decorations.push({
-        range: new monacoInstance.Range(ln, dashIdx + 3, ln, model.getLineMaxColumn(ln)),
-        options: {
-          inlineClassName: 'calcnotes-md-list-item',
-          description: 'md-list-text',
-          before: {
-            content: '\u2022\u2009',
-            inlineClassName: 'calcnotes-md-bullet',
-          }
-        }
-      })
-      continue
-    }
-
-    // > Blockquotes — hide the `> `, style with left border feel
-    const quoteMatch = trimmed.match(/^>\s?(.+)$/)
-    if (quoteMatch) {
-      const gtIdx = text.indexOf('>')
-      const afterGt = text.substring(gtIdx + 1)
-      const spaceAfterGt = afterGt.startsWith(' ') ? 1 : 0
-      const prefixEnd = gtIdx + 1 + spaceAfterGt
-      decorations.push({
-        range: new monacoInstance.Range(ln, 1, ln, prefixEnd + 1),
-        options: { inlineClassName: 'calcnotes-md-hidden-syntax', description: 'md-quote-prefix' }
-      })
-      decorations.push({
-        range: new monacoInstance.Range(ln, prefixEnd + 1, ln, model.getLineMaxColumn(ln)),
-        options: {
-          inlineClassName: 'calcnotes-md-quote',
-          description: 'md-quote-text',
-          before: {
-            content: '\u2503\u2009',
-            inlineClassName: 'calcnotes-md-quote-bar',
-          }
-        }
-      })
-      continue
-    }
-  }
-
-  if (mdDecorationCollection) {
-    mdDecorationCollection.set(decorations)
-  } else {
-    mdDecorationCollection = editor.createDecorationsCollection(decorations)
-  }
-}
-
-// When cursor moves, re-evaluate which line to reveal raw
-watch(currentLine, () => {
-  if (!props.showMarkdownPreview || !monacoEditorInstance) return
-  nextTick(() => updateMarkdownPreview())
-})
-
+// --- Font family map ---
 const FONT_FAMILY_MAP = {
   'system': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
   'fira-code': "'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
@@ -249,7 +92,6 @@ const FONT_FAMILY_MAP = {
 
 const editorFontSize = computed(() => props.localePreferences?.editorFontSize ?? 16)
 const editorFontFamily = computed(() => FONT_FAMILY_MAP[props.localePreferences?.editorFontFamily] ?? FONT_FAMILY_MAP.system)
-const editorWordWrap = computed(() => props.localePreferences?.editorWordWrap ? 'on' : 'off')
 const editorLineNumbers = computed(() => {
   const val = props.localePreferences?.editorLineNumbers
   return ['on', 'off', 'relative', 'interval'].includes(val) ? val : 'on'
@@ -264,19 +106,445 @@ const editorCursorBlinking = computed(() => {
 })
 const autoCopyResult = computed(() => props.localePreferences?.autoCopyResult !== false)
 
-// Re-format display when locale preferences change (no recalculation)
+// --- Build font/cursor theme ---
+const buildFontTheme = () => {
+  const fontSize = editorFontSize.value
+  const fontFamily = editorFontFamily.value
+  const lh = lineHeight.value
+  const ligatures = props.localePreferences?.editorLigatures ? 'normal' : 'none'
+  const cursorWidth = editorCursorStyle.value.includes('thin') ? '1px' : '2px'
+
+  return EditorView.theme({
+    '.cm-content': {
+      fontFamily,
+      fontSize: `${fontSize}px`,
+      lineHeight: `${lh}px`,
+      fontVariantLigatures: ligatures,
+    },
+    '.cm-gutters': {
+      fontFamily,
+      fontSize: `${fontSize}px`,
+      lineHeight: `${lh}px`,
+    },
+    '.cm-cursor': {
+      borderLeftWidth: cursorWidth,
+    },
+    '.cm-line': {
+      lineHeight: `${lh}px`,
+    },
+  })
+}
+
+// --- Inline result widget ---
+class InlineResultWidget extends WidgetType {
+  constructor(text, className, padText) {
+    super()
+    this.text = text
+    this.className = className
+    this.padText = padText
+  }
+  toDOM() {
+    const wrapper = document.createElement('span')
+    // Padding span
+    const pad = document.createElement('span')
+    pad.className = 'calcnotes-inline-pad'
+    pad.textContent = this.padText
+    wrapper.appendChild(pad)
+    // Result span
+    const result = document.createElement('span')
+    result.className = this.className
+    result.textContent = this.text
+    wrapper.appendChild(result)
+    return wrapper
+  }
+  eq(other) {
+    return this.text === other.text && this.className === other.className && this.padText === other.padText
+  }
+  ignoreEvent() { return false }
+}
+
+// --- Markdown preview widget (prefix replacement) ---
+class MdPrefixWidget extends WidgetType {
+  constructor(content, className) {
+    super()
+    this.content = content
+    this.className = className
+  }
+  toDOM() {
+    const span = document.createElement('span')
+    span.className = this.className
+    span.textContent = this.content
+    return span
+  }
+  eq(other) { return this.content === other.content && this.className === other.className }
+}
+
+// --- StateEffect for updating inline results ---
+const setInlineResults = StateEffect.define()
+const setMdDecorations = StateEffect.define()
+
+// StateField for inline result decorations
+const inlineResultField = StateField.define({
+  create() { return Decoration.none },
+  update(decos, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setInlineResults)) return e.value
+    }
+    return decos.map(tr.changes)
+  },
+  provide: f => EditorView.decorations.from(f),
+})
+
+// StateField for markdown preview decorations
+const mdPreviewField = StateField.define({
+  create() { return Decoration.none },
+  update(decos, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setMdDecorations)) return e.value
+    }
+    return decos.map(tr.changes)
+  },
+  provide: f => EditorView.decorations.from(f),
+})
+
+// --- Build inline result decorations ---
+const buildInlineDecorations = (view) => {
+  if (!props.showInline) return Decoration.none
+  const lines = displayLines.value
+  if (!lines.length) return Decoration.none
+
+  const doc = view.state.doc
+  const docLines = doc.lines
+  const maxLine = Math.min(lines.length, docLines)
+  const alignRight = props.localePreferences?.inlineResultAlign === 'right'
+
+  // For right-alignment, estimate visible columns
+  let targetCol = 0
+  if (alignRight) {
+    const contentDom = view.contentDOM
+    if (contentDom) {
+      const contentWidth = contentDom.clientWidth
+      const charWidth = editorFontSize.value * 0.6 // approximate
+      if (charWidth > 0) targetCol = Math.floor(contentWidth / charWidth)
+    }
+  }
+
+  const widgets = []
+  for (let i = 0; i < maxLine; i++) {
+    const line = lines[i]
+    if (!line.result && !line.error) continue
+
+    const docLine = doc.line(i + 1)
+    const lineLength = docLine.length
+    const resultStr = line.result ? `= ${line.result}` : `⚠ ${line.error}`
+    const className = line.result ? 'calcnotes-inline-result' : 'calcnotes-inline-error'
+
+    let padText
+    if (alignRight && targetCol > 0) {
+      const padCount = Math.max(4, targetCol - lineLength - resultStr.length)
+      padText = ' '.repeat(padCount)
+    } else {
+      padText = '  '
+    }
+
+    const widget = Decoration.widget({
+      widget: new InlineResultWidget(resultStr, className, padText),
+      side: 1,
+    })
+    widgets.push(widget.range(docLine.to))
+  }
+
+  return Decoration.set(widgets)
+}
+
+// --- Build markdown preview decorations ---
+const buildMdDecorations = (view) => {
+  if (!props.showMarkdownPreview) return Decoration.none
+
+  const doc = view.state.doc
+  const cursorLine = doc.lineAt(view.state.selection.main.head).number
+  const widgets = []
+
+  for (let ln = 1; ln <= doc.lines; ln++) {
+    const docLine = doc.line(ln)
+    const text = docLine.text
+    const trimmed = text.trim()
+    if (!trimmed || ln === cursorLine) continue
+
+    // # Headers
+    const headerMatch = trimmed.match(/^(#{1,6})\s(.+)$/)
+    if (headerMatch) {
+      const hashes = headerMatch[1]
+      const prefixLen = text.indexOf(hashes) + hashes.length + 1
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixLen))
+      widgets.push(Decoration.mark({ class: `calcnotes-md-h${hashes.length}` }).range(docLine.from + prefixLen, docLine.to))
+      continue
+    }
+
+    // // Comments
+    if (trimmed.startsWith('//')) {
+      const slashIdx = text.indexOf('//')
+      const afterSlash = text.substring(slashIdx + 2)
+      const spaceAfter = afterSlash.startsWith(' ') ? 1 : 0
+      const prefixEnd = slashIdx + 2 + spaceAfter
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-comment' }).range(docLine.from + prefixEnd, docLine.to))
+      continue
+    }
+
+    // - [x] / - [ ] Checkboxes
+    const checkMatch = trimmed.match(/^- \[([ x])\]\s(.+)$/)
+    if (checkMatch) {
+      const checked = checkMatch[1] === 'x'
+      const prefixStr = checked ? '- [x] ' : '- [ ] '
+      const prefixStart = text.indexOf(prefixStr)
+      const prefixEnd = prefixStart + prefixStr.length
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
+      widgets.push(Decoration.widget({
+        widget: new MdPrefixWidget(checked ? '\u2611\u2009' : '\u2610\u2009', 'calcnotes-md-check-icon'),
+        side: -1,
+      }).range(docLine.from + prefixEnd))
+      widgets.push(Decoration.mark({
+        class: checked ? 'calcnotes-md-checked' : 'calcnotes-md-unchecked'
+      }).range(docLine.from + prefixEnd, docLine.to))
+      continue
+    }
+
+    // - List items
+    const listMatch = trimmed.match(/^- (.+)$/)
+    if (listMatch) {
+      const dashIdx = text.indexOf('- ')
+      const prefixEnd = dashIdx + 2
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
+      widgets.push(Decoration.widget({
+        widget: new MdPrefixWidget('\u2022\u2009', 'calcnotes-md-bullet'),
+        side: -1,
+      }).range(docLine.from + prefixEnd))
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-list-item' }).range(docLine.from + prefixEnd, docLine.to))
+      continue
+    }
+
+    // > Blockquotes
+    const quoteMatch = trimmed.match(/^>\s?(.+)$/)
+    if (quoteMatch) {
+      const gtIdx = text.indexOf('>')
+      const afterGt = text.substring(gtIdx + 1)
+      const spaceAfterGt = afterGt.startsWith(' ') ? 1 : 0
+      const prefixEnd = gtIdx + 1 + spaceAfterGt
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
+      widgets.push(Decoration.widget({
+        widget: new MdPrefixWidget('\u2503\u2009', 'calcnotes-md-quote-bar'),
+        side: -1,
+      }).range(docLine.from + prefixEnd))
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-quote' }).range(docLine.from + prefixEnd, docLine.to))
+      continue
+    }
+  }
+
+  return Decoration.set(widgets, true)
+}
+
+// --- Dispatch decoration updates ---
+const updateInlineDecorations = () => {
+  if (!editorView) return
+  const decos = buildInlineDecorations(editorView)
+  editorView.dispatch({ effects: setInlineResults.of(decos) })
+}
+
+const updateMarkdownPreview = () => {
+  if (!editorView) return
+  const decos = buildMdDecorations(editorView)
+  editorView.dispatch({ effects: setMdDecorations.of(decos) })
+}
+
+// --- Keyboard shortcuts ---
+const buildKeymap = () => {
+  const h = props.shortcutHandlers
+  if (!h) return []
+  const bindings = []
+  const map = [
+    ['Mod-s', h.save],
+    ['Mod-Shift-n', h.newNote],
+    ['Mod-o', h.openFile],
+    ['Mod-p', h.print],
+    ['Mod-d', h.duplicate],
+    ['Mod-e', h.exportText],
+    ['Mod-h', h.help],
+    ['Mod-Shift-s', h.exportAll],
+  ]
+  for (const [key, handler] of map) {
+    if (handler) {
+      bindings.push({ key, run: () => { handler(); return true }, preventDefault: true })
+    }
+  }
+  return cmKeymap.of(bindings)
+}
+
+// --- NuxtCodeMirror basicSetup config ---
+const cmBasicSetup = computed(() => ({
+  lineNumbers: editorLineNumbers.value !== 'off',
+  foldGutter: props.localePreferences?.editorFolding ?? true,
+  highlightActiveLine: (props.localePreferences?.editorRenderLineHighlight ?? 'line') !== 'none',
+  highlightActiveLineGutter: (props.localePreferences?.editorRenderLineHighlight ?? 'line') !== 'none',
+  bracketMatching: true,
+  closeBrackets: (props.localePreferences?.editorAutoClosingBrackets ?? 'always') !== 'never',
+  autocompletion: false,
+  highlightSelectionMatches: true,
+  tabSize: props.localePreferences?.editorTabSize ?? 2,
+  drawSelection: true,
+  rectangularSelection: true,
+  crosshairCursor: false,
+  dropCursor: true,
+  allowMultipleSelections: true,
+  indentOnInput: true,
+  syntaxHighlighting: true,
+  defaultKeymap: true,
+  historyKeymap: true,
+  searchKeymap: true,
+  foldKeymap: true,
+  completionKeymap: false,
+  lintKeymap: false,
+}))
+
+// --- Theme mode for NuxtCodeMirror ---
+const cmThemeMode = computed(() => colorMode.value === 'dark' ? 'dark' : 'light')
+
+// --- Extensions array ---
+const cmExtensions = computed(() => [
+  calcnotesLanguage,
+  themeCompartment.of(colorMode.value === 'dark' ? calcnotesDarkTheme : calcnotesLightTheme),
+  fontThemeCompartment.of(buildFontTheme()),
+  inlineResultField,
+  mdPreviewField,
+  buildKeymap(),
+  // Cursor position tracking
+  EditorView.updateListener.of((update) => {
+    if (update.selectionSet || update.docChanged) {
+      const line = update.state.doc.lineAt(update.state.selection.main.head)
+      currentLine.value = line.number - 1
+    }
+  }),
+  // Word wrap
+  props.localePreferences?.editorWordWrap ? EditorView.lineWrapping : [],
+  // Click handler for inline results (copy on click)
+  EditorView.domEventHandlers({
+    click: handleResultClick,
+    touchend: handleResultTouch,
+  }),
+])
+
+// --- Click/touch handlers for inline result copy ---
+const handleResultClick = (event, view) => {
+  if (!props.showInline || !autoCopyResult.value) return false
+  const el = event.target
+  if (!el || !el.classList.contains('calcnotes-inline-result')) return false
+
+  const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
+  if (pos == null) return false
+  const line = view.state.doc.lineAt(pos)
+  const lineIndex = line.number - 1
+  const lineData = displayLines.value[lineIndex]
+  if (!lineData?.result) return false
+
+  copyResult(lineData.result, lineIndex)
+  showCopiedToast(view, event.clientX, event.clientY, lineIndex)
+  return false
+}
+
+const handleResultTouch = (event, view) => {
+  if (!props.showInline || !autoCopyResult.value) return false
+  const touch = event.changedTouches?.[0]
+  if (!touch) return false
+
+  const el = document.elementFromPoint(touch.clientX, touch.clientY)
+  if (!el || !el.classList.contains('calcnotes-inline-result')) return false
+
+  const pos = view.posAtCoords({ x: touch.clientX, y: touch.clientY })
+  if (pos == null) return false
+  const line = view.state.doc.lineAt(pos)
+  const lineIndex = line.number - 1
+  const lineData = displayLines.value[lineIndex]
+  if (!lineData?.result) return false
+
+  event.preventDefault()
+  copyResult(lineData.result, lineIndex)
+  showCopiedToast(view, touch.clientX, touch.clientY, lineIndex)
+  return false
+}
+
+// --- Editor lifecycle ---
+const initEditor = (view) => {
+  if (editorReady.value) return
+  editorView = view
+  injectInlineStyles()
+  updateLines(props.content)
+  updateInlineDecorations()
+  updateMarkdownPreview()
+  editorReady.value = true
+}
+
+// NuxtCodeMirror emits "onCreateEditor" with { view, state } payload.
+const onEditorCreate = (payload) => {
+  initEditor(payload.view)
+}
+
+// Primary approach: watch the exposed view ref from NuxtCodeMirror.
+// defineExpose'd refs are auto-unwrapped through template refs in Vue 3,
+// so editorRef.value?.view gives us the EditorView directly.
+// We use a short poll as a safety net since the child mounts inside <ClientOnly>.
+let initPollTimer = null
+const pollForView = () => {
+  if (editorReady.value) { clearInterval(initPollTimer); return }
+  const view = editorRef.value?.view
+  if (view && typeof view.dispatch === 'function') {
+    clearInterval(initPollTimer)
+    initEditor(view)
+  }
+}
+onMounted(() => {
+  initPollTimer = setInterval(pollForView, 50)
+  // Give up after 10s
+  setTimeout(() => clearInterval(initPollTimer), 10000)
+})
+
+onBeforeUnmount(() => {
+  if (initPollTimer) clearInterval(initPollTimer)
+})
+
+// Compute initial results on mount
+onMounted(() => {
+  updateLines(props.content)
+})
+
+// --- Watchers ---
+
+// Re-format display when locale preferences change
 watch(() => props.localePreferences, () => {
   reformatDisplay()
+  // Reconfigure font theme
+  if (editorView) {
+    editorView.dispatch({
+      effects: fontThemeCompartment.reconfigure(buildFontTheme())
+    })
+  }
 }, { deep: true })
 
-// Live clock: update lines tagged liveTime every second
+// Theme changes
+watch(() => colorMode.value, () => {
+  if (!editorView) return
+  editorView.dispatch({
+    effects: themeCompartment.reconfigure(
+      colorMode.value === 'dark' ? calcnotesDarkTheme : calcnotesLightTheme
+    )
+  })
+})
+
+// Live clock
 const tickLiveTime = () => {
   const raw = rawLines.value
   if (!raw.length) return
   const hasLive = raw.some(l => l.liveTime)
   if (!hasLive) return
-
-  // Update raw results for live-time lines with fresh timestamps
   for (const line of raw) {
     if (!line.liveTime) continue
     const now = new Date()
@@ -289,228 +557,50 @@ const tickLiveTime = () => {
   }
   reformatDisplay()
 }
-
 useIntervalFn(tickLiveTime, 1000)
 
-// Editor options
-const editorOptions = computed(() => ({
-  theme: colorMode.value === 'dark' ? 'vs-dark' : 'vs',
-  fontSize: editorFontSize.value,
-  fontFamily: editorFontFamily.value,
-  fontLigatures: props.localePreferences?.editorLigatures ?? false,
-  lineHeight: lineHeight.value,
-  minimap: { enabled: props.localePreferences?.editorMinimap ?? false },
-  scrollBeyondLastLine: true,
-  wordWrap: editorWordWrap.value,
-  lineNumbers: editorLineNumbers.value,
-  cursorStyle: editorCursorStyle.value,
-  cursorBlinking: editorCursorBlinking.value,
-  cursorSmoothCaretAnimation: props.localePreferences?.editorCursorSmoothCaret ? 'on' : 'off',
-  smoothScrolling: props.localePreferences?.editorSmoothScrolling ?? false,
-  glyphMargin: props.localePreferences?.editorGlyphMargin ?? true,
-  folding: props.localePreferences?.editorFolding ?? true,
-  stickyScroll: { enabled: props.localePreferences?.editorStickyScroll ?? false },
-  renderWhitespace: props.localePreferences?.editorRenderWhitespace ?? 'none',
-  autoClosingBrackets: props.localePreferences?.editorAutoClosingBrackets ?? 'always',
-  autoClosingQuotes: props.localePreferences?.editorAutoClosingQuotes ?? 'always',
-  bracketPairColorization: { enabled: props.localePreferences?.editorBracketPairColorization ?? true },
-  tabSize: props.localePreferences?.editorTabSize ?? 2,
-  renderLineHighlight: props.localePreferences?.editorRenderLineHighlight ?? 'line',
-  lineDecorationsWidth: 0,
-  lineNumbersMinChars: 0,
-  scrollbar: {
-    vertical: 'visible',
-    horizontal: 'visible',
-    useShadows: false,
-    verticalScrollbarSize: 10,
-    horizontalScrollbarSize: 10,
-  },
-  overviewRulerLanes: 0,
-  hideCursorInOverviewRuler: true,
-  overviewRulerBorder: false,
-  automaticLayout: true,
-  accessibilitySupport: 'off',
-}))
-
-// Compute initial results on mount
-onMounted(() => {
-  updateLines(props.content)
-})
-
-// Called by nuxt-monaco-editor @load event — receives the raw IStandaloneCodeEditor
-const onEditorLoad = (editor) => {
-  useMonaco().then((monaco) => {
-    monacoInstance = monaco
-    monacoEditorInstance = editor
-
-    injectInlineStyles()
-
-    // Firefox workaround: Monaco crashes when caretPositionFromPoint returns null
-    if (typeof document.caretPositionFromPoint === 'function') {
-      const original = document.caretPositionFromPoint.bind(document)
-      document.caretPositionFromPoint = (x, y) => {
-        const result = original(x, y)
-        if (!result) {
-          return { offsetNode: document.body, offset: 0 }
-        }
-        return result
-      }
-    }
-
-    // Register language and set theme
-    registerCalcLanguage(monaco)
-    const themeName = colorMode.value === 'dark' ? 'calcnotes-dark' : 'calcnotes-light'
-    monaco.editor.setTheme(themeName)
-
-    // Set language on the existing model (don't dispose — the component owns it)
-    const model = editor.getModel()
-    if (model) {
-      monaco.editor.setModelLanguage(model, 'calcnotes')
-    }
-
-    // Listen for cursor position changes
-    editor.onDidChangeCursorPosition((e) => {
-      currentLine.value = e.position.lineNumber - 1
-    })
-
-    // Re-render right-aligned decorations when editor is resized
-    editor.onDidLayoutChange(() => {
-      if (props.localePreferences?.inlineResultAlign === 'right' && props.showInline) {
-        updateInlineDecorations()
-      }
-    })
-
-    // Click-to-copy on inline result decorations
-    editor.onMouseDown((e) => {
-      if (!props.showInline || !autoCopyResult.value) return
-      // Check if the click target is an inline result decoration
-      const target = e.target
-      if (target.type !== monacoInstance.editor.MouseTargetType.CONTENT_TEXT) return
-      const el = target.element
-      if (!el || !el.classList.contains('calcnotes-inline-result')) return
-
-      const lineIndex = target.position.lineNumber - 1
-      const line = displayLines.value[lineIndex]
-      if (!line?.result) return
-
-      copyResult(line.result, lineIndex)
-
-      // Show a small "Copied" toast near the click
-      showCopiedToast(editor, e.event.posx, e.event.posy, lineIndex)
-    })
-
-    // Touch-to-copy on inline result decorations (touchscreens)
-    const editorDom = editor.getDomNode()
-    if (editorDom) {
-      editorDom.addEventListener('touchend', (e) => {
-        if (!props.showInline || !autoCopyResult.value) return
-        const touch = e.changedTouches?.[0]
-        if (!touch) return
-
-        const el = document.elementFromPoint(touch.clientX, touch.clientY)
-        if (!el || !el.classList.contains('calcnotes-inline-result')) return
-
-        // Walk up to find the view-line and determine line number
-        const viewLine = el.closest('.view-line')
-        if (!viewLine) return
-        const allViewLines = Array.from(editorDom.querySelectorAll('.view-line'))
-        const topAttr = viewLine.style.top
-        // Monaco sets top style on view-lines; derive line number from position
-        const editorScrollTop = editor.getScrollTop()
-        const topPx = parseFloat(topAttr) || 0
-        const lineIndex = Math.round((topPx + editorScrollTop) / lineHeight.value)
-        const line = displayLines.value[lineIndex]
-        if (!line?.result) return
-
-        e.preventDefault()
-        copyResult(line.result, lineIndex)
-        showCopiedToast(editor, touch.clientX, touch.clientY, lineIndex)
-      }, { passive: false })
-    }
-
-    // Set initial cursor position
-    const position = editor.getPosition()
-    if (position) {
-      currentLine.value = position.lineNumber - 1
-    }
-
-    // Apply real decorations
-    updateInlineDecorations()
-    updateMarkdownPreview()
-
-    // Register app keyboard shortcuts on Monaco so they fire our handlers
-    // instead of being swallowed or triggering browser defaults
-    if (props.shortcutHandlers) {
-      const h = props.shortcutHandlers
-      const bindings = [
-        [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, h.save],
-        [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyN, h.newNote],
-        [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO, h.openFile],
-        [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyP, h.print],
-        [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, h.duplicate],
-        [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE, h.exportText],
-        [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyH, h.help],
-        [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS, h.exportAll],
-      ]
-      for (const [keybinding, handler] of bindings) {
-        if (handler) {
-          editor.addCommand(keybinding, () => handler())
-        }
-      }
-    }
-
-    editorReady.value = true
-  })
-}
-
-// Re-apply decorations whenever displayLines or showResults mode changes.
-// Use nextTick so Monaco's model has ingested any pending content change first.
-watch(displayLines, () => {
-  nextTick(() => updateInlineDecorations())
-})
-
-watch(() => props.showInline, () => {
-  updateInlineDecorations()
-})
-
-watch(() => props.localePreferences?.inlineResultAlign, () => {
-  updateInlineDecorations()
-})
-
-// Re-render markdown preview when toggle or content changes
-watch(() => props.showMarkdownPreview, () => {
-  nextTick(() => updateMarkdownPreview())
-})
-
+// Re-apply inline decorations
 watch(displayLines, () => {
   nextTick(() => {
+    updateInlineDecorations()
     if (props.showMarkdownPreview) updateMarkdownPreview()
   })
 })
 
-// Watch for external content changes (e.g. switching notes, inserting templates)
+watch(() => props.showInline, () => updateInlineDecorations())
+watch(() => props.localePreferences?.inlineResultAlign, () => updateInlineDecorations())
+
+// Markdown preview toggle
+watch(() => props.showMarkdownPreview, () => nextTick(() => updateMarkdownPreview()))
+
+// Cursor line change → re-render markdown (reveal raw on cursor line)
+watch(currentLine, () => {
+  if (props.showMarkdownPreview && editorView) {
+    nextTick(() => updateMarkdownPreview())
+  }
+})
+
+// External content changes (switching notes, inserting templates)
 watch(() => props.content, (newContent) => {
   if (localContent.value !== newContent) {
     localContent.value = newContent
-    // Note switch: evaluate immediately (skip debounce) so results appear instantly
+    // Evaluate immediately (skip debounce) so results appear instantly
     updateLines(newContent)
   }
-  // If content is the same (e.g. re-render), do nothing — localContent watcher won't fire.
 })
 
 const debouncedUpdateLines = useDebounceFn((text) => updateLines(text), 80)
 
-// Watch local content and emit changes + debounce calculations while typing
 watch(localContent, (newContent) => {
   emit('update:content', newContent)
   debouncedUpdateLines(newContent)
 })
 
+// --- Core logic ---
 const updateLines = (text) => {
   if (!text) {
     rawLines.value = []
     displayLines.value = []
-    if (decorationsCollection) decorationsCollection.set([])
     return
   }
   const lines = text.split('\n')
@@ -518,7 +608,6 @@ const updateLines = (text) => {
   reformatDisplay()
 }
 
-// Apply locale display formatting to cached raw results (no recalculation)
 const reformatDisplay = () => {
   const prefs = props.localePreferences
   if (!prefs || !rawLines.value.length) {
@@ -531,17 +620,20 @@ const reformatDisplay = () => {
   })
 }
 
-// Inject CSS for inline result decorations and markdown preview (once)
+// --- Inject CSS for inline result decorations and markdown preview ---
 const injectInlineStyles = () => {
   if (inlineStylesInjected) return
   inlineStylesInjected = true
   const style = document.createElement('style')
   style.textContent = `
-    .calcnotes-inline-result { color: #0062a3; font-style: italic; opacity: 0.85; }
-    .vs-dark .calcnotes-inline-result { color: #4fc1ff; }
-    .calcnotes-inline-error { color: #f44336; font-style: italic; opacity: 0.75; }
-    .vs-dark .calcnotes-inline-error { color: #ef5350; }
-    .calcnotes-md-hidden-syntax { font-size: 0 !important; letter-spacing: 0 !important; width: 0 !important; }
+    .calcnotes-inline-result { color: #0062a3; font-style: italic; opacity: 0.85; cursor: pointer; }
+    .cm-theme-dark .calcnotes-inline-result,
+    .dark .calcnotes-inline-result { color: #4fc1ff; }
+    .calcnotes-inline-error { color: #f44336; font-style: italic; opacity: 0.75; cursor: default; }
+    .cm-theme-dark .calcnotes-inline-error,
+    .dark .calcnotes-inline-error { color: #ef5350; }
+    .calcnotes-inline-pad { cursor: default; }
+    .calcnotes-md-hidden-syntax { font-size: 0 !important; letter-spacing: 0 !important; width: 0 !important; display: inline-block; overflow: hidden; }
     .calcnotes-md-h1 { font-size: 1.7em !important; font-weight: 700 !important; }
     .calcnotes-md-h2 { font-size: 1.4em !important; font-weight: 600 !important; }
     .calcnotes-md-h3 { font-size: 1.2em !important; font-weight: 600 !important; }
@@ -549,7 +641,8 @@ const injectInlineStyles = () => {
     .calcnotes-md-h5 { font-size: 1.05em !important; font-weight: 600 !important; }
     .calcnotes-md-h6 { font-size: 1em !important; font-weight: 600 !important; }
     .calcnotes-md-comment { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; color: #444 !important; }
-    .vs-dark .calcnotes-md-comment { color: #bbb !important; }
+    .cm-theme-dark .calcnotes-md-comment,
+    .dark .calcnotes-md-comment { color: #bbb !important; }
     .calcnotes-md-list-item { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
     .calcnotes-md-bullet { opacity: 0.6; }
     .calcnotes-md-checked { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; text-decoration: line-through !important; opacity: 0.6 !important; }
@@ -557,46 +650,32 @@ const injectInlineStyles = () => {
     .calcnotes-md-check-icon { font-style: normal !important; }
     .calcnotes-md-quote { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: italic !important; opacity: 0.85 !important; }
     .calcnotes-md-quote-bar { color: #007acc !important; font-style: normal !important; }
-    .vs-dark .calcnotes-md-quote-bar { color: #4fc1ff !important; }
-    .calcnotes-inline-result { cursor: pointer; }
-    .calcnotes-inline-error { cursor: default; }
-    .calcnotes-inline-pad { cursor: default; }
+    .cm-theme-dark .calcnotes-md-quote-bar,
+    .dark .calcnotes-md-quote-bar { color: #4fc1ff !important; }
     .calcnotes-inline-copied-toast {
       position: absolute; pointer-events: none; z-index: 100;
       padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;
       color: #16a34a; background: #dcfce7; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
       white-space: nowrap;
     }
-    .vs-dark .calcnotes-inline-copied-toast { color: #4ade80; background: #14532d; }
-
-    /* float-up (original) */
+    .dark .calcnotes-inline-copied-toast { color: #4ade80; background: #14532d; }
     .calcnotes-toast-float-up { animation: calcnotes-float-up 0.8s ease-out forwards; }
     @keyframes calcnotes-float-up {
       0% { opacity: 1; transform: translateY(0); }
       70% { opacity: 1; transform: translateY(-4px); }
       100% { opacity: 0; transform: translateY(-8px); }
     }
-
-    /* fade */
     .calcnotes-toast-fade { animation: calcnotes-fade 0.8s ease-in-out forwards; }
     @keyframes calcnotes-fade {
-      0% { opacity: 0; }
-      15% { opacity: 1; }
-      70% { opacity: 1; }
-      100% { opacity: 0; }
+      0% { opacity: 0; } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; }
     }
-
-    /* scale-pop */
     .calcnotes-toast-scale-pop { animation: calcnotes-scale-pop 0.8s ease-out forwards; }
     @keyframes calcnotes-scale-pop {
       0% { opacity: 0; transform: scale(0.5); }
       20% { opacity: 1; transform: scale(1.15); }
-      35% { transform: scale(1); }
-      70% { opacity: 1; }
+      35% { transform: scale(1); } 70% { opacity: 1; }
       100% { opacity: 0; transform: scale(0.9); }
     }
-
-    /* slide-right */
     .calcnotes-toast-slide-right { animation: calcnotes-slide-right 0.8s ease-out forwards; }
     @keyframes calcnotes-slide-right {
       0% { opacity: 0; transform: translateX(-12px); }
@@ -604,19 +683,13 @@ const injectInlineStyles = () => {
       70% { opacity: 1; }
       100% { opacity: 0; transform: translateX(8px); }
     }
-
-    /* bounce */
     .calcnotes-toast-bounce { animation: calcnotes-bounce 0.8s ease-out forwards; }
     @keyframes calcnotes-bounce {
       0% { opacity: 0; transform: translateY(6px); }
       25% { opacity: 1; transform: translateY(-6px); }
-      45% { transform: translateY(2px); }
-      60% { transform: translateY(-2px); }
-      75% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; }
+      45% { transform: translateY(2px); } 60% { transform: translateY(-2px); }
+      75% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; }
     }
-
-    /* glow */
     .calcnotes-toast-glow { animation: calcnotes-glow 0.8s ease-out forwards; }
     @keyframes calcnotes-glow {
       0% { opacity: 0; box-shadow: 0 0 0 0 rgba(22,163,74,0.4); }
@@ -624,117 +697,17 @@ const injectInlineStyles = () => {
       60% { opacity: 1; box-shadow: 0 0 2px 0 rgba(22,163,74,0.2); }
       100% { opacity: 0; box-shadow: 0 0 0 0 rgba(22,163,74,0); }
     }
-
-    /* none */
     .calcnotes-toast-none { animation: calcnotes-none 0.6s forwards; }
     @keyframes calcnotes-none {
-      0% { opacity: 1; }
-      80% { opacity: 1; }
-      100% { opacity: 0; }
+      0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; }
     }
   `
   document.head.appendChild(style)
 }
 
-// Update Monaco inline decorations from displayLines
-const updateInlineDecorations = () => {
-  if (!monacoEditorInstance || !monacoInstance) return
-
-  // Only show inline decorations when enabled
-  if (!props.showInline) {
-    if (decorationsCollection) decorationsCollection.set([])
-    return
-  }
-
-  const lines = displayLines.value
-  const model = monacoEditorInstance.getModel()
-  if (!model) return
-
-  let modelLineCount
-  try {
-    modelLineCount = model.getLineCount()
-  } catch {
-    return
-  }
-  if (!modelLineCount || modelLineCount < 1) return
-
-  const alignRight = props.localePreferences?.inlineResultAlign === 'right'
-
-  // For right-alignment, calculate visible columns from editor layout
-  let targetCol = 0
-  if (alignRight) {
-    const layoutInfo = monacoEditorInstance.getLayoutInfo()
-    const charWidthPx = monacoEditorInstance.getOption(monacoInstance.editor.EditorOption.fontInfo).typicalHalfwidthCharacterWidth
-    if (layoutInfo && charWidthPx > 0) {
-      // contentWidth is the area where text is rendered (excludes line numbers, scrollbar, etc.)
-      targetCol = Math.floor(layoutInfo.contentWidth / charWidthPx)
-    }
-  }
-
-  const maxLine = Math.min(lines.length, modelLineCount)
-  const newDecorations = []
-  for (let i = 0; i < maxLine; i++) {
-    const line = lines[i]
-    if (!line.result && !line.error) continue
-
-    const lineNumber = i + 1
-    let lineLength
-    try {
-      lineLength = model.getLineLength(lineNumber)
-    } catch {
-      continue
-    }
-
-    const resultStr = line.result
-      ? `= ${line.result}`
-      : `⚠ ${line.error}`
-
-    let padText
-    if (alignRight && targetCol > 0) {
-      const padCount = Math.max(4, targetCol - lineLength - resultStr.length)
-      padText = ' '.repeat(padCount)
-    } else {
-      padText = '  '
-    }
-
-    const className = line.result ? 'calcnotes-inline-result' : 'calcnotes-inline-error'
-
-    // Padding decoration (not clickable)
-    newDecorations.push({
-      range: new monacoInstance.Range(lineNumber, lineLength + 1, lineNumber, lineLength + 1),
-      options: {
-        description: 'calcnotes-inline-pad',
-        after: {
-          content: padText,
-          inlineClassName: 'calcnotes-inline-pad',
-        },
-        showIfCollapsed: true,
-      }
-    })
-
-    // Result decoration (clickable for results)
-    newDecorations.push({
-      range: new monacoInstance.Range(lineNumber, lineLength + 1, lineNumber, lineLength + 1),
-      options: {
-        description: 'calcnotes-inline-result',
-        after: {
-          content: resultStr,
-          inlineClassName: className,
-        },
-        showIfCollapsed: true,
-      }
-    })
-  }
-
-  if (decorationsCollection) {
-    decorationsCollection.set(newDecorations)
-  } else {
-    decorationsCollection = monacoEditorInstance.createDecorationsCollection(newDecorations)
-  }
-}
-
-const showCopiedToast = (editor, posx, posy, lineIndex) => {
-  const editorDom = editor.getDomNode()
+// --- Copied toast ---
+const showCopiedToast = (view, posx, posy, lineIndex) => {
+  const editorDom = view.dom
   if (!editorDom) return
   const animStyle = props.localePreferences?.copyAnimationStyle || 'float-up'
   const toast = document.createElement('div')
@@ -755,8 +728,6 @@ const copyResult = async (result, index) => {
   try {
     await navigator.clipboard.writeText(result)
   } catch {
-    // WORKAROUND: Firefox does not support clipboard API on localhost over HTTP.
-    // TODO: Remove this fallback once Firefox improves localhost clipboard support.
     try {
       const textarea = document.createElement('textarea')
       textarea.value = result
@@ -768,124 +739,49 @@ const copyResult = async (result, index) => {
       document.body.removeChild(textarea)
     } catch (fallbackErr) {
       console.error('Failed to copy:', fallbackErr)
-      return
     }
   }
 }
 
-// Watch for theme changes
-watch(() => colorMode.value, (newMode) => {
-  if (window.monaco) {
-    const monaco = window.monaco
-    const themeName = newMode === 'dark' ? 'calcnotes-dark' : 'calcnotes-light'
-    monaco.editor.setTheme(themeName)
-  }
-})
-
-// Helper to get the Monaco editor instance
-const getEditor = () => monacoEditorInstance
-
-// Expose methods for toolbar actions
+// --- Expose methods for toolbar actions ---
 const insertText = (text) => {
-  const editor = getEditor()
-  if (!editor) {
-    // Fallback: append to content
+  if (!editorView) {
     const newContent = localContent.value + text
     localContent.value = newContent
     emit('update:content', newContent)
     return
   }
-
-  if (typeof editor.executeEdits === 'function') {
-    const position = editor.getPosition()
-    const range = {
-      startLineNumber: position.lineNumber,
-      startColumn: position.column,
-      endLineNumber: position.lineNumber,
-      endColumn: position.column
-    }
-
-    editor.executeEdits('toolbar', [{
-      range: range,
-      text: text,
-      forceMoveMarkers: true
-    }])
-
-    // Move cursor after inserted text
-    editor.setPosition({
-      lineNumber: position.lineNumber,
-      column: position.column + text.length
-    })
-
-    editor.focus()
-  } else {
-    // Fallback
-    const newContent = localContent.value + text
-    localContent.value = newContent
-    emit('update:content', newContent)
-  }
+  const { from } = editorView.state.selection.main
+  editorView.dispatch({
+    changes: { from, insert: text },
+    selection: EditorSelection.cursor(from + text.length),
+  })
+  editorView.focus()
 }
 
 const wrapSelection = (before, after = before) => {
-  const editor = getEditor()
-  if (!editor) {
-    // Fallback: append to content
+  if (!editorView) {
     const newContent = localContent.value + before + after
     localContent.value = newContent
     emit('update:content', newContent)
     return
   }
+  const { from, to } = editorView.state.selection.main
+  const selectedText = editorView.state.sliceDoc(from, to)
 
-  if (typeof editor.executeEdits === 'function') {
-    const selection = editor.getSelection()
-    const selectedText = editor.getModel().getValueInRange(selection)
-
-    if (selectedText) {
-      // Wrap selected text
-      const wrappedText = before + selectedText + after
-      editor.executeEdits('toolbar', [{
-        range: selection,
-        text: wrappedText,
-        forceMoveMarkers: true
-      }])
-
-      // Select the wrapped content (excluding the wrapper)
-      editor.setSelection({
-        startLineNumber: selection.startLineNumber,
-        startColumn: selection.startColumn + before.length,
-        endLineNumber: selection.endLineNumber,
-        endColumn: selection.endColumn + before.length
-      })
-    } else {
-      // No selection, insert at cursor with cursor between wrappers
-      const position = editor.getPosition()
-      const range = {
-        startLineNumber: position.lineNumber,
-        startColumn: position.column,
-        endLineNumber: position.lineNumber,
-        endColumn: position.column
-      }
-
-      editor.executeEdits('toolbar', [{
-        range: range,
-        text: before + after,
-        forceMoveMarkers: true
-      }])
-
-      // Position cursor between the wrappers
-      editor.setPosition({
-        lineNumber: position.lineNumber,
-        column: position.column + before.length
-      })
-    }
-
-    editor.focus()
+  if (selectedText) {
+    const wrapped = before + selectedText + after
+    editorView.dispatch({
+      changes: { from, to, insert: wrapped },
+      selection: EditorSelection.range(from + before.length, from + before.length + selectedText.length),
+    })
   } else {
-    // Fallback
-    const newContent = localContent.value + before + after
-    localContent.value = newContent
-    emit('update:content', newContent)
+    editorView.dispatch({
+      changes: { from, insert: before + after },
+      selection: EditorSelection.cursor(from + before.length),
+    })
   }
+  editorView.focus()
 }
 
 defineExpose({

@@ -1,6 +1,6 @@
 # Calc Notes
 
-A free and open-source natural language calculator with notes. Built with Nuxt 4, Vue 3, and Monaco Editor.
+A free and open-source natural language calculator with notes. Built with Nuxt 4, Vue 3, and CodeMirror.
 
 Write calculations naturally alongside notes, with live results, unit conversions, currency exchange, and more — all client-side in the browser.
 
@@ -36,7 +36,7 @@ npm run dev                 # http://localhost:3000
 │   └── index.vue              # Main (only) page — SPA
 ├── components/
 │   ├── AppHeader.vue          # Top bar with title and settings
-│   ├── NoteEditor.vue         # Monaco editor wrapper with calc integration
+│   ├── NoteEditor.vue         # CodeMirror editor wrapper with calc integration
 │   ├── NotesList.vue          # Sidebar note list with CRUD
 │   ├── NoteMetaModal.vue      # Note rename/metadata modal
 │   ├── SettingsDropdown.vue   # Settings menu (theme, language, help)
@@ -47,7 +47,7 @@ npm run dev                 # http://localhost:3000
 │   └── ThemeSwitcher.vue      # Light/dark mode toggle
 ├── composables/
 │   ├── useCalculator.js       # Core calculator engine (all math/units/currency logic)
-│   ├── useMonacoCalcLanguage.js # Custom Monaco language definition + tokenizer
+│   ├── useCalcLanguage.js       # Custom CodeMirror language definition + tokenizer
 │   ├── useNotes.js            # Note persistence (localStorage) and state
 │   └── useTemplates.js        # Predefined calculation templates
 ├── locales/                   # i18n translation files
@@ -70,7 +70,7 @@ The app is a pure client-side SPA (`ssr: false` in `nuxt.config.ts`). All data i
 ### Key modules
 
 - `useCalculator.js` — The core engine. Parses natural language input and evaluates arithmetic, percentages, unit conversions, currency exchange, date/time, variables, and aggregation (sum/average). This is where most of the logic lives and where most contributions will happen.
-- `useMonacoCalcLanguage.js` — Registers a custom Monaco Editor language (`calcnotes`) with syntax highlighting for numbers, operators, units, currencies, functions, and comments.
+- `useCalcLanguage.js` — Registers a custom CodeMirror language (`calcnotes`) with syntax highlighting for numbers, operators, units, currencies, functions, and comments.
 - `useNotes.js` — Manages multiple notes with auto-save to localStorage.
 - `useTemplates.js` — Provides predefined templates (budget, cooking, fitness, etc.).
 

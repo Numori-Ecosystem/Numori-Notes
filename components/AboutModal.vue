@@ -70,7 +70,7 @@
                   <li><a href="https://tailwindcss.com/docs/typography-plugin" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@tailwindcss/typography</a></li>
                   <li><a href="https://vueuse.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@vueuse/core</a></li>
                   <li><a href="https://s00d.github.io/nuxt-i18n-micro" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">nuxt-i18n-micro</a></li>
-                  <li><a href="https://nuxt.com/modules/monaco-editor" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">nuxt-monaco-editor</a></li>
+                  <li><a href="https://nuxt.com/modules/nuxt-codemirror" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">nuxt-codemirror</a></li>
                   <li><a href="https://vitest.dev" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Vitest</a></li>
                 </ul>
               </div>

@@ -377,7 +377,7 @@ describe('Editor Settings — Valid Values', () => {
 
 describe('Editor Options Mapping', () => {
   // These tests verify the mapping logic used in NoteEditor.vue
-  // to ensure preferences translate correctly to Monaco options.
+  // to ensure preferences translate correctly to editor options.
 
   const mapWordWrap = (val) => val ? 'on' : 'off'
   const mapLineNumbers = (val) => ['on', 'off', 'relative', 'interval'].includes(val) ? val : 'on'

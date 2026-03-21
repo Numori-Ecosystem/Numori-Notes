@@ -9,11 +9,8 @@ export default defineNuxtConfig({
     'nuxt-i18n-micro',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
-    'nuxt-monaco-editor'
+    'nuxt-codemirror'
   ],
-  monacoEditor: {
-    locale: 'en'
-  },
   colorMode: {
     classSuffix: '',
     preference: 'system',

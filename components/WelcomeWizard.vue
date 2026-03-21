@@ -209,7 +209,7 @@ const finish = () => {
 </script>
 
 <style scoped>
-/* CalcNotes syntax colours — light theme (matches Monaco calcnotes-light) */
+/* CalcNotes syntax colours — light theme (matches calcnotes-light) */
 .calc-variable { color: #001080; }
 .calc-operator { color: #000000; }
 .calc-currency { color: #098658; }
@@ -217,7 +217,7 @@ const finish = () => {
 .calc-conversion { color: #0000ff; }
 .calc-result   { color: #098658; font-weight: 500; }
 
-/* Dark theme overrides (matches Monaco calcnotes-dark) */
+/* Dark theme overrides (matches calcnotes-dark) */
 :root.dark .calc-variable { color: #9cdcfe; }
 :root.dark .calc-operator { color: #d4d4d4; }
 :root.dark .calc-currency { color: #b5cea8; }
