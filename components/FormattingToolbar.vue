@@ -1,6 +1,7 @@
 <template>
   <div class="flex items-center justify-center gap-1 overflow-x-auto" :class="containerClass">
     <button v-for="btn in buttons" :key="btn.title"
+      @mousedown.prevent
       @click="$emit('apply-format', btn.before, btn.after)"
       class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors flex-shrink-0 leading-none"
       :title="btn.title">

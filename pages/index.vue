@@ -102,7 +102,7 @@
     <div v-if="currentNote" class="lg:hidden fixed left-0 right-0 z-10 transition-[bottom] duration-150 ease-out"
       :style="{ bottom: mobileKeyboardOffset + 'px' }">
       <!-- Toggle chevron — absolutely positioned above the toolbar so it doesn't push content -->
-      <button @click="showMobileToolbar = !showMobileToolbar"
+      <button @mousedown.prevent @click="showMobileToolbar = !showMobileToolbar"
         class="absolute right-2 bottom-full px-1.5 pt-1 pb-0.5 bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-950 rounded-t-lg transition-colors z-50"
         :title="showMobileToolbar ? 'Hide formatting toolbar' : 'Show formatting toolbar'">
         <Icon :name="showMobileToolbar ? 'mdi:chevron-down' : 'mdi:chevron-up'" class="w-5 h-5 block" />
