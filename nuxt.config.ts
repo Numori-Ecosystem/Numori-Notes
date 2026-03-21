@@ -63,5 +63,29 @@ export default defineNuxtConfig({
       routes: ['/']
     }
   },
+  vite: {
+    build: {
+      sourcemap: false,
+      rollupOptions: {
+        onwarn(warning, warn) {
+          // Suppress the module-preload-polyfill sourcemap warning
+          if (warning.plugin === 'nuxt:module-preload-polyfill') return
+          warn(warning)
+        },
+        output: {
+          manualChunks(id) {
+            // Split CodeMirror + Lezer into their own chunk (~377 kB)
+            if (id.includes('@codemirror') || id.includes('@lezer')) {
+              return 'codemirror'
+            }
+            // Split Capacitor plugins into their own chunk
+            if (id.includes('@capacitor')) {
+              return 'capacitor'
+            }
+          }
+        }
+      }
+    }
+  },
   ssr: false // Pure client-side SPA
 })

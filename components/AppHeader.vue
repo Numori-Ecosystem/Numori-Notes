@@ -2,7 +2,7 @@
   <header class="bg-gray-100 dark:bg-gray-900 sticky top-0 z-10" :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
     <div class="flex items-center justify-between px-3 py-2">
       <!-- Left: File dropdown & Title -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 min-w-0">
         <!-- File dropdown -->
         <FileDropdown :has-note="!!currentNote" :mod-label="modLabel"
           @new-note="$emit('file-new')"
@@ -19,8 +19,8 @@
           @print="$emit('file-print')"
           @about="$emit('file-about')" />
 
-        <button @click="$emit('show-meta')" class="text-left">
-          <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-400 truncate max-w-[200px] sm:max-w-none">
+        <button @click="$emit('show-meta')" class="text-left min-w-0">
+          <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-400 truncate max-w-[200px] sm:max-w-xs lg:max-w-sm xl:max-w-md">
             {{ currentNote?.title || 'Notes' }}
           </h1>
         </button>
