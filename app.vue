@@ -15,6 +15,12 @@
   transition-duration: 150ms;
 }
 
+/* CodeMirror manages its own transitions — don't interfere */
+.cm-editor *,
+.cm-editor {
+  transition: none !important;
+}
+
 /* Prevent transition on page load */
 .no-transition * {
   transition: none !important;

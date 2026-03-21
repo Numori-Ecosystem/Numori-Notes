@@ -209,19 +209,19 @@ const finish = () => {
 </script>
 
 <style scoped>
-/* CalcNotes syntax colours — light theme (matches calcnotes-light) */
-.calc-variable { color: #001080; }
-.calc-operator { color: #000000; }
-.calc-currency { color: #098658; }
-.calc-number   { color: #098658; }
-.calc-conversion { color: #0000ff; }
-.calc-result   { color: #098658; font-weight: 500; }
+/* CalcNotes syntax colours — light theme */
+.calc-variable { color: #18181b; }
+.calc-operator { color: #52525b; }
+.calc-currency { color: #059669; }
+.calc-number   { color: #059669; }
+.calc-conversion { color: #7c3aed; }
+.calc-result   { color: #2451ed; font-weight: 500; }
 
-/* Dark theme overrides (matches calcnotes-dark) */
-:root.dark .calc-variable { color: #9cdcfe; }
-:root.dark .calc-operator { color: #d4d4d4; }
-:root.dark .calc-currency { color: #b5cea8; }
-:root.dark .calc-number   { color: #b5cea8; }
-:root.dark .calc-conversion { color: #569cd6; }
-:root.dark .calc-result   { color: #b5cea8; }
+/* Dark theme overrides */
+:root.dark .calc-variable { color: #e4e4e7; }
+:root.dark .calc-operator { color: #a1a1aa; }
+:root.dark .calc-currency { color: #6ee7b7; }
+:root.dark .calc-number   { color: #6ee7b7; }
+:root.dark .calc-conversion { color: #c4b5fd; }
+:root.dark .calc-result   { color: #5c94ff; }
 </style>
