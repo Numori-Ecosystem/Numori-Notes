@@ -52,63 +52,154 @@ const calcnotesStreamParser = {
 
 export const calcnotesLanguage = StreamLanguage.define(calcnotesStreamParser)
 
-// ── Light theme ──────────────────────────────────────────────────────
+// ─── Palette ────────────────────────────────────────────────────────
+// Dark                              Light (inverted for paper feel)
+// bg:        #2D2A2E                bg:        #FCFCFA
+// fg:        #FCFCFA                fg:        #2D2A2E
+// keyword:   #FF6188                keyword:   #CC2D56
+// argument:  #FC9867                argument:  #C4621A
+// string:    #FFD866                string:    #A68A1B
+// function:  #A9DC76                function:  #4D8C2A
+// class:     #78DCE8                class:     #1A8A9A
+// constant:  #AB9DF2                constant:  #7B5FC4
+// dimmed 1:  #C1C0C0                dimmed 1:  #939293
+// dimmed 2:  #939293                dimmed 2:  #727072
+// dimmed 3:  #727072                dimmed 3:  #5B595C
+// dimmed 4:  #5B595C                dimmed 4:  #403E41
+// dimmed 5:  #403E41                dimmed 5:  #C1C0C0
+// bg dim 1:  #221F22                bg dim 1:  #F5F4F2
+// bg dim 2:  #19181A                bg dim 2:  #ECEAE8
+
+// ─────────────────────────────────────────────────────────────────────
+// Light theme — warm paper feel, muted accent colours for readability
+// ─────────────────────────────────────────────────────────────────────
 const lightHighlight = HighlightStyle.define([
-  { tag: t.heading, color: '#2451ed', fontWeight: 'bold' },
-  { tag: t.comment, color: '#71717a', fontStyle: 'italic' },
-  { tag: t.labelName, color: '#1c3eda', fontWeight: 'bold' },
-  { tag: t.keyword, color: '#2451ed', fontWeight: 'bold' },
-  { tag: t.operatorKeyword, color: '#7c3aed' },
-  { tag: t.typeName, color: '#b45309' },
-  { tag: t.definition(t.name), color: '#0369a1' },
-  { tag: t.atom, color: '#7c3aed' },
-  { tag: t.unit, color: '#059669' },
-  { tag: t.number, color: '#059669' },
-  { tag: t.variableName, color: '#18181b' },
-  { tag: t.operator, color: '#52525b' },
-  { tag: t.bracket, color: '#71717a' },
+  // Structure
+  { tag: t.heading,                color: '#2D2A2E', fontWeight: '700' },
+  { tag: t.comment,                color: '#939293', fontStyle: 'italic' },
+  { tag: t.labelName,              color: '#727072', fontWeight: '600' },
+
+  // Aggregation keywords: sum, total, avg, prev
+  { tag: t.keyword,                color: '#CC2D56', fontWeight: '600' },
+
+  // Conversion glue words: in, to, as, of, on, off
+  { tag: t.operatorKeyword,        color: '#939293' },
+
+  // Date/time: now, today, tomorrow, yesterday, next/last week…
+  { tag: t.typeName,               color: '#1A8A9A' },
+
+  // Functions: sqrt(), round(), sin()…
+  { tag: t.definition(t.name),     color: '#4D8C2A' },
+
+  // Constants: pi, e, tau, phi
+  { tag: t.atom,                   color: '#7B5FC4' },
+
+  // Currency symbols/codes & percentages
+  { tag: t.unit,                   color: '#C4621A' },
+
+  // Plain numbers & numbers with units
+  { tag: t.number,                 color: '#A68A1B' },
+
+  // Variables / identifiers
+  { tag: t.variableName,           color: '#2D2A2E' },
+
+  // Operators: + - * / ^ = and word operators
+  { tag: t.operator,               color: '#C1C0C0' },
+
+  // Brackets
+  { tag: t.bracket,                color: '#C1C0C0' },
 ])
 
+// ─────────────────────────────────────────────────────────────────────
+// Dark theme — rich warm tones on a deep charcoal background
+// ─────────────────────────────────────────────────────────────────────
 const darkHighlight = HighlightStyle.define([
-  { tag: t.heading, color: '#90baff', fontWeight: 'bold' },
-  { tag: t.comment, color: '#63636e', fontStyle: 'italic' },
-  { tag: t.labelName, color: '#bdd4ff', fontWeight: 'bold' },
-  { tag: t.keyword, color: '#90baff', fontWeight: 'bold' },
-  { tag: t.operatorKeyword, color: '#c4b5fd' },
-  { tag: t.typeName, color: '#fbbf24' },
-  { tag: t.definition(t.name), color: '#67e8f9' },
-  { tag: t.atom, color: '#c4b5fd' },
-  { tag: t.unit, color: '#6ee7b7' },
-  { tag: t.number, color: '#6ee7b7' },
-  { tag: t.variableName, color: '#e4e4e7' },
-  { tag: t.operator, color: '#a1a1aa' },
-  { tag: t.bracket, color: '#71717a' },
+  // Structure
+  { tag: t.heading,                color: '#FCFCFA', fontWeight: '700' },
+  { tag: t.comment,                color: '#727072', fontStyle: 'italic' },
+  { tag: t.labelName,              color: '#C1C0C0', fontWeight: '600' },
+
+  // Aggregation keywords
+  { tag: t.keyword,                color: '#FF6188', fontWeight: '600' },
+
+  // Conversion glue words
+  { tag: t.operatorKeyword,        color: '#727072' },
+
+  // Date/time
+  { tag: t.typeName,               color: '#78DCE8' },
+
+  // Functions
+  { tag: t.definition(t.name),     color: '#A9DC76' },
+
+  // Constants
+  { tag: t.atom,                   color: '#AB9DF2' },
+
+  // Currency & percentages
+  { tag: t.unit,                   color: '#FC9867' },
+
+  // Numbers
+  { tag: t.number,                 color: '#FFD866' },
+
+  // Variables
+  { tag: t.variableName,           color: '#FCFCFA' },
+
+  // Operators
+  { tag: t.operator,               color: '#5B595C' },
+
+  // Brackets
+  { tag: t.bracket,                color: '#5B595C' },
 ])
 
-// ── Light editor chrome ──────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+// Light editor chrome
+// ─────────────────────────────────────────────────────────────────────
 const lightEditorTheme = EditorView.theme({
-  '&': { backgroundColor: '#ffffff', color: '#18181b' },
-  '.cm-gutters': { backgroundColor: '#fafafa', borderRight: '1px solid #e4e4e7' },
-  '.cm-lineNumbers .cm-gutterElement': { color: '#a1a1aa' },
-  '.cm-activeLineGutter .cm-gutterElement': { color: '#52525b' },
-  '.cm-activeLine': { backgroundColor: '#f4f4f5' },
-  '.cm-cursor': { borderLeftColor: '#2451ed' },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': { backgroundColor: '#dae6ff' },
-  '.cm-selectionMatch': { backgroundColor: '#dae6ff80' },
-  '.cm-matchingBracket': { backgroundColor: '#bdd4ff', color: '#1c3eda' },
+  '&': {
+    backgroundColor: '#FCFCFA',
+    color: '#2D2A2E',
+  },
+  '.cm-gutters': {
+    backgroundColor: '#F5F4F2',
+    borderRight: '1px solid #ECEAE8',
+  },
+  '.cm-lineNumbers .cm-gutterElement': { color: '#C1C0C0' },
+  '.cm-activeLineGutter .cm-gutterElement': { color: '#727072' },
+  '.cm-activeLine': { backgroundColor: '#F5F4F280' },
+  '.cm-cursor': { borderLeftColor: '#2D2A2E' },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
+    backgroundColor: '#CC2D5625',
+  },
+  '.cm-selectionMatch': { backgroundColor: '#CC2D5615' },
+  '.cm-matchingBracket': { backgroundColor: '#A9DC7640', color: '#4D8C2A', outline: 'none' },
+  '.cm-searchMatch': { backgroundColor: '#FFD86640', outline: '1px solid #A68A1B' },
+  '.cm-searchMatch.cm-searchMatch-selected': { backgroundColor: '#FFD86660' },
+  '.cm-placeholder': { color: '#C1C0C0', fontStyle: 'italic' },
 }, { dark: false })
 
-// ── Dark editor chrome ───────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+// Dark editor chrome
+// ─────────────────────────────────────────────────────────────────────
 const darkEditorTheme = EditorView.theme({
-  '&': { backgroundColor: '#161618', color: '#e4e4e7' },
-  '.cm-gutters': { backgroundColor: '#161618', borderRight: '1px solid #27272a' },
-  '.cm-lineNumbers .cm-gutterElement': { color: '#52525b' },
-  '.cm-activeLineGutter .cm-gutterElement': { color: '#a1a1aa' },
-  '.cm-activeLine': { backgroundColor: '#1c1c1f' },
-  '.cm-cursor': { borderLeftColor: '#5c94ff' },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': { backgroundColor: '#1e318b50' },
-  '.cm-selectionMatch': { backgroundColor: '#1e318b40' },
-  '.cm-matchingBracket': { backgroundColor: '#1e318b', color: '#90baff' },
+  '&': {
+    backgroundColor: '#2D2A2E',
+    color: '#FCFCFA',
+  },
+  '.cm-gutters': {
+    backgroundColor: '#2D2A2E',
+    borderRight: '1px solid #403E41',
+  },
+  '.cm-lineNumbers .cm-gutterElement': { color: '#5B595C' },
+  '.cm-activeLineGutter .cm-gutterElement': { color: '#939293' },
+  '.cm-activeLine': { backgroundColor: '#403E4180' },
+  '.cm-cursor': { borderLeftColor: '#FCFCFA' },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
+    backgroundColor: '#FF618830',
+  },
+  '.cm-selectionMatch': { backgroundColor: '#FF618818' },
+  '.cm-matchingBracket': { backgroundColor: '#AB9DF240', color: '#AB9DF2', outline: 'none' },
+  '.cm-searchMatch': { backgroundColor: '#FFD86630', outline: '1px solid #FFD866' },
+  '.cm-searchMatch.cm-searchMatch-selected': { backgroundColor: '#FFD86650' },
+  '.cm-placeholder': { color: '#5B595C', fontStyle: 'italic' },
 }, { dark: true })
 
 export const calcnotesLightTheme = [lightEditorTheme, syntaxHighlighting(lightHighlight)]

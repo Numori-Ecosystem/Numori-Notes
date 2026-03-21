@@ -1,5 +1,5 @@
 <template>
-  <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 sticky top-0 z-10">
+  <header class="bg-gray-100 dark:bg-gray-900 sticky top-0 z-10">
     <div class="flex items-center justify-between px-3 py-2">
       <!-- Left: File dropdown & Title -->
       <div class="flex items-center gap-2">

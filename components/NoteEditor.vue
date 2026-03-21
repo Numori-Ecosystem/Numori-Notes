@@ -398,7 +398,9 @@ const cmBasicSetup = computed(() => ({
   dropCursor: true,
   allowMultipleSelections: true,
   indentOnInput: true,
-  syntaxHighlighting: true,
+  // Disable the default syntaxHighlighting so our custom HighlightStyle
+  // from useCalcLanguage is the sole source of token colours.
+  syntaxHighlighting: false,
   defaultKeymap: true,
   historyKeymap: true,
   searchKeymap: true,
@@ -629,12 +631,12 @@ const injectInlineStyles = () => {
   inlineStylesInjected = true
   const style = document.createElement('style')
   style.textContent = `
-    .calcnotes-inline-result { color: #2451ed; font-style: italic; opacity: 0.8; cursor: pointer; }
+    .calcnotes-inline-result { color: #CC2D56; font-style: italic; opacity: 0.75; cursor: pointer; }
     .cm-theme-dark .calcnotes-inline-result,
-    .dark .calcnotes-inline-result { color: #5c94ff; }
-    .calcnotes-inline-error { color: #dc2626; font-style: italic; opacity: 0.7; cursor: default; }
+    .dark .calcnotes-inline-result { color: #FF6188; opacity: 0.7; }
+    .calcnotes-inline-error { color: #dc2626; font-style: italic; opacity: 0.65; cursor: default; }
     .cm-theme-dark .calcnotes-inline-error,
-    .dark .calcnotes-inline-error { color: #f87171; }
+    .dark .calcnotes-inline-error { color: #FC9867; }
     .calcnotes-inline-pad { cursor: default; }
     .calcnotes-md-hidden-syntax { font-size: 0 !important; letter-spacing: 0 !important; width: 0 !important; display: inline-block; overflow: hidden; }
     .calcnotes-md-h1 { font-size: 1.7em !important; font-weight: 700 !important; }
@@ -643,25 +645,25 @@ const injectInlineStyles = () => {
     .calcnotes-md-h4 { font-size: 1.1em !important; font-weight: 600 !important; }
     .calcnotes-md-h5 { font-size: 1.05em !important; font-weight: 600 !important; }
     .calcnotes-md-h6 { font-size: 1em !important; font-weight: 600 !important; }
-    .calcnotes-md-comment { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; color: #52525b !important; }
+    .calcnotes-md-comment { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; color: #939293 !important; }
     .cm-theme-dark .calcnotes-md-comment,
-    .dark .calcnotes-md-comment { color: #a1a1aa !important; }
+    .dark .calcnotes-md-comment { color: #727072 !important; }
     .calcnotes-md-list-item { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
     .calcnotes-md-bullet { opacity: 0.6; }
     .calcnotes-md-checked { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; text-decoration: line-through !important; opacity: 0.6 !important; }
     .calcnotes-md-unchecked { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
     .calcnotes-md-check-icon { font-style: normal !important; }
     .calcnotes-md-quote { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: italic !important; opacity: 0.85 !important; }
-    .calcnotes-md-quote-bar { color: #2451ed !important; font-style: normal !important; }
+    .calcnotes-md-quote-bar { color: #FF6188 !important; font-style: normal !important; }
     .cm-theme-dark .calcnotes-md-quote-bar,
-    .dark .calcnotes-md-quote-bar { color: #5c94ff !important; }
+    .dark .calcnotes-md-quote-bar { color: #FF6188 !important; }
     .calcnotes-inline-copied-toast {
       position: absolute; pointer-events: none; z-index: 100;
       padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 500;
-      color: #059669; background: #ecfdf5; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      color: #4D8C2A; background: #F0FDF4; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
       white-space: nowrap;
     }
-    .dark .calcnotes-inline-copied-toast { color: #34d399; background: #064e3b; }
+    .dark .calcnotes-inline-copied-toast { color: #A9DC76; background: #221F22; }
     .calcnotes-toast-float-up { animation: calcnotes-float-up 0.8s ease-out forwards; }
     @keyframes calcnotes-float-up {
       0% { opacity: 1; transform: translateY(0); }
@@ -695,10 +697,10 @@ const injectInlineStyles = () => {
     }
     .calcnotes-toast-glow { animation: calcnotes-glow 0.8s ease-out forwards; }
     @keyframes calcnotes-glow {
-      0% { opacity: 0; box-shadow: 0 0 0 0 rgba(5,150,105,0.4); }
-      20% { opacity: 1; box-shadow: 0 0 8px 2px rgba(5,150,105,0.5); }
-      60% { opacity: 1; box-shadow: 0 0 2px 0 rgba(5,150,105,0.2); }
-      100% { opacity: 0; box-shadow: 0 0 0 0 rgba(5,150,105,0); }
+      0% { opacity: 0; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+      20% { opacity: 1; box-shadow: 0 0 8px 2px rgba(16,185,129,0.5); }
+      60% { opacity: 1; box-shadow: 0 0 2px 0 rgba(16,185,129,0.2); }
+      100% { opacity: 0; box-shadow: 0 0 0 0 rgba(16,185,129,0); }
     }
     .calcnotes-toast-none { animation: calcnotes-none 0.6s forwards; }
     @keyframes calcnotes-none {
