@@ -11,7 +11,7 @@
           leave-active-class="transition ease-in duration-200"
           leave-from-class="opacity-100 scale-100"
           leave-to-class="opacity-0 scale-95">
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-none md:rounded-lg max-w-5xl w-full h-screen md:h-[90vh] overflow-hidden flex flex-col"
+          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-none md:rounded-lg max-w-5xl w-full h-screen md:h-[90vh] overflow-hidden flex flex-col safe-area-modal"
             @click.stop>
       <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-800">
         <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">{{ $t('templates.title') }}</h2>

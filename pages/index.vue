@@ -9,7 +9,8 @@
       leave-from-class="opacity-100 max-h-20"
       leave-to-class="opacity-0 max-h-0">
       <div v-if="showAlphaWarning"
-        class="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2.5 flex items-center justify-between gap-3 text-sm text-amber-800 dark:text-amber-200 overflow-hidden">
+        class="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2.5 flex items-center justify-between gap-3 text-sm text-amber-800 dark:text-amber-200 overflow-hidden"
+        :style="{ paddingTop: 'calc(0.625rem + env(safe-area-inset-top, 0px))', paddingLeft: 'calc(1rem + env(safe-area-inset-left, 0px))', paddingRight: 'calc(1rem + env(safe-area-inset-right, 0px))' }">
         <p class="flex-1 text-center">
           ⚠️ This is very early alpha. Expect bugs, partially implemented features, and missing functionality.
         </p>

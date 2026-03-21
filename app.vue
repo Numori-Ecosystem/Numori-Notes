@@ -33,4 +33,14 @@
 .no-transition * {
   transition: none !important;
 }
+
+/* Full-screen modals: respect safe areas on mobile */
+@media (max-width: 767px) {
+  .safe-area-modal {
+    padding-top: var(--sat);
+    padding-bottom: var(--sab);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+  }
+}
 </style>
