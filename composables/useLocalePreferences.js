@@ -89,6 +89,7 @@ const DEFAULT_PREFERENCES = {
   editorCursorBlinking: 'blink',
   editorCursorSmoothCaret: false,
   editorSmoothScrolling: false,
+  editorScrollPastEnd: true,
   // Editor — Behaviour
   editorAutoClosingBrackets: 'always',
   editorAutoClosingQuotes: 'always',

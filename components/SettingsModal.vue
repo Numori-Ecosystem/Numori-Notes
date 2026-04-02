@@ -342,6 +342,15 @@
                             <span :class="toggleDot(preferences.editorSmoothScrolling)" />
                           </button>
                         </div>
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <label :class="labelInlineClass">Scroll Past End</label>
+                            <p :class="hintClass">Allow scrolling beyond the last line of the document</p>
+                          </div>
+                          <button @click="preferences.editorScrollPastEnd = !preferences.editorScrollPastEnd; onSettingChange()" :class="toggleClass(preferences.editorScrollPastEnd)">
+                            <span :class="toggleDot(preferences.editorScrollPastEnd)" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </section>
@@ -552,7 +561,7 @@ const sections = [
   { id: 'locales', label: 'Locales', keywords: 'locale language preset volume fuel economy distance temperature date time number format region' },
   { id: 'typography', label: 'Typography', keywords: 'font family size line height ligatures typography text' },
   { id: 'layout', label: 'Layout', keywords: 'layout line numbers whitespace word wrap minimap folding glyph margin sticky scroll highlight' },
-  { id: 'cursor', label: 'Cursor & Scrolling', keywords: 'cursor style blink animation smooth caret scrolling phase expand solid' },
+  { id: 'cursor', label: 'Cursor & Scrolling', keywords: 'cursor style blink animation smooth caret scrolling phase expand solid scroll past end' },
   { id: 'behaviour', label: 'Behaviour', keywords: 'behaviour auto close brackets quotes tab size indentation bracket pair colorization' },
   { id: 'results', label: 'Results & Display', keywords: 'results display precision decimal significant copy animation inline alignment' },
   { id: 'general', label: 'General', keywords: 'general alpha warning dismiss welcome wizard relaunch setup' },

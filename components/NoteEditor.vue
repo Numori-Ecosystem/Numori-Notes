@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { EditorView, Decoration, WidgetType, keymap as cmKeymap } from '@codemirror/view'
+import { EditorView, Decoration, WidgetType, keymap as cmKeymap, scrollPastEnd } from '@codemirror/view'
 import { StateField, StateEffect, Compartment, EditorSelection } from '@codemirror/state'
 import { calcnotesLanguage, calcnotesLightTheme, calcnotesDarkTheme } from '~/composables/useCalcLanguage'
 import { formatDisplay } from '~/composables/useDisplayFormatter'
@@ -431,6 +431,8 @@ const cmExtensions = computed(() => [
   }),
   // Word wrap
   props.localePreferences?.editorWordWrap ? EditorView.lineWrapping : [],
+  // Scroll past end
+  props.localePreferences?.editorScrollPastEnd !== false ? scrollPastEnd() : [],
   // Click handler for inline results (copy on click)
   EditorView.domEventHandlers({
     click: handleResultClick,
