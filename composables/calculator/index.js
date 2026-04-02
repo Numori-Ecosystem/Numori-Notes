@@ -270,9 +270,10 @@ export const useCalculator = () => {
     // Currency
     const currencyResult = handleCurrencyExpression(cleanInput)
     if (currencyResult.isConverted || currencyResult.hasCurrency) {
-      // Hide when it's just a simple currency value with no operation (e.g., "$30", "100 EUR")
+      // Hide when it's just a simple currency value with no operation (e.g., "$30", "100 EUR", "-£300")
       // Show when there's a conversion or arithmetic (e.g., "$30 in EUR", "$30 + €20", "price * 2")
-      const isCurrencyOperation = currencyResult.isConverted || /[+\-*/]/.test(cleanInput)
+      // Use lookbehind to only match infix operators (after a digit/letter/symbol), not prefix negation
+      const isCurrencyOperation = currencyResult.isConverted || /(?<=[\d\w€$£¥₹₽)])\s*[+\-*/]/.test(cleanInput)
       return {
         value: currencyResult.value,
         display: currencyResult.currency ? `${formatResult(currencyResult.value)} ${currencyResult.currency}` : formatResult(currencyResult.value),
