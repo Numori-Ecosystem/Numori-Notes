@@ -240,6 +240,7 @@ const buildInlineDecorations = (view) => {
   for (let i = 0; i < maxLine; i++) {
     const line = lines[i]
     if (!line.result && !line.error) continue
+    if (line.hideResult) continue
 
     const docLine = doc.line(i + 1)
     const lineLength = docLine.length

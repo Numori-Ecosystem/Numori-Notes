@@ -98,6 +98,7 @@ export const useCalculator = () => {
       try {
         const result = evaluateExpression(labelMatch[2].trim(), index, allResults)
         line.result = result.display
+        if (result.hideResult) line.hideResult = true
         if (result.liveTime) { line.liveTime = true; line.iana = result.iana || null }
         previousResult.value = result.value
         previousResultCurrency.value = result.currency || null
@@ -111,6 +112,7 @@ export const useCalculator = () => {
     try {
       const result = evaluateExpression(input, index, allResults)
       line.result = result.display
+      if (result.hideResult) line.hideResult = true
       if (result.liveTime) { line.liveTime = true; line.iana = result.iana || null }
       previousResult.value = result.value
       previousResultCurrency.value = result.currency || null
@@ -135,7 +137,7 @@ export const useCalculator = () => {
         if (percentMatch) {
           const percentValue = parseFloat(percentMatch[1])
           variables.value[varName] = `${percentValue}%`
-          return { value: percentValue, display: `${percentValue}%` }
+          return { value: percentValue, display: `${percentValue}%`, hideResult: true }
         }
 
         const result = evaluateExpression(expression, index, allResults)
@@ -261,16 +263,21 @@ export const useCalculator = () => {
         display: unitResult.unit ? `${formatResult(unitResult.value)} ${unitResult.unit}` : formatResult(unitResult.value),
         unit: unitResult.unit || null,
         category: unitResult.category || null,
+        hideResult: unitResult.hasUnit && !unitResult.isConverted,
       }
     }
 
     // Currency
     const currencyResult = handleCurrencyExpression(cleanInput)
     if (currencyResult.isConverted || currencyResult.hasCurrency) {
+      // Hide when it's just a simple currency value with no operation (e.g., "$30", "100 EUR")
+      // Show when there's a conversion or arithmetic (e.g., "$30 in EUR", "$30 + €20", "price * 2")
+      const isCurrencyOperation = currencyResult.isConverted || /[+\-*/]/.test(cleanInput)
       return {
         value: currencyResult.value,
         display: currencyResult.currency ? `${formatResult(currencyResult.value)} ${currencyResult.currency}` : formatResult(currencyResult.value),
         currency: currencyResult.currency || null,
+        hideResult: !isCurrencyOperation,
       }
     }
 
@@ -300,7 +307,15 @@ export const useCalculator = () => {
     // Regular math
     let expression = handleFunctions(cleanInput)
     const value = evaluateMath(expression)
-    return { value, display: formatResult(value) }
+
+    // Hide result when input is just a plain number, variable, or constant — no operation performed
+    const isPlainNumber = /^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(cleanInput)
+    const isScaledNumber = /^-?\d+(\.\d+)?\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)$/i.test(cleanInput)
+    const isHexBinOct = /^0[xXbBoO][0-9a-fA-F]+$/.test(cleanInput)
+    const isVariableRef = /^[a-zA-Z_]\w*$/.test(cleanInput) && (variables.value[cleanInput] !== undefined || /^(pi|e|tau|phi|prev)$/i.test(cleanInput))
+    const hideResult = isPlainNumber || isScaledNumber || isHexBinOct || isVariableRef
+
+    return { value, display: formatResult(value), hideResult }
   }
 
   const clearAll = () => {
