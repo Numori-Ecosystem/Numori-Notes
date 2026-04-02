@@ -25,6 +25,7 @@
     <!-- Mobile-friendly Toolbar -->
     <AppHeader :current-note="currentNote" :show-inline="showInlineResults" :show-markdown-preview="showMarkdownPreview"
       :hide-alpha="localePrefs.preferences.dismissAlphaWarning" :mod-label="modLabel"
+      :selection-count="selectedNoteIds.length"
       @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
       @toggle-inline="showInlineResults = !showInlineResults"
@@ -51,6 +52,7 @@
         <div class="w-80 h-full">
           <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" @new-note="addNote" @select-note="selectNote"
             @delete-note="confirmDelete" @edit-note="openEditModal"
+            @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
             @show-help="showHelp = true"
             @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
         </div>
@@ -78,6 +80,7 @@
             :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)' }">
             <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" @new-note="addNote" @select-note="selectNote"
               @delete-note="confirmDelete" @edit-note="openEditModal"
+              @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
               @show-help="showHelp = true"
               @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true" />
           </aside>
@@ -181,6 +184,11 @@
     <ConfirmDeleteModal :is-open="showDeleteConfirm"
       @close="showDeleteConfirm = false"
       @confirm="handleDeleteConfirm" />
+
+    <ConfirmBulkDeleteModal :is-open="showBulkDeleteConfirm"
+      :count="pendingBulkDeleteIds.length"
+      @close="showBulkDeleteConfirm = false"
+      @confirm="handleBulkDeleteConfirm" />
 
     <WelcomeWizard :is-open="welcomeWizard.isOpen.value"
       :preferences="localePrefs.preferences"
@@ -332,6 +340,30 @@ const pendingExportAction = ref(null)
 const showDeleteConfirm = ref(false)
 const pendingDeleteId = ref(null)
 
+// Bulk delete confirmation
+const showBulkDeleteConfirm = ref(false)
+const pendingBulkDeleteIds = ref([])
+
+// Selection tracking from sidebar
+const selectedNoteIds = ref([])
+
+const onSelectionChange = (ids) => {
+  selectedNoteIds.value = ids
+}
+
+const confirmBulkDelete = (ids) => {
+  pendingBulkDeleteIds.value = ids
+  showBulkDeleteConfirm.value = true
+}
+
+const handleBulkDeleteConfirm = () => {
+  showBulkDeleteConfirm.value = false
+  for (const id of pendingBulkDeleteIds.value) {
+    deleteNote(id)
+  }
+  pendingBulkDeleteIds.value = []
+}
+
 const askExportOptions = (action) => {
   pendingExportAction.value = action
   showExportOptions.value = true
@@ -371,11 +403,47 @@ const handleDuplicate = () => {
   }
 }
 
-const handleExportText = () => askExportOptions('text')
-const handleExportMarkdown = () => askExportOptions('markdown')
-const handleExportPdf = () => askExportOptions('pdf')
-const handleExportJson = () => exportNoteAsJson(currentNote.value)
-const handleExportAll = () => exportAllNotes(notes.value)
+const handleExportText = () => {
+  if (selectedNoteIds.value.length > 0) {
+    // Bulk: export selected as JSON backup
+    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    exportAllNotes(selected)
+  } else {
+    askExportOptions('text')
+  }
+}
+const handleExportMarkdown = () => {
+  if (selectedNoteIds.value.length > 0) {
+    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    exportAllNotes(selected)
+  } else {
+    askExportOptions('markdown')
+  }
+}
+const handleExportPdf = () => {
+  if (selectedNoteIds.value.length > 0) {
+    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    exportAllNotes(selected)
+  } else {
+    askExportOptions('pdf')
+  }
+}
+const handleExportJson = () => {
+  if (selectedNoteIds.value.length > 0) {
+    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    exportAllNotes(selected)
+  } else {
+    exportNoteAsJson(currentNote.value)
+  }
+}
+const handleExportAll = () => {
+  if (selectedNoteIds.value.length > 0) {
+    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    exportAllNotes(selected)
+  } else {
+    exportAllNotes(notes.value)
+  }
+}
 
 const handleImport = async () => {
   try {

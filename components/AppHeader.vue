@@ -4,7 +4,7 @@
       <!-- Left: File dropdown & Title -->
       <div class="flex items-center gap-2 min-w-0">
         <!-- File dropdown -->
-        <FileDropdown :has-note="!!currentNote" :mod-label="modLabel"
+        <FileDropdown :has-note="!!currentNote" :mod-label="modLabel" :selection-count="selectionCount"
           @new-note="$emit('file-new')"
           @open-file="$emit('file-open')"
           @templates="$emit('show-templates')"
@@ -93,6 +93,10 @@ defineProps({
   modLabel: {
     type: String,
     default: 'Ctrl'
+  },
+  selectionCount: {
+    type: Number,
+    default: 0
   }
 })
 

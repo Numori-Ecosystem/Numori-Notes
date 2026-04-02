@@ -8,8 +8,21 @@
     @mouseup="handleMouseUp"
     @mouseleave="handleMouseUp"
     class="p-4 border-b border-gray-200 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-850 transition-colors"
-    :class="{ 'bg-white dark:bg-gray-925 border-l-4 border-l-primary-500': active }">
+    :class="{
+      'bg-white dark:bg-gray-925 border-l-4 border-l-primary-500': active && !selectMode,
+      'bg-primary-50 dark:bg-primary-900/20': selectMode && selected
+    }">
     <div class="flex items-start justify-between gap-2">
+      <!-- Checkbox for select mode -->
+      <div v-if="selectMode" class="flex-shrink-0 pt-0.5 mr-1" @click.stop="$emit('toggle-select', note.id)">
+        <div class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+          :class="selected
+            ? 'bg-primary-600 border-primary-600'
+            : 'border-gray-300 dark:border-gray-600'">
+          <Icon v-if="selected" name="mdi:check" class="w-3.5 h-3.5 text-white" />
+        </div>
+      </div>
+
       <div class="flex-1 min-w-0">
         <h3 class="font-medium text-gray-900 dark:text-gray-400 truncate">
           {{ note.title || 'Untitled' }}
@@ -27,7 +40,7 @@
           {{ formatDate(note.updatedAt) }}
         </p>
       </div>
-      <button @click.stop="$emit('delete', note.id)"
+      <button v-if="!selectMode" @click.stop="$emit('delete', note.id)"
         class="p-1 text-gray-400 hover:text-error-600 dark:text-gray-500 dark:hover:text-error-400 transition-colors"
         title="Delete note">
         <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
@@ -39,10 +52,12 @@
 <script setup>
 const props = defineProps({
   note: { type: Object, required: true },
-  active: { type: Boolean, default: false }
+  active: { type: Boolean, default: false },
+  selectMode: { type: Boolean, default: false },
+  selected: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['select', 'edit', 'delete'])
+const emit = defineEmits(['select', 'edit', 'delete', 'long-press', 'toggle-select'])
 
 const LONG_PRESS_DURATION = 500
 const longPressTimer = ref(null)
@@ -52,7 +67,13 @@ const startLongPress = () => {
   longPressTriggered.value = false
   longPressTimer.value = setTimeout(() => {
     longPressTriggered.value = true
-    emit('edit', props.note.id)
+    if (props.selectMode) {
+      // Already in select mode — just toggle this item
+      emit('toggle-select', props.note.id)
+    } else {
+      // Enter select mode with this note
+      emit('long-press', props.note.id)
+    }
   }, LONG_PRESS_DURATION)
 }
 
@@ -69,10 +90,15 @@ const handleMouseDown = () => startLongPress()
 const handleMouseUp = () => cancelLongPress()
 
 const handleClick = () => {
-  if (!longPressTriggered.value) {
+  if (longPressTriggered.value) {
+    longPressTriggered.value = false
+    return
+  }
+  if (props.selectMode) {
+    emit('toggle-select', props.note.id)
+  } else {
     emit('select', props.note.id)
   }
-  longPressTriggered.value = false
 }
 
 const formatDate = (dateString) => {

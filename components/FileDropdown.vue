@@ -30,10 +30,10 @@
         <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
 
         <!-- Export sub-menu -->
-        <DropdownSubmenu icon="mdi:export" label="Export" :disabled="!hasNote">
-          <DropdownItem icon="mdi:download" label="Text (.txt)" :shortcut="`${modLabel}+E`" @click="action('export-text')" />
-          <DropdownItem icon="mdi:language-markdown-outline" label="Markdown (.md)" @click="action('export-markdown')" />
-          <DropdownItem icon="mdi:file-pdf-box" label="PDF" @click="action('export-pdf')" />
+        <DropdownSubmenu icon="mdi:export" :label="selectionCount > 0 ? `Export Selection (${selectionCount})` : 'Export'" :disabled="!hasNote && selectionCount === 0">
+          <DropdownItem icon="mdi:download" :label="selectionCount > 0 ? `Selection as JSON (${selectionCount})` : 'Text (.txt)'" :shortcut="selectionCount > 0 ? '' : `${modLabel}+E`" @click="action('export-text')" />
+          <DropdownItem v-if="selectionCount === 0" icon="mdi:language-markdown-outline" label="Markdown (.md)" @click="action('export-markdown')" />
+          <DropdownItem v-if="selectionCount === 0" icon="mdi:file-pdf-box" label="PDF" @click="action('export-pdf')" />
         </DropdownSubmenu>
 
         <DropdownItem icon="mdi:content-copy" label="Copy to Clipboard" :disabled="!hasNote" @click="action('copy')" />
@@ -42,8 +42,8 @@
         <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
 
         <!-- Backup & restore -->
-        <DropdownItem icon="mdi:code-json" label="Export as JSON" :disabled="!hasNote" @click="action('export-json')" />
-        <DropdownItem icon="mdi:database-export" label="Export All Notes" :shortcut="`${modLabel}+⇧+S`" @click="action('export-all')" />
+        <DropdownItem icon="mdi:code-json" :label="selectionCount > 0 ? `Export Selection as JSON (${selectionCount})` : 'Export as JSON'" :disabled="!hasNote && selectionCount === 0" @click="action('export-json')" />
+        <DropdownItem icon="mdi:database-export" :label="selectionCount > 0 ? `Export Selection (${selectionCount})` : 'Export All Notes'" :shortcut="selectionCount > 0 ? '' : `${modLabel}+⇧+S`" @click="action('export-all')" />
         <DropdownItem icon="mdi:upload" label="Import Notes…" @click="action('import')" />
 
         <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
@@ -63,6 +63,10 @@ const props = defineProps({
   modLabel: {
     type: String,
     default: 'Ctrl',
+  },
+  selectionCount: {
+    type: Number,
+    default: 0,
   },
 })
 
