@@ -139,6 +139,70 @@ describe('Currency with code-based amounts in arithmetic', () => {
   })
 })
 
+describe('Currency with postfix symbol (e.g. 3€)', () => {
+  it('30€ returns value with EUR', () => {
+    const result = calc('30€')
+    expect(parseFloat(result)).toBe(30)
+    expect(result).toMatch(/EUR/)
+  })
+
+  it('50£ returns value with GBP', () => {
+    const result = calc('50£')
+    expect(parseFloat(result)).toBe(50)
+    expect(result).toMatch(/GBP/)
+  })
+
+  it('100$ returns value with USD', () => {
+    const result = calc('100$')
+    expect(parseFloat(result)).toBe(100)
+    expect(result).toMatch(/USD/)
+  })
+
+  it('30€ in USD converts currency', () => {
+    const result = calc('30€ in USD')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/USD/)
+  })
+
+  it('postfix currency arithmetic: 30€ + 20$ (mixed currencies)', () => {
+    const result = calc('30€ + 20$')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/EUR/)
+  })
+
+  it('mixed prefix/postfix arithmetic: $30 + 20€', () => {
+    const result = calc('$30 + 20€')
+    expect(result).toBeTruthy()
+    expect(result).toMatch(/USD/)
+  })
+
+  it('postfix with scale: 2k€ = 2000 EUR', () => {
+    const result = calc('2k€')
+    expect(parseFloat(result)).toBe(2000)
+    expect(result).toMatch(/EUR/)
+  })
+
+  it('postfix with scale: 1.5M£ = 1500000 GBP', () => {
+    const result = calc('1.5M£')
+    expect(parseFloat(result)).toBe(1500000)
+    expect(result).toMatch(/GBP/)
+  })
+
+  it('postfix conversion with scale: 2k€ in USD', () => {
+    const result = calc('2k€ in USD')
+    expect(result).toMatch(/USD/)
+    const val = parseFloat(result)
+    expect(val).toBeGreaterThan(1800)
+    expect(val).toBeLessThan(2400)
+  })
+
+  it('variable with postfix currency: v = 20€, v + 10€', () => {
+    const results = calcLines(['v = 20€', 'v + 10€'])
+    expect(parseFloat(results[1])).toBe(30)
+    expect(results[1]).toMatch(/EUR/)
+  })
+})
+
 describe('Currency with Scales', () => {
   // Symbol prefix + scale suffix
   it('$2k = 2000 USD', () => {

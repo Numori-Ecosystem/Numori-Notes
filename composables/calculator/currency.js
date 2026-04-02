@@ -94,6 +94,16 @@ export const parseCurrency = (input) => {
     return { value, currency, rest }
   }
 
+  // "3€", "50£", "2k€", "1.5M€" (postfix symbol)
+  const postfixSymbolRe = new RegExp(`^${SCALED_NUM_RE}\\s*([€$£¥₹₽])(.*)$`)
+  const postfixMatch = input.match(postfixSymbolRe)
+  if (postfixMatch) {
+    const currency = currencyMap[postfixMatch[3]]
+    const value = applyScale(postfixMatch[1], postfixMatch[2])
+    const rest = postfixMatch[4].trim()
+    return { value, currency, rest }
+  }
+
   // "100 USD", "50 EUR", "2k EUR", "1.5M usd", "3 million eur"
   const codeScaleRe = new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*(${SCALE_SUFFIX})?\\s+([a-zA-Z]+)(.*)$`)
   const codeMatch = input.match(codeScaleRe)
@@ -133,7 +143,16 @@ const collectCurrencies = (symbolMatches, currencyVarsInExpr, codeCurrencyMatche
 const replaceCurrencyTokens = (expr, symbolMatches, currencyVarsInExpr, codeCurrencyMatches, allSameCurrency) => {
   let result = expr
 
+  // Match prefix symbols: €50, $2k
   result = result.replace(/([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?/g, (_, symbol, num, scale) => {
+    const cur = currencyMap[symbol]
+    const val = applyScale(num, scale)
+    if (allSameCurrency) return `(${val})`
+    return `(${val / exchangeRates.value[cur]})`
+  })
+
+  // Match postfix symbols: 50€, 2k$
+  result = result.replace(/(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s*([€$£¥₹₽])/g, (_, num, scale, symbol) => {
     const cur = currencyMap[symbol]
     const val = applyScale(num, scale)
     if (allSameCurrency) return `(${val})`
@@ -199,10 +218,16 @@ export const handleCurrencyExpression = (input) => {
 
       if (hasCurrencySymbols || hasCurrencyVars || hasCodeCurrencies) {
         const symbolMatches = []
-        const symRe = /([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?/g
+        // Match prefix symbols: €50, $2k
+        const symPreRe = /([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?/g
         let sm
-        while ((sm = symRe.exec(sourceExpr)) !== null) {
+        while ((sm = symPreRe.exec(sourceExpr)) !== null) {
           symbolMatches.push({ symbol: sm[1], value: applyScale(sm[2], sm[3]), currency: currencyMap[sm[1]] })
+        }
+        // Match postfix symbols: 50€, 2k$
+        const symPostRe = /(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s*([€$£¥₹₽])/g
+        while ((sm = symPostRe.exec(sourceExpr)) !== null) {
+          symbolMatches.push({ symbol: sm[3], value: applyScale(sm[1], sm[2]), currency: currencyMap[sm[3]] })
         }
 
         const allCurrencies = collectCurrencies(symbolMatches, cvarsInSource, codeMatches)
@@ -234,14 +259,23 @@ export const handleCurrencyExpression = (input) => {
     }
   }
 
-  // Currency arithmetic: "$30 + €20", "$2k + €500", "$1.5M - €200k"
-  const currArithMatch = input.match(/^([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s*([+\-*/])\s*([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?$/)
+  // Currency arithmetic: "$30 + €20", "$2k + €500", "$1.5M - €200k", "30€ + 20$", "3€ + $2"
+  // Match prefix or postfix symbol on each operand
+  const currArithMatch = input.match(/^(?:([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?|(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s*([€$£¥₹₽]))\s*([+\-*/])\s*(?:([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?|(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s*([€$£¥₹₽]))$/)
   if (currArithMatch) {
-    const cur1 = currencyMap[currArithMatch[1]]
-    const val1 = applyScale(currArithMatch[2], currArithMatch[3])
-    const op = currArithMatch[4]
-    const cur2 = currencyMap[currArithMatch[5]]
-    const val2 = applyScale(currArithMatch[6], currArithMatch[7])
+    // First operand: prefix groups [1,2,3] or postfix groups [4,5,6]
+    const sym1 = currArithMatch[1] || currArithMatch[6]
+    const num1 = currArithMatch[1] ? currArithMatch[2] : currArithMatch[4]
+    const scale1 = currArithMatch[1] ? currArithMatch[3] : currArithMatch[5]
+    const cur1 = currencyMap[sym1]
+    const val1 = applyScale(num1, scale1)
+    const op = currArithMatch[7]
+    // Second operand: prefix groups [8,9,10] or postfix groups [11,12,13]
+    const sym2 = currArithMatch[8] || currArithMatch[13]
+    const num2 = currArithMatch[8] ? currArithMatch[9] : currArithMatch[11]
+    const scale2 = currArithMatch[8] ? currArithMatch[10] : currArithMatch[12]
+    const cur2 = currencyMap[sym2]
+    const val2 = applyScale(num2, scale2)
 
     let result
     if (cur1 === cur2) {
@@ -286,10 +320,16 @@ export const handleCurrencyExpression = (input) => {
   }
 
   const symbolMatches = []
+  // Match prefix symbols: €50, $2k
   const symbolRegex = /([€$£¥₹₽])\s*(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?/g
   let sMatch
   while ((sMatch = symbolRegex.exec(input)) !== null) {
     symbolMatches.push({ symbol: sMatch[1], value: applyScale(sMatch[2], sMatch[3]), currency: currencyMap[sMatch[1]] })
+  }
+  // Match postfix symbols: 50€, 2k$
+  const postfixSymbolRegex = /(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s*([€$£¥₹₽])/g
+  while ((sMatch = postfixSymbolRegex.exec(input)) !== null) {
+    symbolMatches.push({ symbol: sMatch[3], value: applyScale(sMatch[1], sMatch[2]), currency: currencyMap[sMatch[3]] })
   }
 
   const codeCurrencyMatches = findCodeCurrencyMatches(input)
