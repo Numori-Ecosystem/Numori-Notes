@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   )
 
   const user = result.rows[0]
-  const secret = process.env.JWT_SECRET || useRuntimeConfig().jwtSecret
+  const secret = process.env.JWT_SECRET
   const token = await signJwt({ userId: user.id, email: user.email }, secret)
 
   return {

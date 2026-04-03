@@ -74,7 +74,7 @@ export async function requireAuth(event) {
   }
 
   const token = header.slice(7)
-  const secret = process.env.JWT_SECRET || useRuntimeConfig().jwtSecret
+  const secret = process.env.JWT_SECRET
 
   try {
     return await verifyJwt(token, secret)
@@ -91,7 +91,7 @@ export async function optionalAuth(event) {
   if (!header?.startsWith('Bearer ')) return null
 
   const token = header.slice(7)
-  const secret = process.env.JWT_SECRET || useRuntimeConfig().jwtSecret
+  const secret = process.env.JWT_SECRET
 
   try {
     return await verifyJwt(token, secret)

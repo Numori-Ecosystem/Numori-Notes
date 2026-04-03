@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Invalid email or password' })
   }
 
-  const secret = process.env.JWT_SECRET || useRuntimeConfig().jwtSecret
+  const secret = process.env.JWT_SECRET
   const token = await signJwt({ userId: user.id, email: user.email }, secret)
 
   return {

@@ -7,7 +7,7 @@ export default defineNitroPlugin(async () => {
   try {
     await migrate()
   } catch (err) {
-    console.error('[migrate] Failed to run migrations:', err.message)
+    console.error('[migrate] Failed to run migrations:', err.message, err.stack)
     // Don't crash the server — the app works offline without a DB
   }
 })
