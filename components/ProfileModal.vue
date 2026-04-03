@@ -1,75 +1,74 @@
 <template>
   <Teleport to="body">
     <Transition name="modal-backdrop">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50"
         @click.self="$emit('close')">
         <Transition name="modal-panel" appear>
           <div v-if="isOpen"
             class="bg-white dark:bg-gray-925 rounded-lg max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col">
 
             <!-- Header -->
-            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-              <div class="flex items-center gap-2">
-                <button v-if="activeSection !== 'main'" @click="activeSection = 'main'"
-                  class="flex items-center gap-1 px-2 py-1 -ml-2 text-sm text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors">
+            <div class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+              <div class="flex items-center gap-2 min-w-0">
+                <button v-if="activeSection !== 'main'" @click="goBack"
+                  class="flex items-center gap-1 px-2 py-1 -ml-2 text-sm text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors flex-shrink-0">
                   <Icon name="mdi:arrow-left" class="block w-4 h-4" />
-                  <span>Back</span>
+                  <span class="hidden sm:inline">Back</span>
                 </button>
-                <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">
+                <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none truncate">
                   {{ activeSection === 'main' ? 'Profile' : sectionTitle }}
                 </h2>
               </div>
               <button @click="$emit('close')"
-                class="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                class="flex-shrink-0 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                 <Icon name="mdi:close" class="block w-5 h-5" />
               </button>
             </div>
 
             <!-- Body -->
-            <div class="flex-1 overflow-y-auto px-5 py-4">
+            <div class="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-5 py-4">
 
               <!-- Feedback message -->
-              <div v-if="feedback" class="mb-3 px-3 py-2 rounded-lg text-xs"
-                :class="feedbackType === 'error'
-                  ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                  : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'">
-                {{ feedback }}
-              </div>
+              <Transition enter-active-class="transition duration-200" enter-from-class="opacity-0 -translate-y-1" leave-active-class="transition duration-150" leave-to-class="opacity-0">
+                <div v-if="feedback" class="mb-3 px-3 py-2 rounded-lg text-xs"
+                  :class="feedbackType === 'error'
+                    ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                    : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'">
+                  {{ feedback }}
+                </div>
+              </Transition>
 
               <!-- ═══ Main section ═══ -->
               <div v-if="activeSection === 'main'" class="space-y-4">
 
-                <!-- Avatar + name -->
-                <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    <img v-if="user?.avatarUrl" :src="user.avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
-                    <Icon v-else name="mdi:account" class="w-7 h-7 text-primary-600 dark:text-primary-400" />
-                  </div>
-                  <div class="min-w-0">
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{{ user?.name || 'No name set' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-500 truncate">{{ user?.email }}</p>
-                  </div>
+                <!-- Avatar + name card -->
+                <div class="flex flex-col items-center text-center py-2">
+                  <button @click="activeSection = 'avatar'" class="relative group mb-2" title="Change avatar">
+                    <div class="w-20 h-20 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700">
+                      <img v-if="user?.avatarUrl" :src="user.avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
+                      <Icon v-else name="mdi:account" class="w-10 h-10 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Icon name="mdi:camera" class="w-5 h-5 text-white" />
+                    </div>
+                  </button>
+                  <p class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ user?.name || 'No name set' }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500">{{ user?.email }}</p>
                 </div>
 
-                <!-- Stats -->
-                <div class="grid grid-cols-2 gap-2">
-                  <div class="px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                <!-- Quick stats -->
+                <div class="grid grid-cols-3 gap-2 text-center">
+                  <div class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900">
                     <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ user?.stats?.notesCount ?? '—' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-500">Cloud notes</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Notes</p>
                   </div>
-                  <div class="px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                  <div class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900">
                     <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ user?.stats?.sharedCount ?? '—' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-500">Shared notes</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Shared</p>
                   </div>
-                </div>
-
-                <!-- Sync status -->
-                <div class="px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
-                  <div class="flex items-center gap-2">
-                    <Icon name="mdi:cloud-sync-outline" class="w-4 h-4 text-gray-500" />
-                    <span class="text-xs text-gray-600 dark:text-gray-400">
-                      {{ lastSyncedAt ? `Last synced ${formatDate(lastSyncedAt)}` : 'Never synced' }}
-                    </span>
+                  <div class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 leading-snug break-words capitalize">{{ lastSyncedAt ? formatDate(lastSyncedAt) : '—' }}</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Synced</p>
                   </div>
                 </div>
 
@@ -80,57 +79,36 @@
                 </div>
 
                 <!-- Menu items -->
-                <div class="space-y-1">
+                <nav class="space-y-0.5">
                   <button @click="activeSection = 'edit'"
                     class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                    <Icon name="mdi:account-edit-outline" class="w-5 h-5 text-gray-400" />
-                    Edit Profile
+                    <Icon name="mdi:account-edit-outline" class="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    <span class="truncate">Edit Profile</span>
                   </button>
                   <button @click="openSharedSection"
                     class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                    <Icon name="mdi:share-variant-outline" class="w-5 h-5 text-gray-400" />
-                    Shared Notes
-                    <span v-if="user?.stats?.sharedCount" class="ml-auto text-xs text-gray-400">{{ user.stats.sharedCount }}</span>
+                    <Icon name="mdi:share-variant-outline" class="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    <span class="truncate">Shared Notes</span>
+                    <span v-if="user?.stats?.sharedCount" class="ml-auto text-xs text-gray-400 flex-shrink-0">{{ user.stats.sharedCount }}</span>
                   </button>
                   <button @click="activeSection = 'password'"
                     class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                    <Icon name="mdi:lock-outline" class="w-5 h-5 text-gray-400" />
-                    Change Password
+                    <Icon name="mdi:lock-outline" class="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    <span class="truncate">Change Password</span>
                   </button>
                   <button @click="activeSection = 'danger'"
                     class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                    <Icon name="mdi:alert-outline" class="w-5 h-5" />
-                    Data &amp; Account Deletion
+                    <Icon name="mdi:alert-outline" class="w-5 h-5 flex-shrink-0" />
+                    <span class="truncate">Data &amp; Account</span>
                   </button>
-                </div>
+                </nav>
 
                 <!-- Privacy toggle -->
-                <div class="px-3 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-2">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                      <Icon name="mdi:shield-account-outline" class="w-4 h-4 text-gray-500" />
-                      <span class="text-sm text-gray-700 dark:text-gray-300">Privacy protection</span>
-                      <div class="relative group">
-                        <Icon name="mdi:information-outline" class="w-4 h-4 text-gray-400 cursor-help" />
-                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 px-3 py-2 rounded-lg bg-gray-900 dark:bg-gray-700 text-white text-xs leading-relaxed shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
-                          <p class="font-medium mb-1">Privacy Protection</p>
-                          <p>Controls what data others can collect when you view their shared notes.</p>
-                          <p class="mt-1.5 font-medium">When enabled (default):</p>
-                          <ul class="list-disc pl-3 mt-0.5 space-y-0.5">
-                            <li>Your name will not be visible to the note sharer</li>
-                            <li>Your device, browser, and IP address won't be recorded</li>
-                            <li>You will appear as "Unknown" in their analytics</li>
-                            <li>Only the fact that someone viewed the note is recorded</li>
-                          </ul>
-                          <p class="mt-1.5 font-medium">When disabled:</p>
-                          <ul class="list-disc pl-3 mt-0.5 space-y-0.5">
-                            <li>Your display name may be shown to the note sharer</li>
-                            <li>Your browser, device, and IP address may be recorded</li>
-                          </ul>
-                          <p class="mt-1.5 text-gray-300">Your email is never shared regardless of this setting.</p>
-                          <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
-                        </div>
-                      </div>
+                <div class="px-3 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 space-y-1.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <Icon name="mdi:shield-account-outline" class="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      <span class="text-sm text-gray-700 dark:text-gray-300 truncate">Privacy protection</span>
                     </div>
                     <button @click="togglePrivacy" :disabled="savingPrivacy"
                       class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
@@ -145,10 +123,50 @@
                   </p>
                 </div>
 
-                <!-- Member since -->
-                <p class="text-xs text-gray-400 dark:text-gray-600 text-center pt-2">
-                  Member since {{ user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—' }}
-                </p>
+                <!-- Logout + member since -->
+                <div class="flex items-center justify-between pt-1">
+                  <p class="text-xs text-gray-400 dark:text-gray-600">
+                    Since {{ user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—' }}
+                  </p>
+                  <button @click="$emit('logout')"
+                    class="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors">
+                    Sign out
+                  </button>
+                </div>
+              </div>
+
+              <!-- ═══ Avatar Editor ═══ -->
+              <div v-else-if="activeSection === 'avatar'" class="space-y-4">
+                <div v-if="!avatarImageSrc" class="text-center space-y-3">
+                  <div class="w-24 h-24 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <Icon name="mdi:image-plus" class="w-10 h-10 text-gray-400" />
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Choose an image for your avatar</p>
+                  <label class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
+                    <Icon name="mdi:upload" class="w-4 h-4" />
+                    Upload Image
+                    <input type="file" accept="image/*" class="hidden" @change="onFileSelect" />
+                  </label>
+                  <button v-if="user?.avatarUrl" @click="removeAvatar"
+                    class="block mx-auto text-xs text-red-500 hover:text-red-700 dark:text-red-400 transition-colors mt-2">
+                    Remove current avatar
+                  </button>
+                </div>
+
+                <div v-else class="space-y-3">
+                  <AvatarEditor :image-source="avatarImageSrc" :canvas-size="editorCanvasSize" @update="onAvatarCropped" />
+                  <div class="flex gap-2">
+                    <button @click="avatarImageSrc = null"
+                      class="flex-1 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
+                      Choose Different
+                    </button>
+                    <button @click="saveAvatar" :disabled="saving"
+                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
+                      <Icon v-if="saving" name="mdi:loading" class="w-4 h-4 animate-spin" />
+                      Save Avatar
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <!-- ═══ Edit Profile ═══ -->
@@ -164,13 +182,6 @@
                   <input v-model="editEmail" type="email"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
                     placeholder="you@example.com" />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Avatar URL</label>
-                  <input v-model="editAvatarUrl" type="url"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
-                    placeholder="https://example.com/avatar.jpg" />
-                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Link to an image hosted elsewhere</p>
                 </div>
                 <button @click="saveProfile" :disabled="saving"
                   class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
@@ -210,13 +221,11 @@
                 <p class="text-xs text-gray-500 dark:text-gray-500">
                   These actions are irreversible. Your password is required to confirm.
                 </p>
-
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Confirm Password</label>
                   <input v-model="dangerPassword" type="password"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
                 </div>
-
                 <div class="space-y-2">
                   <button @click="handleDeleteData" :disabled="saving || !dangerPassword"
                     class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
@@ -224,15 +233,14 @@
                     <Icon v-else name="mdi:database-remove-outline" class="w-4 h-4" />
                     Delete All Cloud Data
                   </button>
-                  <p class="text-xs text-gray-500 dark:text-gray-500">Removes all synced notes and shared notes from the server. Your account stays active. Local notes are not affected.</p>
-
+                  <p class="text-xs text-gray-500 dark:text-gray-500">Removes all synced and shared notes from the server. Your account stays active.</p>
                   <button @click="handleDeleteAccount" :disabled="saving || !dangerPassword"
                     class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
                     <Icon v-if="saving" name="mdi:loading" class="w-4 h-4 animate-spin" />
                     <Icon v-else name="mdi:account-remove-outline" class="w-4 h-4" />
                     Request Account Deletion
                   </button>
-                  <p class="text-xs text-gray-500 dark:text-gray-500">Marks your account for permanent deletion. All data will be removed. You will be signed out.</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500">Marks your account for permanent deletion. All data will be removed.</p>
                 </div>
               </div>
 
@@ -243,7 +251,7 @@
                 </div>
                 <template v-else-if="sharedNotes.length">
                   <div v-for="sn in sharedNotes" :key="sn.hash"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg border"
+                    class="flex items-center gap-2 px-3 py-2.5 rounded-lg border"
                     :class="sn.isActive
                       ? 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800'
                       : 'bg-gray-50/50 dark:bg-gray-900/50 border-gray-200/50 dark:border-gray-800/50 opacity-60'">
@@ -254,28 +262,33 @@
                           unshared
                         </span>
                       </div>
-                      <p class="text-xs text-gray-500 dark:text-gray-500">
+                      <p class="text-xs text-gray-500 dark:text-gray-500 truncate">
                         {{ sn.anonymous ? 'Anonymous' : '' }}
                         {{ sn.anonymous && sn.expiresAt ? ' · ' : '' }}
                         {{ formatExpiry(sn.expiresAt) }}
-                        {{ sn.collectAnalytics ? ' · Analytics on' : '' }}
+                        {{ sn.collectAnalytics ? ' · Analytics' : '' }}
                       </p>
                     </div>
-                    <button v-if="sn.collectAnalytics" @click="emit('open-analytics', sn.hash)"
-                      class="flex-shrink-0 p-1.5 text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors"
-                      title="View analytics">
-                      <Icon name="mdi:chart-bar" class="w-4 h-4" />
-                    </button>
-                    <button v-if="sn.isActive" @click="copySharedLink(sn.hash)"
-                      class="flex-shrink-0 p-1.5 text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors"
-                      title="Copy link">
-                      <Icon :name="copiedHash === sn.hash ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" />
-                    </button>
-                    <button v-if="sn.isActive" @click="handleUnshare(sn.hash)"
-                      class="flex-shrink-0 p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                      title="Stop sharing">
-                      <Icon name="mdi:link-variant-off" class="w-4 h-4" />
-                    </button>
+                    <div class="flex items-center gap-0.5 flex-shrink-0">
+                      <button v-if="sn.collectAnalytics" @click="openAnalytics(sn.hash)"
+                        class="p-1.5 text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors"
+                        title="View analytics">
+                        <Icon name="mdi:chart-bar" class="w-4 h-4" />
+                      </button>
+                      <button @click="copySharedLink(sn.hash)"
+                        class="p-1.5 text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors"
+                        title="Copy link">
+                        <Icon :name="copiedHash === sn.hash ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" />
+                      </button>
+                      <button @click="handleUnshare(sn.hash)" :disabled="!sn.isActive"
+                        class="p-1.5 rounded transition-colors"
+                        :class="sn.isActive
+                          ? 'text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20'
+                          : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'"
+                        :title="sn.isActive ? 'Stop sharing' : 'Already unshared'">
+                        <Icon name="mdi:link-variant-off" class="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </template>
                 <div v-else class="text-center py-8">
@@ -308,7 +321,14 @@ const saving = ref(false)
 // Edit profile fields
 const editName = ref('')
 const editEmail = ref('')
-const editAvatarUrl = ref('')
+
+// Avatar editor
+const avatarImageSrc = ref(null)
+const croppedAvatarDataUrl = ref(null)
+const editorCanvasSize = computed(() => {
+  if (typeof window === 'undefined') return 220
+  return Math.min(220, window.innerWidth - 80)
+})
 
 // Password fields
 const currentPassword = ref('')
@@ -334,7 +354,8 @@ watch(() => props.isOpen, (open) => {
     feedback.value = null
     editName.value = props.user?.name || ''
     editEmail.value = props.user?.email || ''
-    editAvatarUrl.value = props.user?.avatarUrl || ''
+    avatarImageSrc.value = null
+    croppedAvatarDataUrl.value = null
     currentPassword.value = ''
     newPassword.value = ''
     confirmNewPassword.value = ''
@@ -343,9 +364,14 @@ watch(() => props.isOpen, (open) => {
 })
 
 const sectionTitle = computed(() => {
-  const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Data & Account', shared: 'Shared Notes' }
+  const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Data & Account', shared: 'Shared Notes', avatar: 'Change Avatar' }
   return titles[activeSection.value] || 'Profile'
 })
+
+const goBack = () => {
+  activeSection.value = 'main'
+  feedback.value = null
+}
 
 const showFeedback = (msg, type = 'success') => {
   feedback.value = msg
@@ -364,11 +390,54 @@ const formatDate = (iso) => {
   return d.toLocaleDateString()
 }
 
+// Avatar
+const onFileSelect = (e) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = () => { avatarImageSrc.value = reader.result }
+  reader.readAsDataURL(file)
+  e.target.value = ''
+}
+
+const onAvatarCropped = (dataUrl) => {
+  croppedAvatarDataUrl.value = dataUrl
+}
+
+const saveAvatar = async () => {
+  if (!croppedAvatarDataUrl.value) return
+  saving.value = true
+  feedback.value = null
+  try {
+    await emit('update-profile', { avatarUrl: croppedAvatarDataUrl.value })
+    showFeedback('Avatar updated')
+    avatarImageSrc.value = null
+    activeSection.value = 'main'
+  } catch (err) {
+    showFeedback(err?.data?.statusMessage || 'Failed to update avatar', 'error')
+  } finally {
+    saving.value = false
+  }
+}
+
+const removeAvatar = async () => {
+  saving.value = true
+  try {
+    await emit('update-profile', { avatarUrl: '' })
+    showFeedback('Avatar removed')
+    activeSection.value = 'main'
+  } catch (err) {
+    showFeedback(err?.data?.statusMessage || 'Failed to remove avatar', 'error')
+  } finally {
+    saving.value = false
+  }
+}
+
 const saveProfile = async () => {
   saving.value = true
   feedback.value = null
   try {
-    await emit('update-profile', { name: editName.value, email: editEmail.value, avatarUrl: editAvatarUrl.value })
+    await emit('update-profile', { name: editName.value, email: editEmail.value })
     showFeedback('Profile updated')
     activeSection.value = 'main'
   } catch (err) {
@@ -466,6 +535,13 @@ const handleUnshare = async (hash) => {
 const openSharedSection = () => {
   activeSection.value = 'shared'
   loadSharedNotes()
+}
+
+const openAnalytics = (hash) => {
+  emit('close')
+  nextTick(() => {
+    emit('open-analytics', hash)
+  })
 }
 
 const togglePrivacy = async () => {

@@ -24,13 +24,28 @@ export default defineEventHandler(async (event) => {
 
   const deletedSet = new Set(deletedClientIds)
 
-  // 1. Soft-delete notes the client deleted
+  // 1. Soft-delete notes the client deleted + cascade to shared notes
   if (deletedClientIds.length > 0) {
+    // Get titles of notes being deleted so we can cascade to shared_notes
+    const titlesResult = await query(
+      `SELECT title FROM notes WHERE user_id = $1 AND client_id = ANY($2) AND deleted_at IS NULL`,
+      [auth.userId, deletedClientIds]
+    )
+    const deletedTitles = titlesResult.rows.map(r => r.title)
+
     await query(
       `UPDATE notes SET deleted_at = NOW(), updated_at = NOW()
        WHERE user_id = $1 AND client_id = ANY($2) AND deleted_at IS NULL`,
       [auth.userId, deletedClientIds]
     )
+
+    // Hard-delete shared notes (and their analytics via CASCADE) for deleted note titles
+    if (deletedTitles.length > 0) {
+      await query(
+        `DELETE FROM shared_notes WHERE user_id = $1 AND title = ANY($2)`,
+        [auth.userId, deletedTitles]
+      )
+    }
   }
 
   // 2. Upsert each client note — but ONLY if it's not soft-deleted on server
@@ -41,7 +56,7 @@ export default defineEventHandler(async (event) => {
 
     // Check if this note is soft-deleted on server
     const checkDeleted = await query(
-      'SELECT deleted_at FROM notes WHERE user_id = $1 AND client_id = $2',
+      'SELECT title, deleted_at FROM notes WHERE user_id = $1 AND client_id = $2',
       [auth.userId, note.clientId]
     )
 
@@ -49,6 +64,10 @@ export default defineEventHandler(async (event) => {
     if (checkDeleted.rows.length > 0 && checkDeleted.rows[0].deleted_at) {
       continue
     }
+
+    // Track old title for shared note title sync
+    const oldTitle = checkDeleted.rows.length > 0 ? checkDeleted.rows[0].title : null
+    const newTitle = note.title || 'Untitled Note'
 
     const result = await query(`
       INSERT INTO notes (user_id, client_id, title, description, tags, content, sort_order, created_at, updated_at)
@@ -66,7 +85,7 @@ export default defineEventHandler(async (event) => {
     `, [
       auth.userId,
       note.clientId,
-      note.title || 'Untitled Note',
+      newTitle,
       note.description || '',
       JSON.stringify(note.tags || []),
       note.content || '',
@@ -88,6 +107,14 @@ export default defineEventHandler(async (event) => {
         createdAt: row.created_at,
         updatedAt: row.updated_at
       })
+
+      // Update shared note titles if the note was renamed
+      if (oldTitle && oldTitle !== newTitle) {
+        await query(
+          `UPDATE shared_notes SET title = $1, updated_at = NOW() WHERE user_id = $2 AND title = $3`,
+          [newTitle, auth.userId, oldTitle]
+        )
+      }
     }
   }
 
