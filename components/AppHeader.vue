@@ -67,17 +67,6 @@
           <Icon name="mdi:share-variant-outline" class="w-5 h-5 block" />
         </button>
 
-        <!-- Cloud sync -->
-        <button v-if="isLoggedIn" @click="$emit('sync')"
-          class="p-2 rounded-lg transition-colors leading-none"
-          :class="syncing
-            ? 'text-primary-600 dark:text-primary-400'
-            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
-          :title="syncing ? 'Syncing...' : 'Sync notes'">
-          <Icon v-if="syncing" name="mdi:sync" class="w-5 h-5 block animate-spin" />
-          <Icon v-else name="mdi:cloud-sync-outline" class="w-5 h-5 block" />
-        </button>
-
         <!-- Toggle sidebar -->
         <button @click="$emit('toggle-sidebar')"
           class="p-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
@@ -119,10 +108,6 @@ defineProps({
   isLoggedIn: {
     type: Boolean,
     default: false
-  },
-  syncing: {
-    type: Boolean,
-    default: false
   }
 })
 
@@ -134,7 +119,6 @@ defineEmits([
   'toggle-inline',
   'toggle-markdown-preview',
   'share-note',
-  'sync',
   'file-new',
   'file-open',
   'file-duplicate',

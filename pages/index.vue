@@ -27,14 +27,12 @@
       :hide-alpha="localePrefs.preferences.dismissAlphaWarning" :mod-label="modLabel"
       :selection-count="selectedNoteIds.length"
       :is-logged-in="auth.isLoggedIn.value"
-      :syncing="syncing"
       @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
       @toggle-inline="showInlineResults = !showInlineResults"
       @toggle-markdown-preview="showMarkdownPreview = !showMarkdownPreview"
       @show-templates="showTemplates = true"
       @share-note="showShareModal = true"
-      @sync="sync"
       @file-new="createNote"
       @file-open="handleOpenFile"
       @file-duplicate="handleDuplicate"
@@ -229,6 +227,8 @@
       @delete-data="handleDeleteData"
       @delete-account="handleDeleteAccount"
       @logout="handleLogout" />
+
+    <SyncIndicator :syncing="syncing" />
   </div>
 </template>
 
