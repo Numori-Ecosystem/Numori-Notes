@@ -104,6 +104,47 @@
                   </button>
                 </div>
 
+                <!-- Privacy toggle -->
+                <div class="px-3 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <Icon name="mdi:shield-account-outline" class="w-4 h-4 text-gray-500" />
+                      <span class="text-sm text-gray-700 dark:text-gray-300">Privacy protection</span>
+                      <div class="relative group">
+                        <Icon name="mdi:information-outline" class="w-4 h-4 text-gray-400 cursor-help" />
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 px-3 py-2 rounded-lg bg-gray-900 dark:bg-gray-700 text-white text-xs leading-relaxed shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
+                          <p class="font-medium mb-1">Privacy Protection</p>
+                          <p>Controls what data others can collect when you view their shared notes.</p>
+                          <p class="mt-1.5 font-medium">When enabled (default):</p>
+                          <ul class="list-disc pl-3 mt-0.5 space-y-0.5">
+                            <li>Your name will not be visible to the note sharer</li>
+                            <li>Your device and browser information won't be recorded</li>
+                            <li>You will appear as "Unknown" in their analytics</li>
+                            <li>Only the fact that someone viewed the note is recorded</li>
+                          </ul>
+                          <p class="mt-1.5 font-medium">When disabled:</p>
+                          <ul class="list-disc pl-3 mt-0.5 space-y-0.5">
+                            <li>Your display name may be shown to the note sharer</li>
+                            <li>Your browser and device info may be recorded</li>
+                          </ul>
+                          <p class="mt-1.5 text-gray-300">Your email is never shared regardless of this setting.</p>
+                          <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <button @click="togglePrivacy" :disabled="savingPrivacy"
+                      class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                      :class="privacyNoTracking ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'"
+                      role="switch" :aria-checked="privacyNoTracking">
+                      <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                        :class="privacyNoTracking ? 'translate-x-4' : 'translate-x-0'" />
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-gray-500">
+                    {{ privacyNoTracking ? 'Your identity is hidden when viewing shared notes' : 'Note sharers can see your name and device info' }}
+                  </p>
+                </div>
+
                 <!-- Member since -->
                 <p class="text-xs text-gray-400 dark:text-gray-600 text-center pt-2">
                   Member since {{ user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—' }}
@@ -268,13 +309,13 @@ const sharedNotes = ref([])
 const loadingShared = ref(false)
 const { apiFetch, apiUrl } = useApi()
 
-const sectionTitle = computed(() => {
-  const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Data & Account', shared: 'Shared Notes' }
-  return titles[activeSection.value] || 'Profile'
-})
+// Privacy
+const privacyNoTracking = ref(true)
+const savingPrivacy = ref(false)
 
 watch(() => props.isOpen, (open) => {
   if (open) {
+    privacyNoTracking.value = props.user?.privacyNoTracking !== false
     activeSection.value = 'main'
     feedback.value = null
     editName.value = props.user?.name || ''
@@ -285,6 +326,11 @@ watch(() => props.isOpen, (open) => {
     confirmNewPassword.value = ''
     dangerPassword.value = ''
   }
+})
+
+const sectionTitle = computed(() => {
+  const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Data & Account', shared: 'Shared Notes' }
+  return titles[activeSection.value] || 'Profile'
 })
 
 const showFeedback = (msg, type = 'success') => {
@@ -406,6 +452,25 @@ const handleUnshare = async (hash) => {
 const openSharedSection = () => {
   activeSection.value = 'shared'
   loadSharedNotes()
+}
+
+const togglePrivacy = async () => {
+  savingPrivacy.value = true
+  const newVal = !privacyNoTracking.value
+  try {
+    const token = localStorage.getItem('auth_token')
+    await apiFetch('/api/auth/privacy', {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { noTracking: newVal }
+    })
+    privacyNoTracking.value = newVal
+    showFeedback(newVal ? 'Privacy protection enabled' : 'Privacy protection disabled')
+  } catch (err) {
+    showFeedback(err?.data?.statusMessage || 'Failed to update privacy setting', 'error')
+  } finally {
+    savingPrivacy.value = false
+  }
 }
 
 const formatExpiry = (iso) => {

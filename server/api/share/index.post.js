@@ -6,15 +6,15 @@ import { query } from '../../utils/db.js'
  * POST /api/share — Share a note. No account required.
  *
  * Body:
- *   { title, description, tags, content, anonymous?, sharerName?, sharerEmail?, expiresInDays? }
+ *   { title, description, tags, content, anonymous?, sharerName?, sharerEmail?, expiresInDays?, collectAnalytics? }
  *
  * If authenticated and not anonymous, sharer details come from the user account.
- * Returns: { hash, url }
+ * Returns: { hash }
  */
 export default defineEventHandler(async (event) => {
   const auth = await optionalAuth(event)
   const body = await readBody(event)
-  const { title, content, description, tags, anonymous, sharerName, sharerEmail, expiresInDays } = body || {}
+  const { title, content, description, tags, anonymous, sharerName, sharerEmail, expiresInDays, collectAnalytics } = body || {}
 
   if (!content && !title) {
     throw createError({ statusCode: 400, statusMessage: 'Title or content is required to share' })
@@ -48,8 +48,8 @@ export default defineEventHandler(async (event) => {
   expiresAt = new Date(Date.now() + days * 86400000).toISOString()
 
   await query(`
-    INSERT INTO shared_notes (hash, user_id, title, description, tags, content, sharer_name, sharer_email, anonymous, expires_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    INSERT INTO shared_notes (hash, user_id, title, description, tags, content, sharer_name, sharer_email, anonymous, expires_at, collect_analytics)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
   `, [
     hash,
     userId,
@@ -60,7 +60,8 @@ export default defineEventHandler(async (event) => {
     name,
     email,
     isAnonymous,
-    expiresAt
+    expiresAt,
+    collectAnalytics === true
   ])
 
   return { hash }

@@ -96,5 +96,39 @@ export async function migrate() {
     END $$
   `)
 
+  // Add collect_analytics flag to shared_notes
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS collect_analytics BOOLEAN NOT NULL DEFAULT FALSE;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$
+  `)
+
+  // Add privacy_no_tracking flag to users (default TRUE — privacy on by default)
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_no_tracking BOOLEAN NOT NULL DEFAULT TRUE;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$
+  `)
+
+  // Share views table for analytics
+  await query(`
+    CREATE TABLE IF NOT EXISTS share_views (
+      id              SERIAL PRIMARY KEY,
+      shared_note_id  INTEGER NOT NULL REFERENCES shared_notes(id) ON DELETE CASCADE,
+      viewer_user_id  INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      viewer_name     TEXT,
+      user_agent      TEXT,
+      referrer        TEXT,
+      country         TEXT,
+      viewed_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `)
+
+  await query(`
+    CREATE INDEX IF NOT EXISTS idx_share_views_shared_note_id ON share_views(shared_note_id)
+  `)
+
   console.log('[migrate] Database tables ready')
 }
