@@ -34,9 +34,12 @@
       </Transition>
 
       <div class="flex-1 min-w-0">
-        <h3 class="font-medium text-gray-900 dark:text-gray-400 truncate">
-          {{ note.title || 'Untitled' }}
-        </h3>
+        <div class="flex items-center gap-1.5">
+          <Icon v-if="shared" name="mdi:link-variant" class="w-3.5 h-3.5 flex-shrink-0 text-primary-500 dark:text-primary-400" title="Shared" />
+          <h3 class="font-medium text-gray-900 dark:text-gray-400 truncate">
+            {{ note.title || 'Untitled' }}
+          </h3>
+        </div>
         <p v-if="note.description" class="text-sm text-gray-600 dark:text-gray-500 truncate mt-1">
           {{ note.description }}
         </p>
@@ -50,11 +53,41 @@
           {{ formatDate(note.updatedAt) }}
         </p>
       </div>
-      <button v-if="!selectMode" @click.stop="$emit('delete', note.id)"
-        class="p-1 text-gray-400 hover:text-error-600 dark:text-gray-500 dark:hover:text-error-400 transition-colors"
-        title="Delete note">
-        <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
-      </button>
+
+      <!-- Three-dots menu -->
+      <div v-if="!selectMode" class="relative flex-shrink-0 self-center" ref="menuRef">
+        <button @click.stop="menuOpen = !menuOpen"
+          class="p-2.5 -m-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors rounded-lg"
+          title="Actions">
+          <Icon name="mdi:dots-vertical" class="w-5 h-5" />
+        </button>
+        <Transition
+          enter-active-class="transition-all duration-150 ease-out"
+          enter-from-class="opacity-0 scale-95"
+          enter-to-class="opacity-100 scale-100"
+          leave-active-class="transition-all duration-100 ease-in"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-95">
+          <div v-if="menuOpen"
+            class="absolute right-0 top-full mt-1 z-20 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1">
+            <button @click.stop="handleAction('share')"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <Icon name="mdi:share-variant-outline" class="w-4 h-4" />
+              Share
+            </button>
+            <button @click.stop="handleAction('delete')"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+              <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
+              Delete
+            </button>
+            <button @click.stop="handleAction('properties')"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <Icon name="mdi:information-outline" class="w-4 h-4" />
+              Properties
+            </button>
+          </div>
+        </Transition>
+      </div>
     </div>
   </div>
 </template>
@@ -64,10 +97,14 @@ const props = defineProps({
   note: { type: Object, required: true },
   active: { type: Boolean, default: false },
   selectMode: { type: Boolean, default: false },
-  selected: { type: Boolean, default: false }
+  selected: { type: Boolean, default: false },
+  shared: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['select', 'delete', 'toggle-select'])
+const emit = defineEmits(['select', 'delete', 'toggle-select', 'share', 'properties'])
+
+const menuOpen = ref(false)
+const menuRef = ref(null)
 
 const handleClick = () => {
   if (props.selectMode) {
@@ -76,6 +113,23 @@ const handleClick = () => {
     emit('select', props.note.id)
   }
 }
+
+const handleAction = (action) => {
+  menuOpen.value = false
+  if (action === 'share') emit('share', props.note.id)
+  else if (action === 'delete') emit('delete', props.note.id)
+  else if (action === 'properties') emit('properties', props.note.id)
+}
+
+// Close menu on outside click
+const onClickOutside = (e) => {
+  if (menuRef.value && !menuRef.value.contains(e.target)) {
+    menuOpen.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', onClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
 
 const formatDate = (dateString) => {
   const date = new Date(dateString)

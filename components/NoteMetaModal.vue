@@ -67,6 +67,31 @@
             </div>
           </div>
 
+          <!-- Share status -->
+          <div v-if="noteId" class="mt-4 px-3 py-2.5 rounded-lg border"
+            :class="props.shared
+              ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'
+              : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800'">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <Icon :name="props.shared ? 'mdi:link-variant' : 'mdi:link-variant-off'"
+                  class="w-4 h-4"
+                  :class="props.shared ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400'" />
+                <span class="text-sm" :class="props.shared ? 'text-primary-700 dark:text-primary-300' : 'text-gray-600 dark:text-gray-400'">
+                  {{ props.shared ? 'This note is shared' : 'Not shared' }}
+                </span>
+              </div>
+              <button v-if="props.shared" @click="emit('unshare', props.noteId)"
+                class="text-xs px-2 py-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">
+                Stop sharing
+              </button>
+              <button v-else @click="emit('share', props.noteId)"
+                class="text-xs px-2 py-1 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors">
+                Share
+              </button>
+            </div>
+          </div>
+
           <div class="flex justify-between gap-2 mt-6">
             <button v-if="noteId" @click="handleDelete"
               class="px-4 py-2 text-error-600 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-lg transition-colors">
@@ -96,10 +121,11 @@ const props = defineProps({
   description: { type: String, default: '' },
   tags: { type: Array, default: () => [] },
   allTags: { type: Array, default: () => [] },
-  noteId: { type: String, default: null }
+  noteId: { type: String, default: null },
+  shared: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['close', 'save', 'delete'])
+const emit = defineEmits(['close', 'save', 'delete', 'share', 'unshare'])
 
 const localTitle = ref(props.title)
 const localDescription = ref(props.description)

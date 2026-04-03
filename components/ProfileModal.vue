@@ -86,6 +86,12 @@
                     <Icon name="mdi:account-edit-outline" class="w-5 h-5 text-gray-400" />
                     Edit Profile
                   </button>
+                  <button @click="openSharedSection"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                    <Icon name="mdi:share-variant-outline" class="w-5 h-5 text-gray-400" />
+                    Shared Notes
+                    <span v-if="user?.stats?.sharedCount" class="ml-auto text-xs text-gray-400">{{ user.stats.sharedCount }}</span>
+                  </button>
                   <button @click="activeSection = 'password'"
                     class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
                     <Icon name="mdi:lock-outline" class="w-5 h-5 text-gray-400" />
@@ -188,6 +194,35 @@
                   <p class="text-xs text-gray-500 dark:text-gray-500">Marks your account for permanent deletion. All data will be removed. You will be signed out.</p>
                 </div>
               </div>
+
+              <!-- ═══ Shared Notes ═══ -->
+              <div v-else-if="activeSection === 'shared'" class="space-y-3">
+                <div v-if="loadingShared" class="flex items-center justify-center py-8">
+                  <Icon name="mdi:loading" class="w-6 h-6 text-gray-400 animate-spin" />
+                </div>
+                <template v-else-if="sharedNotes.length">
+                  <div v-for="sn in sharedNotes" :key="sn.hash"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{{ sn.title || 'Untitled' }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-500">
+                        {{ sn.anonymous ? 'Anonymous' : '' }}
+                        {{ sn.anonymous && sn.expiresAt ? ' · ' : '' }}
+                        {{ formatExpiry(sn.expiresAt) }}
+                      </p>
+                    </div>
+                    <button @click="handleUnshare(sn.hash)"
+                      class="flex-shrink-0 p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                      title="Stop sharing">
+                      <Icon name="mdi:link-variant-off" class="w-4 h-4" />
+                    </button>
+                  </div>
+                </template>
+                <div v-else class="text-center py-8">
+                  <Icon name="mdi:share-variant-outline" class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                  <p class="text-sm text-gray-500 dark:text-gray-500">No shared notes</p>
+                </div>
+              </div>
             </div>
           </div>
         </Transition>
@@ -203,7 +238,7 @@ const props = defineProps({
   lastSyncedAt: { type: String, default: null }
 })
 
-const emit = defineEmits(['close', 'update-profile', 'change-password', 'delete-data', 'delete-account', 'logout'])
+const emit = defineEmits(['close', 'update-profile', 'change-password', 'delete-data', 'delete-account', 'logout', 'unshare'])
 
 const activeSection = ref('main')
 const feedback = ref(null)
@@ -223,8 +258,13 @@ const confirmNewPassword = ref('')
 // Danger zone
 const dangerPassword = ref('')
 
+// Shared notes
+const sharedNotes = ref([])
+const loadingShared = ref(false)
+const { apiFetch } = useApi()
+
 const sectionTitle = computed(() => {
-  const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Data & Account' }
+  const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Data & Account', shared: 'Shared Notes' }
   return titles[activeSection.value] || 'Profile'
 })
 
@@ -316,6 +356,51 @@ const handleDeleteAccount = async () => {
     showFeedback(err?.data?.statusMessage || 'Failed to request deletion', 'error')
     saving.value = false
   }
+}
+
+const loadSharedNotes = async () => {
+  loadingShared.value = true
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
+    sharedNotes.value = await apiFetch('/api/share/my', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+  } catch {
+    sharedNotes.value = []
+  } finally {
+    loadingShared.value = false
+  }
+}
+
+const handleUnshare = async (hash) => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    await apiFetch(`/api/share/${hash}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    sharedNotes.value = sharedNotes.value.filter(n => n.hash !== hash)
+    showFeedback('Shared note removed')
+    emit('unshare', hash)
+  } catch (err) {
+    showFeedback(err?.data?.statusMessage || 'Failed to remove shared note', 'error')
+  }
+}
+
+const openSharedSection = () => {
+  activeSection.value = 'shared'
+  loadSharedNotes()
+}
+
+const formatExpiry = (iso) => {
+  if (!iso) return 'No expiry'
+  const d = new Date(iso)
+  const now = new Date()
+  if (d < now) return 'Expired'
+  const diff = d - now
+  const days = Math.ceil(diff / 86400000)
+  return days === 1 ? '1 day left' : `${days} days left`
 }
 </script>
 

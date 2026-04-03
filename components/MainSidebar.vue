@@ -165,8 +165,11 @@
           :note="note" :active="note.id === currentNoteId"
           :select-mode="selectMode"
           :selected="selectedIds.has(note.id)"
+          :shared="sharedNoteIds.includes(note.id)"
           @select="id => $emit('select-note', id)"
           @delete="id => $emit('delete-note', id)"
+          @share="id => $emit('share-note', id)"
+          @properties="id => $emit('show-properties', id)"
           @toggle-select="toggleNoteSelection" />
       </div>
     </div>
@@ -190,14 +193,16 @@ const props = defineProps({
   currentNoteId: { type: String, default: null },
   allTags: { type: Array, default: () => [] },
   isLoggedIn: { type: Boolean, default: false },
-  user: { type: Object, default: null }
+  user: { type: Object, default: null },
+  sharedNoteIds: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits([
   'new-note', 'select-note', 'delete-note', 'edit-note',
   'show-help', 'show-locale-settings', 'show-language',
   'show-auth', 'logout', 'edit-profile',
-  'bulk-delete', 'selection-change', 'reorder'
+  'bulk-delete', 'selection-change', 'reorder',
+  'share-note', 'show-properties'
 ])
 
 const searchQuery = ref('')

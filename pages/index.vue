@@ -10,7 +10,6 @@
       @toggle-inline="showInlineResults = !showInlineResults"
       @toggle-markdown-preview="showMarkdownPreview = !showMarkdownPreview"
       @show-templates="showTemplates = true"
-      @share-note="showShareModal = true"
       @file-new="createNote"
       @file-open="handleOpenFile"
       @file-duplicate="handleDuplicate"
@@ -30,12 +29,13 @@
       <aside class="flex-shrink-0 hidden lg:block overflow-hidden transition-[width] duration-300 ease-in-out"
         :class="showSidebar ? 'w-80' : 'w-0'">
         <div class="w-80 h-full">
-          <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" @new-note="createNote" @select-note="selectNote"
+          <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" @new-note="createNote" @select-note="selectNote"
             @delete-note="confirmDelete" @edit-note="openEditModal"
             @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
             @show-help="showHelp = true"
             @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true"
             @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile"
+            @share-note="handleShareNote" @show-properties="handleShowProperties"
             @reorder="handleReorder" />
         </div>
       </aside>
@@ -60,12 +60,13 @@
           leave-to-class="-translate-x-full">
           <aside v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
             :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)' }">
-            <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" @new-note="createNote" @select-note="selectNote"
+            <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" @new-note="createNote" @select-note="selectNote"
               @delete-note="confirmDelete" @edit-note="openEditModal"
               @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
               @show-help="showHelp = true"
               @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true"
               @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile"
+              @share-note="handleShareNote" @show-properties="handleShowProperties"
               @reorder="handleReorder" />
           </aside>
         </Transition>
@@ -144,8 +145,12 @@
       :description="currentNote?.description || ''"
       :tags="currentNote?.tags || []"
       :all-tags="allTags"
-      :note-id="currentNote?.id" @close="showMetaModal = false"
-      @save="updateMeta" @delete="confirmDelete" />
+      :note-id="currentNote?.id"
+      :shared="currentNote ? sharedNoteIds.includes(currentNote.id) : false"
+      @close="showMetaModal = false"
+      @save="updateMeta" @delete="confirmDelete"
+      @share="handleShareNote"
+      @unshare="handleUnshareNote" />
 
     <HelpModal :is-open="showHelp" :mod-label="modLabel" @close="showHelp = false" />
     <AboutModal :is-open="showAbout" @close="showAbout = false" />
@@ -194,7 +199,7 @@
       :user-name="auth.user.value?.name || ''"
       :user-email="auth.user.value?.email || ''"
       :auth-headers="auth.authHeaders.value"
-      @close="showShareModal = false" />
+      @close="handleShareModalClose" />
 
     <ProfileModal :is-open="showProfileModal"
       :user="auth.user.value"
@@ -204,7 +209,8 @@
       @change-password="handleChangePassword"
       @delete-data="handleDeleteData"
       @delete-account="handleDeleteAccount"
-      @logout="handleLogout" />
+      @logout="handleLogout"
+      @unshare="handleProfileUnshare" />
 
     <SyncIndicator :syncing="syncing" />
   </div>
@@ -217,6 +223,7 @@ const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()
 const welcomeWizard = useWelcomeWizard()
 const auth = useAuth()
+const { apiFetch } = useApi()
 const { syncing, lastSyncedAt, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds)
 
 // Wrapper: create note + instant sync
@@ -260,6 +267,42 @@ const mobileKeyboardOffset = ref(0)
 const showAuthModal = ref(false)
 const showShareModal = ref(false)
 const showProfileModal = ref(false)
+
+// Track which notes are currently shared (by note title match from /api/share/my)
+const sharedNoteIds = ref([])
+const sharedNotesMap = ref(new Map()) // noteId -> hash
+
+const loadSharedNotes = async () => {
+  if (!auth.isLoggedIn.value) { sharedNoteIds.value = []; sharedNotesMap.value = new Map(); return }
+  try {
+    const shared = await apiFetch('/api/share/my', { headers: auth.authHeaders.value })
+    // Match shared notes to local notes by title
+    const map = new Map()
+    const ids = []
+    for (const sn of shared) {
+      const match = notes.value.find(n => n.title === sn.title)
+      if (match) {
+        ids.push(match.id)
+        map.set(match.id, sn.hash)
+      }
+    }
+    sharedNoteIds.value = ids
+    sharedNotesMap.value = map
+  } catch {
+    sharedNoteIds.value = []
+    sharedNotesMap.value = new Map()
+  }
+}
+
+// Reload shared notes when auth changes or after sharing
+watch(() => auth.isLoggedIn.value, (loggedIn) => {
+  if (loggedIn) loadSharedNotes()
+  else { sharedNoteIds.value = []; sharedNotesMap.value = new Map() }
+})
+
+onMounted(() => {
+  if (auth.isLoggedIn.value) loadSharedNotes()
+})
 
 // Track virtual keyboard via visualViewport API
 let vvCleanup = null
@@ -332,6 +375,42 @@ const handleDeleteData = async (password) => {
 const handleDeleteAccount = async (password) => {
   await auth.requestDeletion('account', password)
   showProfileModal.value = false
+}
+
+// Share a specific note by opening the share modal with that note selected
+const handleShareNote = (noteId) => {
+  currentNoteId.value = noteId
+  showShareModal.value = true
+}
+
+// Unshare from NoteMetaModal
+const handleUnshareNote = async (noteId) => {
+  const hash = sharedNotesMap.value.get(noteId)
+  if (!hash) return
+  try {
+    await apiFetch(`/api/share/${hash}`, {
+      method: 'DELETE',
+      headers: auth.authHeaders.value
+    })
+    await loadSharedNotes()
+  } catch { /* ignore */ }
+}
+
+// Show properties (open meta modal for a specific note)
+const handleShowProperties = (noteId) => {
+  currentNoteId.value = noteId
+  showMetaModal.value = true
+}
+
+// Reload shared notes when share modal closes
+const handleShareModalClose = () => {
+  showShareModal.value = false
+  if (auth.isLoggedIn.value) loadSharedNotes()
+}
+
+// Handle unshare from profile modal
+const handleProfileUnshare = () => {
+  loadSharedNotes()
 }
 
 // Check for pending import from shared note page
