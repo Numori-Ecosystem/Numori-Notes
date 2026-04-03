@@ -89,6 +89,7 @@ const DEFAULT_PREFERENCES = {
   editorRenderLineHighlight: 'all',
   // Editor — Results
   inlineResultAlign: 'left',
+  inlineMode: 'left',
   // Customisation
   precisionMode: 'auto',
   decimalPlaces: 6,

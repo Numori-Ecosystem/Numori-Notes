@@ -340,15 +340,6 @@
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
                           <div>
-                            <label :class="labelInlineClass">Inline Results Alignment</label>
-                            <p :class="hintClass">Align inline results to the right edge of the editor</p>
-                          </div>
-                          <button @click="preferences.inlineResultAlign = preferences.inlineResultAlign === 'right' ? 'left' : 'right'; onSettingChange()" :class="toggleClass(preferences.inlineResultAlign === 'right')">
-                            <span :class="toggleDot(preferences.inlineResultAlign === 'right')" />
-                          </button>
-                        </div>
-                        <div class="flex items-center justify-between">
-                          <div>
                             <label :class="labelInlineClass">Auto-copy Results</label>
                             <p :class="hintClass">Copy result to clipboard when clicked</p>
                           </div>

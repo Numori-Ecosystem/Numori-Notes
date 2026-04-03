@@ -1,5 +1,5 @@
 <template>
-  <div class="relative" ref="menuRef">
+  <div class="relative" ref="menuRef" tabindex="-1" @focusout="onFocusOut">
     <button @click="handleClick"
       class="p-2 rounded-lg transition-colors leading-none"
       :class="isLoggedIn
@@ -54,6 +54,7 @@ const emit = defineEmits(['sign-in', 'logout', 'edit-profile'])
 
 const open = ref(false)
 const menuRef = ref(null)
+const menuId = Math.random().toString(36).slice(2)
 
 // Close on outside click
 const onClickOutside = (e) => {
@@ -62,15 +63,39 @@ const onClickOutside = (e) => {
   }
 }
 
-onMounted(() => document.addEventListener('click', onClickOutside))
-onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
+// Close when focus leaves the container
+const onFocusOut = (e) => {
+  if (menuRef.value && !menuRef.value.contains(e.relatedTarget)) {
+    open.value = false
+  }
+}
+
+// Close when another menu opens
+const onCloseAllMenus = (e) => {
+  if (e.detail?.sourceId !== menuId) {
+    open.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', onClickOutside)
+  document.addEventListener('close-all-menus', onCloseAllMenus)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onClickOutside)
+  document.removeEventListener('close-all-menus', onCloseAllMenus)
+})
 
 const handleClick = () => {
   if (!props.isLoggedIn) {
     emit('sign-in')
     return
   }
-  open.value = !open.value
+  const willOpen = !open.value
+  if (willOpen) {
+    document.dispatchEvent(new CustomEvent('close-all-menus', { detail: { sourceId: menuId } }))
+  }
+  open.value = willOpen
 }
 
 const handleAction = (action) => {

@@ -54,6 +54,7 @@ const EXPECTED_DEFAULTS = {
   editorRenderLineHighlight: 'all',
   // Editor — Results
   inlineResultAlign: 'left',
+  inlineMode: 'left',
   // Customisation
   precisionMode: 'auto',
   decimalPlaces: 6,

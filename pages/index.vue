@@ -1,13 +1,13 @@
 <template>
   <div class="h-screen flex flex-col bg-white dark:bg-gray-925 overscroll-none">
     <!-- Mobile-friendly Toolbar -->
-    <AppHeader :current-note="currentNote" :show-inline="showInlineResults" :show-markdown-preview="showMarkdownPreview"
+    <AppHeader :current-note="currentNote" :inline-mode="showInlineResults" :show-markdown-preview="showMarkdownPreview"
       :mod-label="modLabel"
       :selection-count="selectedNoteIds.length"
       :is-logged-in="auth.isLoggedIn.value"
       @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
-      @toggle-inline="showInlineResults = !showInlineResults"
+      @update:inline-mode="showInlineResults = $event"
       @toggle-markdown-preview="showMarkdownPreview = !showMarkdownPreview"
       @show-templates="showTemplates = true"
       @file-new="createNote"
@@ -78,7 +78,8 @@
 
       <!-- Editor Area -->
       <main class="flex-1 overflow-hidden flex flex-col isolate">
-        <NoteEditor v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-inline="showInlineResults"
+        <NoteEditor v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-inline="showInlineResults !== 'off'"
+          :inline-align="showInlineResults === 'off' ? 'left' : showInlineResults"
           :locale-preferences="localePrefs.preferences"
           :show-markdown-preview="showMarkdownPreview"
           :shortcut-handlers="shortcutHandlers"
@@ -275,7 +276,10 @@ const showTemplates = ref(false)
 const showLanguageModal = ref(false)
 const showLocaleSettings = ref(false)
 const showAbout = ref(false)
-const showInlineResults = ref(true)
+const showInlineResults = computed({
+  get: () => localePrefs.preferences.inlineMode ?? 'left',
+  set: (v) => { localePrefs.preferences.inlineMode = v; localePrefs.save() }
+})
 const showMobileToolbar = ref(true)
 const showMarkdownPreview = ref(false)
 const editorRef = ref(null)

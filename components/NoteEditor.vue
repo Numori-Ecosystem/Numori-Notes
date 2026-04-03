@@ -58,6 +58,7 @@ const props = defineProps({
   placeholder: { type: String, default: 'Start typing... (e.g., 10 + 20)' },
   showResults: { type: Boolean, default: false },
   showInline: { type: Boolean, default: true },
+  inlineAlign: { type: String, default: null },
   bordered: { type: Boolean, default: false },
   localePreferences: { type: Object, default: null },
   showMarkdownPreview: { type: Boolean, default: false },
@@ -223,7 +224,7 @@ const buildInlineDecorations = (view) => {
   const doc = view.state.doc
   const docLines = doc.lines
   const maxLine = Math.min(lines.length, docLines)
-  const alignRight = props.localePreferences?.inlineResultAlign === 'right'
+  const alignRight = (props.inlineAlign ?? props.localePreferences?.inlineResultAlign ?? 'left') === 'right'
 
   // For right-alignment, estimate visible columns
   let targetCol = 0
@@ -646,6 +647,7 @@ watch(displayLines, () => {
 })
 
 watch(() => props.showInline, () => updateInlineDecorations())
+watch(() => props.inlineAlign, () => updateInlineDecorations())
 watch(() => props.localePreferences?.inlineResultAlign, () => updateInlineDecorations())
 
 // Markdown preview toggle

@@ -43,13 +43,33 @@
           <Icon name="mdi:language-markdown-outline" class="w-5 h-5 block" />
         </button>
 
-        <!-- Toggle inline results -->
-        <button @click="$emit('toggle-inline')" class="p-2 rounded-lg transition-colors leading-none"
-          :class="showInline
-            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
-            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'" title="Toggle inline results">
-          <Icon name="mdi:code-tags" class="w-5 h-5 block" />
-        </button>
+        <!-- Inline results mode -->
+        <div class="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden" role="group">
+          <button @click="$emit('update:inline-mode', 'left')"
+            class="p-2 transition-colors leading-none"
+            :class="inlineMode === 'left'
+              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
+            title="Results on left">
+            <Icon name="mdi:format-align-left" class="w-5 h-5 block" />
+          </button>
+          <button @click="$emit('update:inline-mode', 'off')"
+            class="p-2 transition-colors leading-none border-x border-gray-300 dark:border-gray-600"
+            :class="inlineMode === 'off'
+              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
+            title="Results off">
+            <Icon name="mdi:eye-off-outline" class="w-5 h-5 block" />
+          </button>
+          <button @click="$emit('update:inline-mode', 'right')"
+            class="p-2 transition-colors leading-none"
+            :class="inlineMode === 'right'
+              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
+            title="Results on right">
+            <Icon name="mdi:format-align-right" class="w-5 h-5 block" />
+          </button>
+        </div>
 
         <!-- Separator -->
         <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1"></div>
@@ -72,9 +92,9 @@ defineProps({
     type: Object,
     default: null
   },
-  showInline: {
-    type: Boolean,
-    default: true
+  inlineMode: {
+    type: String,
+    default: 'left'
   },
   showMarkdownPreview: {
     type: Boolean,
@@ -99,7 +119,7 @@ defineEmits([
   'show-meta',
   'show-templates',
   'apply-format',
-  'toggle-inline',
+  'update:inline-mode',
   'toggle-markdown-preview',
   'file-new',
   'file-open',

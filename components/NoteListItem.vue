@@ -55,8 +55,9 @@
       </div>
 
       <!-- Three-dots menu -->
-      <div v-if="!selectMode" class="relative flex-shrink-0 self-center" ref="menuRef">
-        <button @click.stop="menuOpen = !menuOpen"
+      <div v-if="!selectMode" class="relative flex-shrink-0 self-center" ref="menuRef"
+        tabindex="-1" @focusout="onFocusOut">
+        <button @click.stop="toggleMenu"
           class="p-2.5 -m-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors rounded-lg"
           title="Actions">
           <Icon name="mdi:dots-vertical" class="w-5 h-5" />
@@ -128,12 +129,27 @@ const { apiUrl } = useApi()
 const menuOpen = ref(false)
 const menuRef = ref(null)
 const copied = ref(false)
+const menuId = Math.random().toString(36).slice(2)
 
 const handleClick = () => {
   if (props.selectMode) {
     emit('toggle-select', props.note.id)
   } else {
     emit('select', props.note.id)
+  }
+}
+
+const toggleMenu = () => {
+  const willOpen = !menuOpen.value
+  if (willOpen) {
+    document.dispatchEvent(new CustomEvent('close-all-menus', { detail: { sourceId: menuId } }))
+  }
+  menuOpen.value = willOpen
+}
+
+const onCloseAllMenus = (e) => {
+  if (e.detail?.sourceId !== menuId) {
+    menuOpen.value = false
   }
 }
 
@@ -153,6 +169,13 @@ const handleCopyLink = async () => {
   setTimeout(() => { copied.value = false; menuOpen.value = false }, 1000)
 }
 
+// Close menu when focus leaves the container
+const onFocusOut = (e) => {
+  if (menuRef.value && !menuRef.value.contains(e.relatedTarget)) {
+    menuOpen.value = false
+  }
+}
+
 // Close menu on outside click
 const onClickOutside = (e) => {
   if (menuRef.value && !menuRef.value.contains(e.target)) {
@@ -160,8 +183,14 @@ const onClickOutside = (e) => {
   }
 }
 
-onMounted(() => document.addEventListener('click', onClickOutside))
-onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
+onMounted(() => {
+  document.addEventListener('click', onClickOutside)
+  document.addEventListener('close-all-menus', onCloseAllMenus)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onClickOutside)
+  document.removeEventListener('close-all-menus', onCloseAllMenus)
+})
 
 const formatDate = (dateString) => {
   const date = new Date(dateString)
