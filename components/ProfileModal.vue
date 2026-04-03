@@ -52,24 +52,30 @@
                       <Icon name="mdi:camera" class="w-5 h-5 text-white" />
                     </div>
                   </button>
-                  <p class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ user?.name || 'No name set' }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-500">{{ user?.email }}</p>
+                  <button @click="activeSection = 'edit'" class="inline-flex items-center gap-1 group" title="Edit profile">
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ user?.name || 'No name set' }}</p>
+                    <Icon name="mdi:pencil-outline" class="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                  <button @click="activeSection = 'edit'" class="inline-flex items-center gap-1 group" title="Edit profile">
+                    <p class="text-xs text-gray-500 dark:text-gray-500">{{ user?.email }}</p>
+                    <Icon name="mdi:pencil-outline" class="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
                 </div>
 
                 <!-- Quick stats -->
                 <div class="grid grid-cols-3 gap-2 text-center">
-                  <div class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900">
+                  <button @click="$emit('show-notes')" class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 hover:ring-1 hover:ring-primary-400 dark:hover:ring-primary-600 transition-all cursor-pointer">
                     <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ user?.stats?.notesCount ?? '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Notes</p>
-                  </div>
-                  <div class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900">
+                  </button>
+                  <button @click="openSharedSection" class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 hover:ring-1 hover:ring-primary-400 dark:hover:ring-primary-600 transition-all cursor-pointer">
                     <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ user?.stats?.sharedCount ?? '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Shared</p>
-                  </div>
-                  <div class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900">
+                  </button>
+                  <button @click="$emit('sync-now')" class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 hover:ring-1 hover:ring-primary-400 dark:hover:ring-primary-600 transition-all cursor-pointer">
                     <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 leading-snug break-words capitalize">{{ lastSyncedAt ? formatDate(lastSyncedAt) : '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Synced</p>
-                  </div>
+                  </button>
                 </div>
 
                 <!-- Deletion requested warning -->
@@ -80,17 +86,6 @@
 
                 <!-- Menu items -->
                 <nav class="space-y-0.5">
-                  <button @click="activeSection = 'edit'"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                    <Icon name="mdi:account-edit-outline" class="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    <span class="truncate">Edit Profile</span>
-                  </button>
-                  <button @click="openSharedSection"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                    <Icon name="mdi:share-variant-outline" class="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    <span class="truncate">Shared Notes</span>
-                    <span v-if="user?.stats?.sharedCount" class="ml-auto text-xs text-gray-400 flex-shrink-0">{{ user.stats.sharedCount }}</span>
-                  </button>
                   <button @click="activeSection = 'password'"
                     class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
                     <Icon name="mdi:lock-outline" class="w-5 h-5 text-gray-400 flex-shrink-0" />
@@ -316,7 +311,7 @@ const props = defineProps({
   lastSyncedAt: { type: String, default: null }
 })
 
-const emit = defineEmits(['close', 'update-profile', 'change-password', 'delete-data', 'delete-account', 'logout', 'unshare', 'open-analytics'])
+const emit = defineEmits(['close', 'update-profile', 'change-password', 'delete-data', 'delete-account', 'logout', 'unshare', 'open-analytics', 'sync-now', 'show-notes'])
 
 const activeSection = ref('main')
 const feedback = ref(null)

@@ -6,7 +6,8 @@
         ? 'text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30'
         : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850'"
       :title="isLoggedIn ? user?.name || user?.email || 'Account' : 'Sign in'">
-      <Icon :name="isLoggedIn ? 'mdi:account-circle' : 'mdi:account-circle-outline'" class="w-5 h-5 block" />
+      <img v-if="isLoggedIn && user?.avatarUrl" :src="user.avatarUrl" class="w-5 h-5 rounded-full object-cover block" alt="Avatar" />
+      <Icon v-else :name="isLoggedIn ? 'mdi:account-circle' : 'mdi:account-circle-outline'" class="w-5 h-5 block" />
     </button>
 
     <!-- Dropdown (opens upward) -->

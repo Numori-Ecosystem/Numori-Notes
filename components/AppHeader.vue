@@ -4,7 +4,7 @@
       <!-- Top row: Centered title -->
       <button @click="$emit('show-meta')" class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md">
         <h1 class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-400 truncate">
-          {{ currentNote?.title || 'Notes' }}
+          {{ currentNote?.title || 'Calc Notes' }}
         </h1>
       </button>
 

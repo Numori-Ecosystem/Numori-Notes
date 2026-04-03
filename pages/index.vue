@@ -29,7 +29,16 @@
       <!-- Sidebar - Notes List (desktop) -->
       <aside v-if="!focusMode" class="flex-shrink-0 hidden lg:block overflow-hidden transition-[width] duration-300 ease-in-out"
         :class="showSidebar ? 'w-80' : 'w-0'">
-        <div class="w-80 h-full">
+        <div class="w-80 h-full relative">
+          <Transition
+            enter-active-class="transition-opacity duration-500"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-500"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0">
+            <div v-if="sidebarGlow" class="absolute inset-0 z-10 pointer-events-none bg-primary-500/25 dark:bg-primary-400/20" />
+          </Transition>
           <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" @new-note="createNote" @select-note="selectNote"
             @delete-note="confirmDelete" @edit-note="openEditModal"
             @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
@@ -63,7 +72,17 @@
           leave-to-class="-translate-x-full">
           <aside v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
             :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)' }">
-            <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" @new-note="createNote" @select-note="selectNote"
+            <div class="h-full relative">
+              <Transition
+                enter-active-class="transition-opacity duration-500"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition-opacity duration-500"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0">
+                <div v-if="sidebarGlow" class="absolute inset-0 z-10 pointer-events-none bg-primary-500/25 dark:bg-primary-400/20" />
+              </Transition>
+              <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" @new-note="createNote" @select-note="selectNote"
               @delete-note="confirmDelete" @edit-note="openEditModal"
               @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
               @show-help="showHelp = true"
@@ -73,6 +92,7 @@
               @unshare-note="handleUnshareNote"
               @open-analytics="handleOpenAnalytics"
               @reorder="handleReorder" />
+            </div>
           </aside>
         </Transition>
       </Teleport>
@@ -231,7 +251,9 @@
       @delete-account="handleDeleteAccount"
       @logout="handleLogout"
       @unshare="handleProfileUnshare"
-      @open-analytics="handleOpenAnalytics" />
+      @open-analytics="handleOpenAnalytics"
+      @sync-now="syncNow"
+      @show-notes="handleShowNotes" />
 
     <SyncIndicator :syncing="syncing" />
 
@@ -475,6 +497,21 @@ const handleProfileUnshare = () => {
   loadSharedNotes()
 }
 
+// Handle "Notes" card tap from profile modal
+const sidebarGlow = ref(false)
+
+const handleShowNotes = () => {
+  showProfileModal.value = false
+  showSidebar.value = true
+  // Small delay to let sidebar open, then glow
+  setTimeout(() => {
+    sidebarGlow.value = true
+  }, 400)
+  setTimeout(() => {
+    sidebarGlow.value = false
+  }, 1400)
+}
+
 // Check for pending import from shared note page
 onMounted(() => {
   const pending = localStorage.getItem('pending_import')
@@ -683,3 +720,4 @@ const handleCopy = async () => {
 
 const handlePrint = () => askExportOptions('print')
 </script>
+
