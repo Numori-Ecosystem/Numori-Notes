@@ -143,7 +143,7 @@ Discounted: prev - 10%
 // Explore Templates for more ideas!` : ''
 
     return {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       title,
       description,
       tags: [],
