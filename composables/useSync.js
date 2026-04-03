@@ -31,9 +31,16 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
     }
   })
 
+  let pendingSync = null // queued source if a sync was requested while one is running
+
   const sync = async (source = 'unknown') => {
-    if (!auth.isLoggedIn.value || syncing.value) {
-      console.debug(`[sync] skipped (loggedIn=${auth.isLoggedIn.value}, syncing=${syncing.value}, source=${source})`)
+    if (!auth.isLoggedIn.value) {
+      console.debug(`[sync] skipped — not logged in (source=${source})`)
+      return
+    }
+    if (syncing.value) {
+      console.debug(`[sync] queued (source=${source}, already syncing)`)
+      pendingSync = source
       return
     }
 
@@ -117,10 +124,18 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
       console.debug(`[sync] error: ${syncError.value}`)
     } finally {
       syncing.value = false
+      // Run queued sync if one was requested while we were busy
+      if (pendingSync) {
+        const queuedSource = pendingSync
+        pendingSync = null
+        console.debug(`[sync] running queued sync (source=${queuedSource})`)
+        sync(queuedSource)
+      }
     }
   }
 
   const syncNow = () => {
+    console.debug('[sync] syncNow called')
     clearTimeout(debounceTimer)
     sync('syncNow')
   }
