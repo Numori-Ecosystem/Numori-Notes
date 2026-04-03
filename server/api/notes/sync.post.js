@@ -99,23 +99,13 @@ export default defineEventHandler(async (event) => {
     serverDeletedIds = deletedResult.rows.map(r => r.client_id)
   }
 
-  // 4. Pull active notes from server that client doesn't have
-  // Exclude soft-deleted and notes the client already sent
-  const excludeIds = [...allClientIds, ...serverDeletedIds]
-  let pullSql = `
+  // 4. Pull ALL active notes from server — client-side merge handles dedup
+  const pullResult = await query(`
     SELECT id, client_id, title, description, tags, content, created_at, updated_at
     FROM notes WHERE user_id = $1 AND deleted_at IS NULL
-  `
-  const pullParams = [auth.userId]
+    ORDER BY updated_at DESC
+  `, [auth.userId])
 
-  if (excludeIds.length > 0) {
-    pullSql += ` AND (client_id IS NULL OR client_id != ALL($2))`
-    pullParams.push(excludeIds)
-  }
-
-  pullSql += ' ORDER BY updated_at DESC'
-
-  const pullResult = await query(pullSql, pullParams)
   const pulled = pullResult.rows.map(row => ({
     id: row.id,
     clientId: row.client_id,
