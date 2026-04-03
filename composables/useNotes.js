@@ -156,8 +156,12 @@ Discounted: prev - 10%
 
   // Add a new note (always at the top)
   const addNote = () => {
-    // Shift all existing notes down
-    notes.value.forEach(n => { n.sortOrder = (n.sortOrder ?? 0) + 1 })
+    // Shift all existing notes down and bump updatedAt so sync picks up the new order
+    const now = new Date().toISOString()
+    notes.value.forEach(n => {
+      n.sortOrder = (n.sortOrder ?? 0) + 1
+      n.updatedAt = now
+    })
     const newNote = createNote()
     newNote.sortOrder = 0
     notes.value.unshift(newNote)
