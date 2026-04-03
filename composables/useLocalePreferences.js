@@ -95,7 +95,6 @@ const DEFAULT_PREFERENCES = {
   significantFigures: 6,
   autoCopyResult: true,
   copyAnimationStyle: 'scale-pop',
-  dismissAlphaWarning: false,
 }
 
 export const useLocalePreferences = () => {

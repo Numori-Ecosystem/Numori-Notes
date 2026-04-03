@@ -60,7 +60,6 @@ const EXPECTED_DEFAULTS = {
   significantFigures: 6,
   autoCopyResult: true,
   copyAnimationStyle: 'scale-pop',
-  dismissAlphaWarning: false,
 }
 
 describe('Default Preferences', () => {

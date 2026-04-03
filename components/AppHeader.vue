@@ -35,12 +35,6 @@
 
       <!-- Right: Actions -->
       <div class="flex items-center gap-1">
-        <!-- Alpha ribbon -->
-        <span v-if="!hideAlpha"
-          class="alpha-ribbon relative px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-400 text-amber-900 mr-2">
-          alpha
-        </span>
-
         <!-- Toggle markdown preview -->
         <button @click="$emit('toggle-markdown-preview')" class="p-2 rounded-lg transition-colors leading-none"
           :class="showMarkdownPreview
@@ -93,10 +87,6 @@ defineProps({
     type: Boolean,
     default: false
   },
-  hideAlpha: {
-    type: Boolean,
-    default: false
-  },
   modLabel: {
     type: String,
     default: 'Ctrl'
@@ -134,8 +124,3 @@ defineEmits([
 ])
 </script>
 
-<style scoped>
-.alpha-ribbon {
-  clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%);
-}
-</style>

@@ -383,15 +383,6 @@
                     <div class="space-y-4 pl-1">
                       <div class="flex items-center justify-between">
                         <div>
-                          <label :class="labelInlineClass">Hide Alpha Warning</label>
-                          <p :class="hintClass">Permanently dismiss the alpha warning banner</p>
-                        </div>
-                        <button @click="preferences.dismissAlphaWarning = !preferences.dismissAlphaWarning; onSettingChange()" :class="toggleClass(preferences.dismissAlphaWarning)">
-                          <span :class="toggleDot(preferences.dismissAlphaWarning)" />
-                        </button>
-                      </div>
-                      <div class="flex items-center justify-between">
-                        <div>
                           <label :class="labelInlineClass">Welcome Wizard</label>
                           <p :class="hintClass">Show the first-time setup wizard again</p>
                         </div>
@@ -473,7 +464,7 @@ const sections = [
   { id: 'cursor', label: 'Cursor & Scrolling', keywords: 'cursor style scroll past end' },
   { id: 'behaviour', label: 'Behaviour', keywords: 'behaviour auto close brackets tab size indentation' },
   { id: 'results', label: 'Results & Display', keywords: 'results display precision decimal significant copy animation inline alignment' },
-  { id: 'general', label: 'General', keywords: 'general alpha warning dismiss welcome wizard relaunch setup' },
+  { id: 'general', label: 'General', keywords: 'general welcome wizard relaunch setup' },
 ]
 
 const presets = LOCALE_PRESETS
