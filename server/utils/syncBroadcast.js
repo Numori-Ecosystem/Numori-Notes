@@ -1,35 +1,34 @@
 /**
  * In-memory SSE broadcast for sync notifications.
- * Maps userId -> Set of response streams.
+ * Maps userId -> Map of sessionId -> stream.
  */
 const listeners = new Map()
 
-export function addListener(userId, stream) {
+export function addListener(userId, sessionId, stream) {
   if (!listeners.has(userId)) {
-    listeners.set(userId, new Set())
+    listeners.set(userId, new Map())
   }
-  listeners.get(userId).add(stream)
+  listeners.get(userId).set(sessionId, stream)
 }
 
-export function removeListener(userId, stream) {
-  const set = listeners.get(userId)
-  if (set) {
-    set.delete(stream)
-    if (set.size === 0) listeners.delete(userId)
+export function removeListener(userId, sessionId) {
+  const sessions = listeners.get(userId)
+  if (sessions) {
+    sessions.delete(sessionId)
+    if (sessions.size === 0) listeners.delete(userId)
   }
 }
 
 /**
- * Notify all connected clients for a user that a sync occurred.
- * Optionally exclude the client that triggered the sync.
+ * Notify all connected clients for a user except the one that triggered the sync.
  */
-export function notifySync(userId, excludeStream = null) {
-  const set = listeners.get(userId)
-  if (!set) return
+export function notifySync(userId, excludeSessionId = null) {
+  const sessions = listeners.get(userId)
+  if (!sessions) return
 
   const data = `data: ${JSON.stringify({ type: 'sync', timestamp: new Date().toISOString() })}\n\n`
-  for (const stream of set) {
-    if (stream !== excludeStream) {
+  for (const [sessionId, stream] of sessions) {
+    if (sessionId !== excludeSessionId) {
       try { stream.write(data) } catch { /* client disconnected */ }
     }
   }

@@ -20,7 +20,7 @@ import { notifySync } from '../../utils/syncBroadcast.js'
 export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)
   const body = await readBody(event)
-  const { notes: clientNotes = [], deletedClientIds = [], lastSyncedAt } = body || {}
+  const { notes: clientNotes = [], deletedClientIds = [], lastSyncedAt, sessionId } = body || {}
 
   const deletedSet = new Set(deletedClientIds)
 
@@ -122,8 +122,8 @@ export default defineEventHandler(async (event) => {
     updatedAt: row.updated_at
   }))
 
-  // Notify other connected clients for this user
-  notifySync(auth.userId, event.node.res)
+  // Notify other connected clients for this user (exclude the sender)
+  notifySync(auth.userId, sessionId || null)
 
   return {
     pushed,
