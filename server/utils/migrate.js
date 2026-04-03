@@ -185,5 +185,20 @@ export async function migrate() {
     END $$
   `)
 
+  // Add city and region columns for IP geolocation
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE share_views ADD COLUMN IF NOT EXISTS city TEXT;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$
+  `)
+
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE share_views ADD COLUMN IF NOT EXISTS region TEXT;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$
+  `)
+
   console.log('[migrate] Database tables ready')
 }

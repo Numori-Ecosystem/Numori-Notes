@@ -9,9 +9,16 @@
             <!-- Header -->
             <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">Share Analytics</h2>
-              <button @click="$emit('close')" class="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                <Icon name="mdi:close" class="block w-5 h-5" />
-              </button>
+              <div class="flex items-center gap-1">
+                <button @click="refresh" :disabled="loading"
+                  class="flex items-center p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded"
+                  title="Refresh">
+                  <Icon name="mdi:refresh" class="block w-5 h-5" :class="{ 'animate-spin': loading }" />
+                </button>
+                <button @click="$emit('close')" class="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                  <Icon name="mdi:close" class="block w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <!-- Tabs -->
@@ -76,11 +83,11 @@
                     </div>
                   </div>
 
-                  <!-- Recent activity -->
+                  <!-- Recent activity (deduplicated by visitor) -->
                   <div v-if="data.views.length">
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-500 mb-2">Recent activity</p>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-500 mb-2">Recent visitors</p>
                     <div class="space-y-1">
-                      <div v-for="v in data.views.slice(0, 5)" :key="v.id"
+                      <div v-for="v in recentUniqueViewers" :key="v.fingerprint || v.id"
                         class="flex items-center justify-between text-xs py-1.5 px-2 rounded bg-gray-50 dark:bg-gray-900">
                         <div class="flex items-center gap-1.5 min-w-0">
                           <Icon :name="v.eventType === 'import' ? 'mdi:download' : 'mdi:eye-outline'"
@@ -88,7 +95,8 @@
                             :class="v.eventType === 'import' ? 'text-primary-500' : 'text-gray-400'" />
                           <span class="text-gray-700 dark:text-gray-300 truncate">{{ viewerLabel(v) }}</span>
                           <span v-if="v.totalVisits > 1" class="text-gray-400 flex-shrink-0">({{ v.totalVisits }}x)</span>
-                          <span v-if="v.parsed" class="text-gray-400 truncate hidden sm:inline">· {{ v.parsed.summary }}</span>
+                          <span v-if="v.location" class="text-gray-400 truncate hidden sm:inline">· {{ formatLocation(v.location) }}</span>
+                          <span v-else-if="v.parsed" class="text-gray-400 truncate hidden sm:inline">· {{ v.parsed.summary }}</span>
                         </div>
                         <span class="text-gray-400 flex-shrink-0 ml-2">{{ formatTimeAgo(v.viewedAt) }}</span>
                       </div>
@@ -179,6 +187,9 @@
                         <div v-if="v.raw.ip" class="text-gray-500 dark:text-gray-500">
                           <span class="text-gray-400">IP:</span> {{ v.raw.ip }}
                         </div>
+                        <div v-if="v.location" class="text-gray-600 dark:text-gray-400">
+                          <span class="text-gray-400">Location:</span> {{ formatLocation(v.location) }}
+                        </div>
                         <div v-if="v.fingerprint" class="text-gray-400 dark:text-gray-600 font-mono text-[10px]">
                           Visitor ID: {{ v.fingerprint }}
                         </div>
@@ -263,6 +274,8 @@ const allOnPageSelected = computed(() => {
   return data.value.views.every(v => selectedIds.value.has(v.id))
 })
 
+let autoRefreshTimer = null
+
 watch(() => props.isOpen, (open) => {
   if (open && props.hash) {
     activeTab.value = 'summary'
@@ -270,10 +283,29 @@ watch(() => props.isOpen, (open) => {
     selectedIds.value = new Set()
     currentPage.value = 1
     loadData(1)
+    startAutoRefresh()
   } else {
     data.value = null
+    stopAutoRefresh()
   }
 })
+
+onBeforeUnmount(() => stopAutoRefresh())
+
+const startAutoRefresh = () => {
+  stopAutoRefresh()
+  autoRefreshTimer = setInterval(() => {
+    if (props.isOpen && props.hash) loadData(currentPage.value)
+  }, 5 * 60 * 1000)
+}
+
+const stopAutoRefresh = () => {
+  if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null }
+}
+
+const refresh = () => {
+  loadData(currentPage.value)
+}
 
 const loadData = async (page = 1) => {
   loading.value = true
@@ -294,6 +326,22 @@ const goToPage = (page) => {
   selectedIds.value = new Set()
   loadData(page)
 }
+
+// Deduplicate views by fingerprint for the summary tab — show each unique visitor once
+const recentUniqueViewers = computed(() => {
+  if (!data.value?.views?.length) return []
+  const seen = new Set()
+  const unique = []
+  for (const v of data.value.views) {
+    const key = v.fingerprint || v.id
+    if (!seen.has(key)) {
+      seen.add(key)
+      unique.push(v)
+      if (unique.length >= 5) break
+    }
+  }
+  return unique
+})
 
 const viewerLabel = (v) => {
   if (v.viewerName) return v.viewerName
@@ -342,6 +390,12 @@ const deleteAll = async () => {
     selectedIds.value = new Set()
     await loadData(1)
   } catch { /* ignore */ }
+}
+
+const formatLocation = (loc) => {
+  if (!loc) return ''
+  const parts = [loc.city, loc.region, loc.country].filter(Boolean)
+  return parts.join(', ')
 }
 
 const formatTimeAgo = (iso) => {

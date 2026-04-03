@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
 
   // Paginated events
   const viewsResult = await query(`
-    SELECT id, viewer_name, viewer_fingerprint, user_agent, ip_address, referrer, event_type, viewed_at, accept_language, dnt, sec_ch_ua
+    SELECT id, viewer_name, viewer_fingerprint, user_agent, ip_address, referrer, event_type, viewed_at, accept_language, dnt, sec_ch_ua, country, region, city
     FROM share_views
     WHERE shared_note_id = $1
     ORDER BY viewed_at DESC
@@ -85,6 +85,11 @@ export default defineEventHandler(async (event) => {
       dnt: v.dnt || null,
       secChUa: v.sec_ch_ua || null
     },
+    location: (v.country || v.city || v.region) ? {
+      country: v.country || null,
+      region: v.region || null,
+      city: v.city || null
+    } : null,
     parsed: parseUserAgent(v.user_agent),
     parsedLang: parseAcceptLanguage(v.accept_language),
     parsedSecChUa: parseSecChUa(v.sec_ch_ua),

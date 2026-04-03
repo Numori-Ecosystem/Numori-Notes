@@ -73,10 +73,26 @@ export default defineEventHandler(async (event) => {
     fingerprint = `anon:${createHash('sha256').update(raw).digest('hex').slice(0, 16)}`
   }
 
-  await query(`
+  const insertRes = await query(`
     INSERT INTO share_views (shared_note_id, viewer_user_id, viewer_name, user_agent, ip_address, referrer, event_type, viewer_fingerprint, accept_language, dnt, sec_ch_ua)
     VALUES ($1, $2, $3, $4, $5, $6, 'import', $7, $8, $9, $10)
+    RETURNING id
   `, [row.id, viewerUserId, viewerName, recordUserAgent, recordIp, referrer, fingerprint, recordAcceptLang, recordDnt, recordSecChUa])
+
+  // Async geo lookup
+  const geoIp = recordIp || ipAddress
+  const recordId = insertRes.rows[0]?.id
+  if (recordId && geoIp && !geoIp.startsWith('127.') && geoIp !== '::1') {
+    fetch(`http://ip-api.com/json/${geoIp}?fields=status,country,regionName,city`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.status === 'success') {
+          query('UPDATE share_views SET country = $1, region = $2, city = $3 WHERE id = $4',
+            [d.country || null, d.regionName || null, d.city || null, recordId])
+        }
+      })
+      .catch(() => {})
+  }
 
   return { ok: true }
 })

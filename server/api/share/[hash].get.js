@@ -121,8 +121,35 @@ async function recordEvent(event, sharedNoteId, eventType) {
 
   const fingerprint = buildFingerprint(auth, privacyOn, ipAddress, userAgent, acceptLang, dnt, sharedNoteId)
 
+  // Insert the record first, then enrich with geolocation asynchronously
   query(`
     INSERT INTO share_views (shared_note_id, viewer_user_id, viewer_name, user_agent, ip_address, referrer, event_type, viewer_fingerprint, accept_language, dnt, sec_ch_ua)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-  `, [sharedNoteId, viewerUserId, viewerName, recordUserAgent, recordIp, referrer, eventType, fingerprint, recordAcceptLang, recordDnt, recordSecChUa]).catch(() => {})
+    RETURNING id
+  `, [sharedNoteId, viewerUserId, viewerName, recordUserAgent, recordIp, referrer, eventType, fingerprint, recordAcceptLang, recordDnt, recordSecChUa])
+    .then(res => {
+      const recordId = res.rows[0]?.id
+      const geoIp = recordIp || ipAddress
+      if (recordId && geoIp && !geoIp.startsWith('127.') && geoIp !== '::1') {
+        lookupGeo(geoIp, recordId)
+      }
+    })
+    .catch(() => {})
+}
+
+/**
+ * Look up IP geolocation via ip-api.com (free, no key, 45 req/min).
+ * Updates the share_views record asynchronously.
+ */
+async function lookupGeo(ip, viewId) {
+  try {
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city`)
+    if (!res.ok) return
+    const data = await res.json()
+    if (data.status !== 'success') return
+    await query(
+      'UPDATE share_views SET country = $1, region = $2, city = $3 WHERE id = $4',
+      [data.country || null, data.regionName || null, data.city || null, viewId]
+    )
+  } catch { /* geo lookup is best-effort */ }
 }
