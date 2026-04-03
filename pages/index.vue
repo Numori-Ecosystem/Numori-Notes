@@ -59,7 +59,8 @@
             @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
             @show-help="showHelp = true"
             @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true"
-            @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile" />
+            @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile"
+            @reorder="reorderNotes" />
         </div>
       </aside>
 
@@ -88,7 +89,8 @@
               @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
               @show-help="showHelp = true"
               @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true"
-              @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile" />
+              @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile"
+              @reorder="reorderNotes" />
           </aside>
         </Transition>
       </Teleport>
@@ -231,7 +233,7 @@
 </template>
 
 <script setup>
-const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds } = useNotes()
+const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes } = useNotes()
 const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
 const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()

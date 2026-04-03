@@ -51,17 +51,18 @@ export default defineEventHandler(async (event) => {
     }
 
     const result = await query(`
-      INSERT INTO notes (user_id, client_id, title, description, tags, content, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO notes (user_id, client_id, title, description, tags, content, sort_order, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       ON CONFLICT (user_id, client_id) WHERE client_id IS NOT NULL
       DO UPDATE SET
         title = EXCLUDED.title,
         description = EXCLUDED.description,
         tags = EXCLUDED.tags,
         content = EXCLUDED.content,
+        sort_order = EXCLUDED.sort_order,
         updated_at = EXCLUDED.updated_at
       WHERE notes.deleted_at IS NULL AND EXCLUDED.updated_at >= notes.updated_at
-      RETURNING id, client_id, title, description, tags, content, created_at, updated_at
+      RETURNING id, client_id, title, description, tags, content, sort_order, created_at, updated_at
     `, [
       auth.userId,
       note.clientId,
@@ -69,6 +70,7 @@ export default defineEventHandler(async (event) => {
       note.description || '',
       JSON.stringify(note.tags || []),
       note.content || '',
+      note.sortOrder ?? 0,
       note.createdAt || new Date().toISOString(),
       note.updatedAt || new Date().toISOString()
     ])
@@ -82,6 +84,7 @@ export default defineEventHandler(async (event) => {
         description: row.description,
         tags: row.tags,
         content: row.content,
+        sortOrder: row.sort_order,
         createdAt: row.created_at,
         updatedAt: row.updated_at
       })
@@ -102,9 +105,9 @@ export default defineEventHandler(async (event) => {
 
   // 4. Pull ALL active notes from server — client-side merge handles dedup
   const pullResult = await query(`
-    SELECT id, client_id, title, description, tags, content, created_at, updated_at
+    SELECT id, client_id, title, description, tags, content, sort_order, created_at, updated_at
     FROM notes WHERE user_id = $1 AND deleted_at IS NULL
-    ORDER BY updated_at DESC
+    ORDER BY sort_order ASC
   `, [auth.userId])
 
   const pulled = pullResult.rows.map(row => ({
@@ -114,6 +117,7 @@ export default defineEventHandler(async (event) => {
     description: row.description,
     tags: row.tags,
     content: row.content,
+    sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   }))

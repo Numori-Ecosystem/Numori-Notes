@@ -147,15 +147,19 @@ Discounted: prev - 10%
       title,
       description,
       tags: [],
+      sortOrder: 0,
       content: defaultContent,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
   }
 
-  // Add a new note
+  // Add a new note (always at the top)
   const addNote = () => {
+    // Shift all existing notes down
+    notes.value.forEach(n => { n.sortOrder = (n.sortOrder ?? 0) + 1 })
     const newNote = createNote()
+    newNote.sortOrder = 0
     notes.value.unshift(newNote)
     currentNoteId.value = newNote.id
     saveNotes()
@@ -204,6 +208,19 @@ Discounted: prev - 10%
     }
   }
 
+  // Reorder notes — accepts the new ordered array of IDs
+  const reorderNotes = (orderedIds) => {
+    orderedIds.forEach((id, index) => {
+      const note = notes.value.find(n => n.id === id)
+      if (note) {
+        note.sortOrder = index
+        note.updatedAt = new Date().toISOString()
+      }
+    })
+    notes.value.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    saveNotes()
+  }
+
   // Get current note
   const currentNote = computed(() => {
     return notes.value.find(n => n.id === currentNoteId.value) || null
@@ -226,6 +243,7 @@ Discounted: prev - 10%
     updateNoteMeta,
     loadNotes,
     saveNotes,
-    clearDeletedIds
+    clearDeletedIds,
+    reorderNotes
   }
 }

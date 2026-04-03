@@ -33,6 +33,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
         description: n.description,
         tags: n.tags || [],
         content: n.content,
+        sortOrder: n.sortOrder ?? 0,
         createdAt: n.createdAt,
         updatedAt: n.updatedAt
       }))
@@ -65,6 +66,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
             existing.description = remote.description
             existing.tags = remote.tags
             existing.content = remote.content
+            existing.sortOrder = remote.sortOrder ?? existing.sortOrder
             existing.updatedAt = remote.updatedAt
           }
         } else {
@@ -74,14 +76,15 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
             description: remote.description,
             tags: remote.tags || [],
             content: remote.content,
+            sortOrder: remote.sortOrder ?? notes.value.length,
             createdAt: remote.createdAt,
             updatedAt: remote.updatedAt
           })
         }
       }
 
-      // Sort by most recently updated
-      notes.value.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      // Sort by user-defined order
+      notes.value.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 
       // Deletions synced successfully — clear the queue
       clearDeletedIds()

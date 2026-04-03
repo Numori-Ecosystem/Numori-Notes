@@ -80,6 +80,14 @@ export async function migrate() {
     END $$
   `)
 
+  // Add sort_order column for manual ordering
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE notes ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$
+  `)
+
   // Add deleted_at column for soft-delete sync
   await query(`
     DO $$ BEGIN

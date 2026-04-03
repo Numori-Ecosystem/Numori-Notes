@@ -35,11 +35,21 @@
         <span>New Note</span>
       </button>
 
-      <!-- Search -->
-      <div class="relative">
-        <Icon name="mdi:magnify" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input v-model="searchQuery" type="text" placeholder="Search notes..."
-          class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+      <!-- Search + select toggle -->
+      <div class="flex items-center gap-2">
+        <button @click="toggleSelectMode"
+          class="flex-shrink-0 p-1.5 rounded-lg transition-colors leading-none"
+          :class="selectMode
+            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+          title="Select notes">
+          <Icon name="mdi:checkbox-multiple-marked-outline" class="w-4 h-4 block" />
+        </button>
+        <div class="relative flex-1">
+          <Icon name="mdi:magnify" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input v-model="searchQuery" type="text" placeholder="Search notes..."
+            class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+        </div>
       </div>
 
       <!-- Tag filter -->
@@ -56,19 +66,31 @@
     </div>
 
     <!-- Notes List -->
-    <div class="flex-1 overflow-y-auto">
+    <div class="flex-1 overflow-y-auto" ref="listRef">
       <div v-if="filteredNotes.length === 0" class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
         No notes found
       </div>
-      <NoteListItem v-for="note in filteredNotes" :key="note.id"
-        :note="note" :active="note.id === currentNoteId"
-        :select-mode="selectMode"
-        :selected="selectedIds.has(note.id)"
-        @select="id => $emit('select-note', id)"
-        @edit="id => $emit('edit-note', id)"
-        @delete="id => $emit('delete-note', id)"
-        @long-press="enterSelectMode"
-        @toggle-select="toggleNoteSelection" />
+      <div v-for="(note, index) in filteredNotes" :key="note.id"
+        :data-index="index"
+        :draggable="canReorder"
+        @dragstart="onDragStart($event, index)"
+        @dragover.prevent="onDragOver($event, index)"
+        @dragend="onDragEnd"
+        @touchstart="onTouchStart($event, index)"
+        class="relative"
+        :class="{
+          'border-t-2 border-t-primary-500': dropTargetIndex === index && dropPosition === 'before',
+          'border-b-2 border-b-primary-500': dropTargetIndex === index && dropPosition === 'after',
+          'opacity-50': draggingIndex === index
+        }">
+        <NoteListItem
+          :note="note" :active="note.id === currentNoteId"
+          :select-mode="selectMode"
+          :selected="selectedIds.has(note.id)"
+          @select="id => $emit('select-note', id)"
+          @delete="id => $emit('delete-note', id)"
+          @toggle-select="toggleNoteSelection" />
+      </div>
     </div>
 
     <!-- Bottom toolbar -->
@@ -97,13 +119,136 @@ const emit = defineEmits([
   'new-note', 'select-note', 'delete-note', 'edit-note',
   'show-help', 'show-locale-settings', 'show-language',
   'show-auth', 'logout', 'edit-profile',
-  'bulk-delete', 'selection-change'
+  'bulk-delete', 'selection-change', 'reorder'
 ])
 
 const searchQuery = ref('')
 const selectedTags = ref([])
+const listRef = ref(null)
 
-// Multi-select state
+// ── Drag-to-reorder ─────────────────────────────────────
+
+const draggingIndex = ref(null)
+const dropTargetIndex = ref(null)
+const dropPosition = ref(null)
+
+const isFiltering = computed(() => searchQuery.value.trim() !== '' || selectedTags.value.length > 0)
+const canReorder = computed(() => !selectMode.value && !isFiltering.value)
+
+// -- Mouse (HTML5 drag) --
+
+const onDragStart = (e, index) => {
+  if (!canReorder.value) return
+  draggingIndex.value = index
+  e.dataTransfer.effectAllowed = 'move'
+}
+
+const onDragOver = (e, index) => {
+  if (draggingIndex.value === null || draggingIndex.value === index) {
+    dropTargetIndex.value = null
+    dropPosition.value = null
+    return
+  }
+  const rect = e.currentTarget.getBoundingClientRect()
+  dropPosition.value = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+  dropTargetIndex.value = index
+}
+
+const onDragEnd = () => {
+  commitReorder()
+}
+
+// -- Touch --
+
+let touchDragActive = false
+let touchHoldTimer = null
+const TOUCH_HOLD_MS = 300
+
+const onTouchStart = (e, index) => {
+  if (!canReorder.value) return
+
+  // Wait a short hold before activating drag so normal taps/scrolls aren't hijacked
+  touchHoldTimer = setTimeout(() => {
+    touchDragActive = true
+    draggingIndex.value = index
+
+    const onTouchMove = (ev) => {
+      if (!touchDragActive) return
+      ev.preventDefault() // stop scrolling while dragging
+      const touch = ev.touches[0]
+      const hit = getItemAtY(touch.clientY)
+      if (hit !== null && hit.index !== draggingIndex.value) {
+        dropTargetIndex.value = hit.index
+        dropPosition.value = hit.position
+      } else {
+        dropTargetIndex.value = null
+        dropPosition.value = null
+      }
+    }
+
+    const onTouchEnd = () => {
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
+      document.removeEventListener('touchcancel', onTouchEnd)
+      touchDragActive = false
+      commitReorder()
+    }
+
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', onTouchEnd)
+    document.addEventListener('touchcancel', onTouchEnd)
+  }, TOUCH_HOLD_MS)
+
+  // If the finger moves before the hold completes, cancel (it's a scroll)
+  const onEarlyMove = () => {
+    clearTimeout(touchHoldTimer)
+    e.target.removeEventListener('touchmove', onEarlyMove)
+  }
+  e.target.addEventListener('touchmove', onEarlyMove, { once: true, passive: true })
+
+  // Clean up hold timer if touch ends before hold
+  const onEarlyEnd = () => {
+    clearTimeout(touchHoldTimer)
+    e.target.removeEventListener('touchend', onEarlyEnd)
+    e.target.removeEventListener('touchmove', onEarlyMove)
+  }
+  e.target.addEventListener('touchend', onEarlyEnd, { once: true })
+}
+
+const getItemAtY = (y) => {
+  if (!listRef.value) return null
+  const items = listRef.value.querySelectorAll('[data-index]')
+  for (const item of items) {
+    const rect = item.getBoundingClientRect()
+    if (y >= rect.top && y <= rect.bottom) {
+      return {
+        index: parseInt(item.dataset.index),
+        position: y < rect.top + rect.height / 2 ? 'before' : 'after'
+      }
+    }
+  }
+  return null
+}
+
+// -- Shared --
+
+const commitReorder = () => {
+  if (draggingIndex.value !== null && dropTargetIndex.value !== null && draggingIndex.value !== dropTargetIndex.value) {
+    const ordered = [...filteredNotes.value]
+    const [moved] = ordered.splice(draggingIndex.value, 1)
+    let insertAt = dropTargetIndex.value
+    if (draggingIndex.value < dropTargetIndex.value) insertAt--
+    if (dropPosition.value === 'after') insertAt++
+    ordered.splice(insertAt, 0, moved)
+    emit('reorder', ordered.map(n => n.id))
+  }
+  draggingIndex.value = null
+  dropTargetIndex.value = null
+  dropPosition.value = null
+}
+
+// ── Multi-select ─────────────────────────────────────────
+
 const selectMode = ref(false)
 const selectedIds = ref(new Set())
 
@@ -111,10 +256,9 @@ const allSelected = computed(() => {
   return filteredNotes.value.length > 0 && filteredNotes.value.every(n => selectedIds.value.has(n.id))
 })
 
-const enterSelectMode = (noteId) => {
-  selectMode.value = true
-  selectedIds.value = new Set([noteId])
-  emit('selection-change', [noteId])
+const toggleSelectMode = () => {
+  if (selectMode.value) exitSelectMode()
+  else { selectMode.value = true; selectedIds.value = new Set(); emit('selection-change', []) }
 }
 
 const exitSelectMode = () => {
@@ -125,17 +269,11 @@ const exitSelectMode = () => {
 
 const toggleNoteSelection = (noteId) => {
   const next = new Set(selectedIds.value)
-  if (next.has(noteId)) {
-    next.delete(noteId)
-  } else {
-    next.add(noteId)
-  }
+  if (next.has(noteId)) next.delete(noteId)
+  else next.add(noteId)
   selectedIds.value = next
   emit('selection-change', [...next])
-  // Auto-exit if nothing selected
-  if (next.size === 0) {
-    selectMode.value = false
-  }
+  if (next.size === 0) selectMode.value = false
 }
 
 const toggleSelectAll = () => {
@@ -154,6 +292,8 @@ const bulkDelete = () => {
   emit('bulk-delete', [...selectedIds.value])
   exitSelectMode()
 }
+
+// ── Filtering ────────────────────────────────────────────
 
 const toggleTag = (tag) => {
   const idx = selectedTags.value.indexOf(tag)
@@ -177,6 +317,6 @@ const filteredNotes = computed(() => {
       selectedTags.value.every(t => (n.tags || []).includes(t))
     )
   }
-  return result.slice().sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+  return result.slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 })
 </script>

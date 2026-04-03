@@ -1,12 +1,6 @@
 <template>
   <div
     @click="handleClick"
-    @touchstart="handleTouchStart"
-    @touchend="handleTouchEnd"
-    @touchcancel="handleTouchEnd"
-    @mousedown="handleMouseDown"
-    @mouseup="handleMouseUp"
-    @mouseleave="handleMouseUp"
     class="p-4 border-b border-gray-200 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-850 transition-colors"
     :class="{
       'bg-white dark:bg-gray-925 border-l-4 border-l-primary-500': active && !selectMode,
@@ -57,43 +51,9 @@ const props = defineProps({
   selected: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['select', 'edit', 'delete', 'long-press', 'toggle-select'])
-
-const LONG_PRESS_DURATION = 500
-const longPressTimer = ref(null)
-const longPressTriggered = ref(false)
-
-const startLongPress = () => {
-  longPressTriggered.value = false
-  longPressTimer.value = setTimeout(() => {
-    longPressTriggered.value = true
-    if (props.selectMode) {
-      // Already in select mode — just toggle this item
-      emit('toggle-select', props.note.id)
-    } else {
-      // Enter select mode with this note
-      emit('long-press', props.note.id)
-    }
-  }, LONG_PRESS_DURATION)
-}
-
-const cancelLongPress = () => {
-  if (longPressTimer.value) {
-    clearTimeout(longPressTimer.value)
-    longPressTimer.value = null
-  }
-}
-
-const handleTouchStart = () => startLongPress()
-const handleTouchEnd = () => cancelLongPress()
-const handleMouseDown = () => startLongPress()
-const handleMouseUp = () => cancelLongPress()
+const emit = defineEmits(['select', 'delete', 'toggle-select'])
 
 const handleClick = () => {
-  if (longPressTriggered.value) {
-    longPressTriggered.value = false
-    return
-  }
   if (props.selectMode) {
     emit('toggle-select', props.note.id)
   } else {
