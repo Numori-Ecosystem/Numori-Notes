@@ -288,6 +288,11 @@
                         :title="sn.isActive ? 'Stop sharing' : 'Already unshared'">
                         <Icon name="mdi:link-variant-off" class="w-4 h-4" />
                       </button>
+                      <button @click="handlePurge(sn.hash)"
+                        class="p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                        title="Delete permanently">
+                        <Icon name="mdi:delete-outline" class="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </template>
@@ -529,6 +534,22 @@ const handleUnshare = async (hash) => {
     emit('unshare', hash)
   } catch (err) {
     showFeedback(err?.data?.statusMessage || 'Failed to remove shared note', 'error')
+  }
+}
+
+const handlePurge = async (hash) => {
+  if (!confirm('Permanently delete this shared note and all its analytics? This cannot be undone.')) return
+  try {
+    const token = localStorage.getItem('auth_token')
+    await apiFetch(`/api/share/${hash}?purge=true`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    await loadSharedNotes()
+    showFeedback('Shared note deleted')
+    emit('unshare', hash)
+  } catch (err) {
+    showFeedback(err?.data?.statusMessage || 'Failed to delete shared note', 'error')
   }
 }
 
