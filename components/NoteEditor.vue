@@ -226,15 +226,15 @@ const buildInlineDecorations = (view) => {
   const maxLine = Math.min(lines.length, docLines)
   const alignRight = (props.inlineAlign ?? props.localePreferences?.inlineResultAlign ?? 'left') === 'right'
 
-  // For right-alignment, estimate visible columns
+  // For right-alignment, estimate available columns using the scroller (viewport) width
   let targetCol = 0
   if (alignRight) {
-    const contentDom = view.contentDOM
-    if (contentDom) {
-      const contentWidth = contentDom.clientWidth
-      const charWidth = editorFontSize.value * 0.6 // approximate
-      if (charWidth > 0) targetCol = Math.floor(contentWidth / charWidth)
-    }
+    const scroller = view.scrollDOM
+    const gutters = view.dom.querySelector('.cm-gutters')
+    const gutterWidth = gutters ? gutters.offsetWidth : 0
+    const availableWidth = (scroller ? scroller.clientWidth : 0) - gutterWidth - 16
+    const charWidth = editorFontSize.value * 0.6
+    if (charWidth > 0 && availableWidth > 0) targetCol = Math.floor(availableWidth / charWidth)
   }
 
   const widgets = []
@@ -250,7 +250,7 @@ const buildInlineDecorations = (view) => {
 
     let padText
     if (alignRight && targetCol > 0) {
-      const padCount = Math.max(4, targetCol - lineLength - resultStr.length)
+      const padCount = Math.max(2, targetCol - lineLength - resultStr.length)
       padText = ' '.repeat(padCount)
     } else {
       padText = '  '

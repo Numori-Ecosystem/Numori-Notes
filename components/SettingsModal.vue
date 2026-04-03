@@ -454,7 +454,7 @@ const sections = [
   { id: 'layout', label: 'Layout', keywords: 'layout line numbers word wrap folding highlight' },
   { id: 'cursor', label: 'Cursor & Scrolling', keywords: 'cursor style scroll past end' },
   { id: 'behaviour', label: 'Behaviour', keywords: 'behaviour auto close brackets tab size indentation' },
-  { id: 'results', label: 'Results & Display', keywords: 'results display precision decimal significant copy animation inline alignment' },
+  { id: 'results', label: 'Results & Display', keywords: 'results display precision decimal significant copy animation' },
   { id: 'general', label: 'General', keywords: 'general welcome wizard relaunch setup' },
 ]
 
