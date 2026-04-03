@@ -3,7 +3,7 @@
     <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
-      <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 md:p-4"
+      <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
         @click="close">
         <Transition enter-active-class="transition ease-out duration-300"
           enter-from-class="opacity-0 scale-95"
@@ -11,9 +11,9 @@
           leave-active-class="transition ease-in duration-200"
           leave-from-class="opacity-100 scale-100"
           leave-to-class="opacity-0 scale-95">
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-none md:rounded-lg max-w-5xl w-full h-screen md:h-[90vh] overflow-hidden flex flex-col safe-area-modal"
+          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-lg max-w-5xl w-full h-[95vh] sm:h-screen md:h-[90vh] overflow-hidden flex flex-col"
             @click.stop>
-      <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">{{ $t('templates.title') }}</h2>
         <button @click="close" class="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
           <Icon name="mdi:close" class="block w-5 h-5" />
@@ -21,29 +21,29 @@
       </div>
 
       <!-- Search + Filters -->
-      <div class="px-4 pt-3 pb-2 space-y-2 border-b border-gray-200 dark:border-gray-800">
-        <div class="flex gap-2">
+      <div class="px-3 sm:px-4 pt-3 pb-2 space-y-2 border-b border-gray-200 dark:border-gray-700 overflow-x-hidden">
+        <div class="flex flex-col sm:flex-row gap-2">
           <div class="relative flex-1">
             <Icon name="mdi:magnify"
               class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-400-muted" />
             <input v-model="searchQuery" type="text" :placeholder="$t('templates.search')"
-              class="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-925 text-gray-900 dark:text-gray-400 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400" />
+              class="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-925 text-gray-900 dark:text-gray-400 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400" />
           </div>
           <select v-model="activeComplexity"
-            class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-925 text-gray-700 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400">
+            class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-925 text-gray-700 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400">
             <option value="">All sizes</option>
             <option value="quick">Quick</option>
             <option value="detailed">Detailed</option>
           </select>
         </div>
         <!-- Use case filters -->
-        <div class="flex flex-wrap items-center gap-1.5">
+        <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Use case:</span>
           <button
             v-for="filter in categoryFilters"
             :key="filter.id"
             @click="toggleChip('category', filter.id)"
-            class="px-2.5 py-1 text-xs font-medium rounded-md border transition-colors"
+            class="px-2.5 py-1 text-xs font-medium rounded-md border transition-colors whitespace-nowrap shrink-0"
             :class="activeCategories.has(filter.id)
               ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-300 border-primary-200 dark:border-primary-800'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-transparent hover:bg-gray-200 dark:hover:bg-gray-750 hover:text-gray-900 dark:hover:text-white'"
@@ -52,13 +52,13 @@
           </button>
         </div>
         <!-- Feature filters -->
-        <div class="flex flex-wrap items-center gap-1.5">
+        <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Features:</span>
           <button
             v-for="feat in featureFilters"
             :key="feat.id"
             @click="toggleChip('feature', feat.id)"
-            class="px-2.5 py-1 text-xs font-medium rounded-full border border-dashed transition-colors"
+            class="px-2.5 py-1 text-xs font-medium rounded-full border border-dashed transition-colors whitespace-nowrap shrink-0"
             :class="activeFeatures.has(feat.id)
               ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-700 border-solid'
               : 'bg-transparent text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
@@ -68,14 +68,14 @@
           <button
             v-if="hasActiveFilters"
             @click="clearFilters"
-            class="ml-auto px-2.5 py-1 text-xs font-medium rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            class="px-2.5 py-1 text-xs font-medium rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors shrink-0"
           >
             Clear all
           </button>
         </div>
       </div>
 
-      <div class="overflow-y-auto p-4 flex-1">
+      <div class="overflow-y-auto p-3 sm:p-4 flex-1">
         <Transition
           enter-active-class="transition-all duration-150 ease-out"
           enter-from-class="opacity-0 translate-y-1"
@@ -89,7 +89,7 @@
           </div>
           <div v-else :key="filterKey" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button v-for="template in filteredTemplates" :key="template.id" @click="insertTemplate(template)"
-              class="text-left p-4 border border-gray-200 dark:border-gray-800 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors">
+              class="text-left p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition-colors">
               <h3 class="font-semibold text-gray-900 dark:text-gray-400 mb-1">{{ template.name }}</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400-muted">{{ template.description }}</p>
             </button>

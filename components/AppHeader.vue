@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-gray-100 dark:bg-gray-900 flex-shrink-0 z-10" :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
+  <header class="bg-gray-100 dark:bg-gray-900 flex-shrink-0" :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
     <div class="flex flex-col px-3 py-1.5 gap-0.5">
       <!-- Top row: Centered title -->
       <button @click="$emit('show-meta')" class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md">
@@ -20,7 +20,6 @@
           <FileDropdown :has-note="!!currentNote" :mod-label="modLabel" :selection-count="selectionCount"
             @new-note="$emit('file-new')"
             @open-file="$emit('file-open')"
-            @templates="$emit('show-templates')"
             @duplicate="$emit('file-duplicate')"
             @export-text="$emit('file-export-text')"
             @export-markdown="$emit('file-export-markdown')"
@@ -29,14 +28,11 @@
             @export-all="$emit('file-export-all')"
             @import="$emit('file-import')"
             @copy="$emit('file-copy')"
-            @print="$emit('file-print')"
-            @about="$emit('file-about')" />
+            @print="$emit('file-print')" />
           <ViewDropdown
-            @toggle-sidebar="$emit('toggle-sidebar')"
             @toggle-markdown-preview="$emit('toggle-markdown-preview')"
-            @inline-left="$emit('update:inline-mode', 'left')"
-            @inline-off="$emit('update:inline-mode', 'off')"
-            @inline-right="$emit('update:inline-mode', 'right')" />
+            @templates="$emit('show-templates')"
+            @about="$emit('file-about')" />
         </div>
 
         <!-- Center: Markdown formatting (desktop only) -->

@@ -1,7 +1,9 @@
 <template>
   <div class="h-screen flex flex-col bg-white dark:bg-gray-925 overscroll-none">
     <!-- Mobile-friendly Toolbar -->
-    <AppHeader v-if="!focusMode" :current-note="currentNote" :inline-mode="showInlineResults" :show-markdown-preview="showMarkdownPreview"
+    <div class="transition-all duration-300 ease-in-out flex-shrink-0 relative z-30"
+      :class="focusMode ? 'max-h-0 overflow-hidden opacity-0' : 'max-h-40 opacity-100'">
+      <AppHeader :current-note="currentNote" :inline-mode="showInlineResults" :show-markdown-preview="showMarkdownPreview"
       :mod-label="modLabel"
       :selection-count="selectedNoteIds.length"
       :is-logged-in="auth.isLoggedIn.value"
@@ -23,12 +25,13 @@
       @file-copy="handleCopy"
       @file-print="handlePrint"
       @file-about="showAbout = true" />
+    </div>
 
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Sidebar - Notes List (desktop) -->
-      <aside v-if="!focusMode" class="flex-shrink-0 hidden lg:block overflow-hidden transition-[width] duration-300 ease-in-out"
-        :class="showSidebar ? 'w-80' : 'w-0'">
+      <aside class="flex-shrink-0 hidden lg:block overflow-hidden transition-all duration-300 ease-in-out"
+        :class="!focusMode && showSidebar ? 'w-80 opacity-100' : 'w-0 opacity-0'">
         <div class="w-80 h-full relative">
           <Transition
             enter-active-class="transition-opacity duration-500"
@@ -50,7 +53,7 @@
             @open-analytics="handleOpenAnalytics"
             @reorder="handleReorder" />
         </div>
-      </aside>
+        </aside>
 
       <!-- Mobile sidebar with slide transition -->
       <Teleport to="body">
@@ -257,20 +260,12 @@
 
     <SyncIndicator :syncing="syncing" />
 
-    <!-- Zen mode exit button -->
-    <Transition
-      enter-active-class="transition-opacity duration-300"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition-opacity duration-200"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <button v-if="focusMode" @click="focusMode = false"
-        class="fixed bottom-3 right-3 z-50 p-2 rounded-lg bg-black/10 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-black/20 dark:hover:bg-white/20 hover:text-gray-700 dark:hover:text-gray-200 transition-colors backdrop-blur-sm"
-        title="Exit focus mode">
-        <Icon name="mdi:fullscreen-exit" class="w-5 h-5 block" />
-      </button>
-    </Transition>
+    <!-- Focus mode exit button -->
+    <button v-if="focusMode" @click="focusMode = false"
+      class="fixed top-0 right-0 z-50 pl-2.5 pb-2.5 pr-1 pt-1 rounded-bl-xl text-gray-400 dark:text-gray-500 hover:bg-black/15 dark:hover:bg-white/15 hover:text-gray-700 dark:hover:text-gray-200 transition-colors focus-exit-enter"
+      title="Exit focus mode">
+      <Icon name="mdi:fullscreen-exit" class="w-4 h-4 block" />
+    </button>
   </div>
 </template>
 
@@ -721,3 +716,47 @@ const handleCopy = async () => {
 const handlePrint = () => askExportOptions('print')
 </script>
 
+
+<style scoped>
+.focus-exit-enter {
+  animation: focus-enter 1.5s ease-out forwards;
+}
+
+@keyframes focus-enter {
+  0% {
+    opacity: 0;
+    background: rgba(239, 68, 68, 0.35);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  }
+  40% {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.25);
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
+  }
+  100% {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @keyframes focus-enter {
+    0% {
+      opacity: 0;
+      background: rgba(248, 113, 113, 0.3);
+      box-shadow: 0 0 20px rgba(248, 113, 113, 0.45);
+    }
+    40% {
+      opacity: 1;
+      background: rgba(248, 113, 113, 0.2);
+      box-shadow: 0 0 14px rgba(248, 113, 113, 0.35);
+    }
+    100% {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: none;
+    }
+  }
+}
+</style>

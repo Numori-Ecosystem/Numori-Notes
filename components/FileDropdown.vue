@@ -24,10 +24,6 @@
         <DropdownItem icon="mdi:content-duplicate" label="Duplicate Note" :shortcut="`${modLabel}+D`" :disabled="!hasNote" @click="action('duplicate')" />
 
         <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
-        
-        <DropdownItem icon="mdi:file-document-outline" label="Templates" @click="action('templates')" />
-
-        <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
 
         <!-- Export sub-menu -->
         <DropdownSubmenu icon="mdi:export" :label="selectionCount > 0 ? `Export Selection (${selectionCount})` : 'Export'" :disabled="!hasNote && selectionCount === 0">
@@ -45,10 +41,6 @@
         <DropdownItem icon="mdi:code-json" :label="selectionCount > 0 ? `Export Selection as JSON (${selectionCount})` : 'Export as JSON'" :disabled="!hasNote && selectionCount === 0" @click="action('export-json')" />
         <DropdownItem icon="mdi:database-export" :label="selectionCount > 0 ? `Export Selection (${selectionCount})` : 'Export All Notes'" :shortcut="selectionCount > 0 ? '' : `${modLabel}+⇧+S`" @click="action('export-all')" />
         <DropdownItem icon="mdi:upload" label="Import Notes…" @click="action('import')" />
-
-        <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
-
-        <DropdownItem icon="mdi:information-outline" label="About" @click="action('about')" />
       </div>
     </Transition>
   </div>
@@ -73,7 +65,6 @@ const props = defineProps({
 const emit = defineEmits([
   'new-note',
   'open-file',
-  'templates',
   'duplicate',
   'export-text',
   'export-markdown',
@@ -83,7 +74,6 @@ const emit = defineEmits([
   'import',
   'copy',
   'print',
-  'about',
 ])
 
 const open = ref(false)

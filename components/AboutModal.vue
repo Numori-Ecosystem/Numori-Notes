@@ -3,7 +3,7 @@
     <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" @click="$emit('close')">
+      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50" @click="$emit('close')">
         <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 scale-95"
           enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-200"
           leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
@@ -11,7 +11,7 @@
             class="bg-white dark:bg-gray-925 rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
 
             <!-- Header -->
-            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+            <div class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">About CalcNotes</h2>
               <button @click="$emit('close')" class="flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                 <Icon name="mdi:close" class="block w-5 h-5" />
@@ -19,7 +19,7 @@
             </div>
 
             <!-- Body -->
-            <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5 text-sm text-gray-700 dark:text-gray-400">
+            <div class="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-5 py-4 space-y-5 text-sm text-gray-700 dark:text-gray-400 break-words">
 
               <!-- App info -->
               <div class="text-center space-y-1">
@@ -58,7 +58,7 @@
               <!-- Third-party licenses -->
               <div class="space-y-2">
                 <p class="font-semibold text-gray-900 dark:text-gray-300">Third-Party Licenses</p>
-                <p class="text-xs text-gray-500 dark:text-gray-500">This application uses the following open-source packages, all licensed under the MIT License:</p>
+                <p class="text-xs text-gray-500 dark:text-gray-500">This application uses the following open-source packages:</p>
                 <ul class="text-xs space-y-0.5 list-disc list-inside text-gray-600 dark:text-gray-400">
                   <li><a href="https://nuxt.com" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Nuxt</a></li>
                   <li><a href="https://vuejs.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Vue</a></li>
@@ -68,16 +68,20 @@
                   <li><a href="https://color-mode.nuxtjs.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@nuxtjs/color-mode</a></li>
                   <li><a href="https://tailwindcss.nuxtjs.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@nuxtjs/tailwindcss</a></li>
                   <li><a href="https://tailwindcss.com/docs/typography-plugin" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@tailwindcss/typography</a></li>
-                  <li><a href="https://vueuse.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@vueuse/core</a></li>
+                  <li><a href="https://vueuse.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@vueuse/core &amp; @vueuse/nuxt</a></li>
                   <li><a href="https://s00d.github.io/nuxt-i18n-micro" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">nuxt-i18n-micro</a></li>
                   <li><a href="https://nuxt.com/modules/nuxt-codemirror" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">nuxt-codemirror</a></li>
+                  <li><a href="https://codemirror.net" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">CodeMirror</a> (commands, language, state, view)</li>
+                  <li><a href="https://capacitorjs.com" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Capacitor</a> (core, android, ios, filesystem, share, status-bar)</li>
+                  <li><a href="https://github.com/dcodeIO/bcrypt.js" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">bcryptjs</a></li>
+                  <li><a href="https://node-postgres.com" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">pg (node-postgres)</a></li>
                   <li><a href="https://vitest.dev" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Vitest</a></li>
                 </ul>
               </div>
             </div>
 
             <!-- Footer -->
-            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-800 flex-shrink-0 text-center">
+            <div class="px-4 sm:px-5 py-3 border-t border-gray-200 dark:border-gray-800 flex-shrink-0 text-center">
               <button @click="$emit('close')"
                 class="px-4 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
                 Close

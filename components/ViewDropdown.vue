@@ -18,18 +18,15 @@
       <div v-if="open"
         class="absolute left-0 mt-1 w-48 sm:w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-50">
 
-        <DropdownItem icon="mdi:menu" label="Toggle Sidebar" @click="action('toggle-sidebar')" />
-
-        <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
-
         <DropdownItem icon="mdi:language-markdown" label="Markdown Preview" @click="action('toggle-markdown-preview')" />
 
         <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
 
-        <div class="px-3 py-1.5 text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide">Results Panel</div>
-        <DropdownItem icon="mdi:dock-left" label="Results Left" @click="action('inline-left')" />
-        <DropdownItem icon="mdi:eye-off-outline" label="Results Off" @click="action('inline-off')" />
-        <DropdownItem icon="mdi:dock-right" label="Results Right" @click="action('inline-right')" />
+        <DropdownItem icon="mdi:file-document-outline" label="Templates" @click="action('templates')" />
+
+        <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+
+        <DropdownItem icon="mdi:information-outline" label="About" @click="action('about')" />
       </div>
     </Transition>
   </div>
@@ -37,11 +34,9 @@
 
 <script setup>
 const emit = defineEmits([
-  'toggle-sidebar',
   'toggle-markdown-preview',
-  'inline-left',
-  'inline-off',
-  'inline-right',
+  'templates',
+  'about',
 ])
 
 const open = ref(false)
