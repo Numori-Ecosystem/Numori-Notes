@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   const user = result.rows[0]
 
   // Fetch summary stats
-  const notesResult = await query('SELECT COUNT(*) as count FROM notes WHERE user_id = $1', [auth.userId])
+  const notesResult = await query('SELECT COUNT(*) as count FROM notes WHERE user_id = $1 AND deleted_at IS NULL', [auth.userId])
   const sharesResult = await query('SELECT COUNT(*) as count FROM shared_notes WHERE user_id = $1', [auth.userId])
 
   return {

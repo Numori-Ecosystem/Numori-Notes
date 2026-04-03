@@ -80,5 +80,13 @@ export async function migrate() {
     END $$
   `)
 
+  // Add deleted_at column for soft-delete sync
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE notes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$
+  `)
+
   console.log('[migrate] Database tables ready')
 }

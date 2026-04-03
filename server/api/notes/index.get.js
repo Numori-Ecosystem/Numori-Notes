@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   let sql = `
     SELECT id, client_id, title, description, tags, content, created_at, updated_at
-    FROM notes WHERE user_id = $1
+    FROM notes WHERE user_id = $1 AND deleted_at IS NULL
   `
   const params = [auth.userId]
 

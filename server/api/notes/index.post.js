@@ -25,6 +25,7 @@ export default defineEventHandler(async (event) => {
         tags = EXCLUDED.tags,
         content = EXCLUDED.content,
         updated_at = NOW()
+      WHERE notes.deleted_at IS NULL
       RETURNING id, client_id, title, description, tags, content, created_at, updated_at
     `, [auth.userId, clientId, title || 'Untitled Note', description || '', JSON.stringify(tags || []), content || ''])
 

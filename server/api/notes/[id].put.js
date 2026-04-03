@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
         tags = COALESCE($3, tags),
         content = COALESCE($4, content),
         updated_at = NOW()
-    WHERE id = $5 AND user_id = $6
+    WHERE id = $5 AND user_id = $6 AND deleted_at IS NULL
     RETURNING id, client_id, title, description, tags, content, created_at, updated_at
   `, [
     title ?? null,
