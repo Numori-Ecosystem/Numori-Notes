@@ -1,10 +1,10 @@
 <template>
   <div class="relative" ref="dropdownRef">
     <button @click="open = !open"
-      class="flex items-center gap-1 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors"
+      class="flex items-center gap-1 px-2.5 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 rounded-lg transition-colors"
       title="File menu">
-      <Icon name="mdi:file-document-outline" class="w-4 h-4 block" />
-      <span class="hidden sm:inline">File</span>
+      <Icon name="mdi:file-document-outline" class="w-4.5 h-4.5 block" />
+      <span class="hidden sm:inline text-sm">File</span>
       <Icon name="mdi:chevron-down" class="w-3 h-3 block transition-transform" :class="{ 'rotate-180': open }" />
     </button>
 

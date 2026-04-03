@@ -1,9 +1,8 @@
 <template>
   <header class="bg-gray-100 dark:bg-gray-900 flex-shrink-0 z-10" :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
-    <div class="flex items-center justify-between px-3 py-2">
+    <div class="flex items-center justify-between px-3 py-1.5 gap-1">
       <!-- Left: File dropdown & Title -->
-      <div class="flex items-center gap-2 min-w-0">
-        <!-- File dropdown -->
+      <div class="flex items-center gap-1.5 min-w-0">
         <FileDropdown :has-note="!!currentNote" :mod-label="modLabel" :selection-count="selectionCount"
           @new-note="$emit('file-new')"
           @open-file="$emit('file-open')"
@@ -20,7 +19,7 @@
           @about="$emit('file-about')" />
 
         <button @click="$emit('show-meta')" class="text-left min-w-0">
-          <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-400 truncate max-w-[200px] sm:max-w-xs lg:max-w-sm xl:max-w-md">
+          <h1 class="text-base font-semibold text-gray-900 dark:text-gray-400 truncate max-w-[180px] sm:max-w-xs lg:max-w-sm xl:max-w-md">
             {{ currentNote?.title || 'Notes' }}
           </h1>
         </button>
@@ -28,59 +27,51 @@
 
       <!-- Center: Markdown formatting (desktop only) -->
       <FormattingToolbar class="hidden lg:flex flex-1"
-        @apply-format="(before, after) => $emit('apply-format', before, after)" />
+        :show-markdown-preview="showMarkdownPreview"
+        @apply-format="(before, after) => $emit('apply-format', before, after)"
+        @toggle-markdown-preview="$emit('toggle-markdown-preview')" />
 
-      <!-- Spacer on mobile to push right actions to the end -->
+      <!-- Spacer on mobile -->
       <div class="flex-1 lg:hidden"></div>
 
       <!-- Right: Actions -->
-      <div class="flex items-center gap-1">
-        <!-- Toggle markdown preview -->
-        <button @click="$emit('toggle-markdown-preview')" class="p-2 rounded-lg transition-colors leading-none"
-          :class="showMarkdownPreview
-            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
-            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'" title="Toggle rendered preview">
-          <Icon name="mdi:language-markdown-outline" class="w-5 h-5 block" />
-        </button>
-
-        <!-- Inline results mode -->
-        <div class="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden" role="group">
+      <div class="flex items-center gap-0.5">
+        <!-- Inline results mode group -->
+        <div class="inline-flex items-center bg-gray-200/50 dark:bg-gray-800 rounded-lg p-0.5" role="group">
           <button @click="$emit('update:inline-mode', 'left')"
-            class="p-2 transition-colors leading-none"
+            class="p-2 rounded-md transition-all leading-none"
             :class="inlineMode === 'left'
-              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
+              ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
+              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
             title="Results on left">
-            <Icon name="mdi:format-align-left" class="w-5 h-5 block" />
+            <Icon name="mdi:dock-left" class="w-5 h-5 block" />
           </button>
           <button @click="$emit('update:inline-mode', 'off')"
-            class="p-2 transition-colors leading-none border-x border-gray-300 dark:border-gray-600"
+            class="p-2 rounded-md transition-all leading-none"
             :class="inlineMode === 'off'
-              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
+              ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
+              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
             title="Results off">
             <Icon name="mdi:eye-off-outline" class="w-5 h-5 block" />
           </button>
           <button @click="$emit('update:inline-mode', 'right')"
-            class="p-2 transition-colors leading-none"
+            class="p-2 rounded-md transition-all leading-none"
             :class="inlineMode === 'right'
-              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-850'"
+              ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
+              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
             title="Results on right">
-            <Icon name="mdi:format-align-right" class="w-5 h-5 block" />
+            <Icon name="mdi:dock-right" class="w-5 h-5 block" />
           </button>
         </div>
 
-        <!-- Separator -->
-        <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+        <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-0.5"></div>
 
         <!-- Toggle sidebar -->
         <button @click="$emit('toggle-sidebar')"
-          class="p-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-850 rounded-lg transition-colors leading-none"
+          class="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors leading-none"
           title="Toggle notes list">
           <Icon name="mdi:menu" class="w-5 h-5 block" />
         </button>
-
       </div>
     </div>
   </header>
@@ -135,4 +126,3 @@ defineEmits([
   'file-about',
 ])
 </script>
-

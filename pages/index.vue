@@ -140,7 +140,10 @@
         leave-to-class="max-h-0 opacity-0">
         <div v-if="showMobileToolbar" class="overflow-hidden bg-gray-50 dark:bg-gray-900"
           :style="{ paddingBottom: mobileKeyboardOffset === 0 ? 'env(safe-area-inset-bottom, 0px)' : '0px', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
-          <FormattingToolbar container-class="px-2 py-1.5" @apply-format="applyFormat" />
+          <FormattingToolbar container-class="px-2 py-1.5"
+            :show-markdown-preview="showMarkdownPreview"
+            @apply-format="applyFormat"
+            @toggle-markdown-preview="showMarkdownPreview = !showMarkdownPreview" />
         </div>
       </Transition>
     </div>
