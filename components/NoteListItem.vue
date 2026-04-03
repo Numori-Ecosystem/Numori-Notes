@@ -73,17 +73,29 @@
             <button @click.stop="handleAction('share')"
               class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <Icon name="mdi:share-variant-outline" class="w-4 h-4" />
-              Share
+              {{ shared ? 'Sharing details' : 'Share' }}
             </button>
-            <button @click.stop="handleAction('delete')"
+            <button v-if="shared" @click.stop="handleCopyLink"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <Icon :name="copied ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" />
+              {{ copied ? 'Copied' : 'Copy link' }}
+            </button>
+            <button v-if="shared" @click.stop="handleAction('unshare')"
               class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-              <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
-              Delete
+              <Icon name="mdi:link-variant-off" class="w-4 h-4" />
+              Stop sharing
             </button>
+            <div class="my-1 border-t border-gray-200 dark:border-gray-700" />
             <button @click.stop="handleAction('properties')"
               class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <Icon name="mdi:information-outline" class="w-4 h-4" />
               Properties
+            </button>
+            <div class="my-1 border-t border-gray-200 dark:border-gray-700" />
+            <button @click.stop="handleAction('delete')"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+              <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
+              Delete
             </button>
           </div>
         </Transition>
@@ -98,13 +110,18 @@ const props = defineProps({
   active: { type: Boolean, default: false },
   selectMode: { type: Boolean, default: false },
   selected: { type: Boolean, default: false },
-  shared: { type: Boolean, default: false }
+  shared: { type: Boolean, default: false },
+  shareHash: { type: String, default: null }
 })
 
-const emit = defineEmits(['select', 'delete', 'toggle-select', 'share', 'properties'])
+const emit = defineEmits(['select', 'delete', 'toggle-select', 'share', 'unshare', 'properties'])
+
+const { copy: clipboardCopy } = useClipboard()
+const { apiUrl } = useApi()
 
 const menuOpen = ref(false)
 const menuRef = ref(null)
+const copied = ref(false)
 
 const handleClick = () => {
   if (props.selectMode) {
@@ -117,8 +134,16 @@ const handleClick = () => {
 const handleAction = (action) => {
   menuOpen.value = false
   if (action === 'share') emit('share', props.note.id)
+  else if (action === 'unshare') emit('unshare', props.note.id)
   else if (action === 'delete') emit('delete', props.note.id)
   else if (action === 'properties') emit('properties', props.note.id)
+}
+
+const handleCopyLink = async () => {
+  if (!props.shareHash) return
+  await clipboardCopy(apiUrl(`/shared/${props.shareHash}`))
+  copied.value = true
+  setTimeout(() => { copied.value = false; menuOpen.value = false }, 1000)
 }
 
 // Close menu on outside click

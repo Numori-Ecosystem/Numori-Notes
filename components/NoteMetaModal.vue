@@ -90,6 +90,14 @@
                 Share
               </button>
             </div>
+            <div v-if="props.shared && props.shareHash" class="flex items-center gap-2 mt-2">
+              <input :value="shareUrl" readonly
+                class="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-400 text-xs font-mono outline-none" />
+              <button @click="copyShareLink"
+                class="flex-shrink-0 p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded transition-colors">
+                <Icon :name="copiedLink ? 'mdi:check' : 'mdi:content-copy'" class="w-3.5 h-3.5 block" />
+              </button>
+            </div>
           </div>
 
           <div class="flex justify-between gap-2 mt-6">
@@ -122,16 +130,32 @@ const props = defineProps({
   tags: { type: Array, default: () => [] },
   allTags: { type: Array, default: () => [] },
   noteId: { type: String, default: null },
-  shared: { type: Boolean, default: false }
+  shared: { type: Boolean, default: false },
+  shareHash: { type: String, default: null }
 })
 
 const emit = defineEmits(['close', 'save', 'delete', 'share', 'unshare'])
+
+const { copy: clipboardCopy } = useClipboard()
+const { apiUrl } = useApi()
 
 const localTitle = ref(props.title)
 const localDescription = ref(props.description)
 const localTags = ref([...props.tags])
 const tagInput = ref('')
 const tagSuggestions = ref([])
+const copiedLink = ref(false)
+
+const shareUrl = computed(() => {
+  if (!props.shareHash) return ''
+  return apiUrl(`/shared/${props.shareHash}`)
+})
+
+const copyShareLink = async () => {
+  await clipboardCopy(shareUrl.value)
+  copiedLink.value = true
+  setTimeout(() => { copiedLink.value = false }, 2000)
+}
 
 watch(() => props.isOpen, (open) => {
   if (open) {
@@ -140,6 +164,7 @@ watch(() => props.isOpen, (open) => {
     localTags.value = [...props.tags]
     tagInput.value = ''
     tagSuggestions.value = []
+    copiedLink.value = false
   }
 })
 

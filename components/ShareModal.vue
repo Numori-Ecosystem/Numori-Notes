@@ -14,21 +14,27 @@
               </button>
             </div>
 
-            <!-- Success state -->
-            <div v-if="shareHash" class="space-y-3">
+            <!-- Already shared / just shared state -->
+            <div v-if="activeHash" class="space-y-3">
               <p class="text-sm text-gray-700 dark:text-gray-400">Your note is shared. Anyone with this link can view it:</p>
               <div class="flex items-center gap-2">
-                <input :value="shareUrl" readonly
+                <input :value="activeShareUrl" readonly
                   class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-400 text-xs font-mono outline-none" />
                 <button @click="copyLink"
                   class="flex-shrink-0 p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">
                   <Icon :name="copied ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4 block" />
                 </button>
               </div>
-              <button @click="$emit('close')"
-                class="w-full px-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
-                Done
-              </button>
+              <div class="flex gap-2">
+                <button @click="$emit('close')"
+                  class="flex-1 px-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors">
+                  Done
+                </button>
+                <button @click="handleUnshare"
+                  class="flex-1 px-4 py-2 text-sm bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg transition-colors">
+                  Stop sharing
+                </button>
+              </div>
             </div>
 
             <!-- Share form -->
@@ -103,10 +109,11 @@ const props = defineProps({
   isLoggedIn: { type: Boolean, default: false },
   userName: { type: String, default: '' },
   userEmail: { type: String, default: '' },
-  authHeaders: { type: Object, default: () => ({}) }
+  authHeaders: { type: Object, default: () => ({}) },
+  existingHash: { type: String, default: null }
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'unshare'])
 
 const { copy: clipboardCopy } = useClipboard()
 const { apiFetch, apiUrl } = useApi()
@@ -117,12 +124,15 @@ const sharerEmail = ref('')
 const expiresInDays = ref(7)
 const sharing = ref(false)
 const error = ref(null)
-const shareHash = ref(null)
+const newShareHash = ref(null)
 const copied = ref(false)
 
-const shareUrl = computed(() => {
-  if (!shareHash.value) return ''
-  return apiUrl(`/shared/${shareHash.value}`)
+// Use existing hash if note is already shared, or the newly created one
+const activeHash = computed(() => newShareHash.value || props.existingHash)
+
+const activeShareUrl = computed(() => {
+  if (!activeHash.value) return ''
+  return apiUrl(`/shared/${activeHash.value}`)
 })
 
 watch(() => props.isOpen, (open) => {
@@ -133,7 +143,7 @@ watch(() => props.isOpen, (open) => {
     expiresInDays.value = 7
     sharing.value = false
     error.value = null
-    shareHash.value = null
+    newShareHash.value = null
     copied.value = false
   }
 })
@@ -164,7 +174,7 @@ const handleShare = async () => {
       body
     })
 
-    shareHash.value = data.hash
+    newShareHash.value = data.hash
   } catch (err) {
     error.value = err.data?.statusMessage || err.message || 'Failed to share'
   } finally {
@@ -172,8 +182,22 @@ const handleShare = async () => {
   }
 }
 
+const handleUnshare = async () => {
+  if (!activeHash.value) return
+  try {
+    await apiFetch(`/api/share/${activeHash.value}`, {
+      method: 'DELETE',
+      headers: props.authHeaders
+    })
+    emit('unshare')
+    emit('close')
+  } catch (err) {
+    error.value = err.data?.statusMessage || err.message || 'Failed to stop sharing'
+  }
+}
+
 const copyLink = async () => {
-  await clipboardCopy(shareUrl.value)
+  await clipboardCopy(activeShareUrl.value)
   copied.value = true
   setTimeout(() => { copied.value = false }, 2000)
 }

@@ -211,6 +211,11 @@
                         {{ formatExpiry(sn.expiresAt) }}
                       </p>
                     </div>
+                    <button @click="copySharedLink(sn.hash)"
+                      class="flex-shrink-0 p-1.5 text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors"
+                      title="Copy link">
+                      <Icon :name="copiedHash === sn.hash ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" />
+                    </button>
                     <button @click="handleUnshare(sn.hash)"
                       class="flex-shrink-0 p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                       title="Stop sharing">
@@ -261,7 +266,7 @@ const dangerPassword = ref('')
 // Shared notes
 const sharedNotes = ref([])
 const loadingShared = ref(false)
-const { apiFetch } = useApi()
+const { apiFetch, apiUrl } = useApi()
 
 const sectionTitle = computed(() => {
   const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Data & Account', shared: 'Shared Notes' }
@@ -371,6 +376,16 @@ const loadSharedNotes = async () => {
   } finally {
     loadingShared.value = false
   }
+}
+
+const { copy: clipboardCopy } = useClipboard()
+const copiedHash = ref(null)
+
+const copySharedLink = async (hash) => {
+  const url = apiUrl(`/shared/${hash}`)
+  await clipboardCopy(url)
+  copiedHash.value = hash
+  setTimeout(() => { copiedHash.value = null }, 2000)
 }
 
 const handleUnshare = async (hash) => {

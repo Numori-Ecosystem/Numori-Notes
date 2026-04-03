@@ -29,13 +29,14 @@
       <aside class="flex-shrink-0 hidden lg:block overflow-hidden transition-[width] duration-300 ease-in-out"
         :class="showSidebar ? 'w-80' : 'w-0'">
         <div class="w-80 h-full">
-          <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" @new-note="createNote" @select-note="selectNote"
+          <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" @new-note="createNote" @select-note="selectNote"
             @delete-note="confirmDelete" @edit-note="openEditModal"
             @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
             @show-help="showHelp = true"
             @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true"
             @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile"
             @share-note="handleShareNote" @show-properties="handleShowProperties"
+            @unshare-note="handleUnshareNote"
             @reorder="handleReorder" />
         </div>
       </aside>
@@ -60,13 +61,14 @@
           leave-to-class="-translate-x-full">
           <aside v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
             :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)' }">
-            <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" @new-note="createNote" @select-note="selectNote"
+            <MainSidebar :notes="notes" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" @new-note="createNote" @select-note="selectNote"
               @delete-note="confirmDelete" @edit-note="openEditModal"
               @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
               @show-help="showHelp = true"
               @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true"
               @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile"
               @share-note="handleShareNote" @show-properties="handleShowProperties"
+              @unshare-note="handleUnshareNote"
               @reorder="handleReorder" />
           </aside>
         </Transition>
@@ -147,6 +149,7 @@
       :all-tags="allTags"
       :note-id="currentNote?.id"
       :shared="currentNote ? sharedNoteIds.includes(currentNote.id) : false"
+      :share-hash="currentNote ? (sharedNotesMap.get(currentNote.id) || null) : null"
       @close="showMetaModal = false"
       @save="updateMeta" @delete="confirmDelete"
       @share="handleShareNote"
@@ -199,7 +202,9 @@
       :user-name="auth.user.value?.name || ''"
       :user-email="auth.user.value?.email || ''"
       :auth-headers="auth.authHeaders.value"
-      @close="handleShareModalClose" />
+      :existing-hash="currentNote ? (sharedNotesMap.get(currentNote.id) || null) : null"
+      @close="handleShareModalClose"
+      @unshare="handleShareModalUnshare" />
 
     <ProfileModal :is-open="showProfileModal"
       :user="auth.user.value"
@@ -404,6 +409,12 @@ const handleShowProperties = (noteId) => {
 
 // Reload shared notes when share modal closes
 const handleShareModalClose = () => {
+  showShareModal.value = false
+  if (auth.isLoggedIn.value) loadSharedNotes()
+}
+
+// Handle unshare from share modal
+const handleShareModalUnshare = () => {
   showShareModal.value = false
   if (auth.isLoggedIn.value) loadSharedNotes()
 }
