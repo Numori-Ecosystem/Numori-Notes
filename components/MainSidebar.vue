@@ -35,7 +35,7 @@
         <span>New Note</span>
       </button>
 
-      <!-- Search + select toggle -->
+      <!-- Search + select toggle + filters -->
       <div class="flex items-center gap-2">
         <button @click="toggleSelectMode"
           class="flex-shrink-0 p-1.5 rounded-lg transition-colors leading-none"
@@ -49,6 +49,63 @@
           <Icon name="mdi:magnify" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input v-model="searchQuery" type="text" placeholder="Search notes..."
             class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+        </div>
+        <button @click="showFilters = !showFilters"
+          class="flex-shrink-0 p-1.5 rounded-lg transition-colors leading-none"
+          :class="hasActiveFilters
+            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+          title="Filters">
+          <Icon name="mdi:filter-variant" class="w-4 h-4 block" />
+        </button>
+      </div>
+
+      <!-- Advanced filters panel -->
+      <div v-if="showFilters" class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 space-y-2">
+        <!-- Date range -->
+        <select v-model="filters.dateRange"
+          class="w-full px-2.5 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-400 outline-none focus:ring-1 focus:ring-primary-500">
+          <option value="">Modified: Any time</option>
+          <option value="today">Modified: Today</option>
+          <option value="week">Modified: Past 7 days</option>
+          <option value="month">Modified: Past 30 days</option>
+          <option value="older">Modified: Older than 30 days</option>
+        </select>
+
+        <!-- Toggle chips -->
+        <div class="flex flex-wrap gap-1.5">
+          <button @click="filters.searchContent = !filters.searchContent"
+            class="px-2 py-0.5 rounded-full text-[11px] font-medium transition-colors"
+            :class="filters.searchContent
+              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+            Content
+          </button>
+          <button @click="filters.hasDescription = !filters.hasDescription"
+            class="px-2 py-0.5 rounded-full text-[11px] font-medium transition-colors"
+            :class="filters.hasDescription
+              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+            Has desc
+          </button>
+          <button @click="filters.hasTags = !filters.hasTags"
+            class="px-2 py-0.5 rounded-full text-[11px] font-medium transition-colors"
+            :class="filters.hasTags
+              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+            Has tags
+          </button>
+          <button @click="filters.emptyOnly = !filters.emptyOnly"
+            class="px-2 py-0.5 rounded-full text-[11px] font-medium transition-colors"
+            :class="filters.emptyOnly
+              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+            Empty
+          </button>
+          <button v-if="hasActiveFilters" @click="clearFilters"
+            class="px-2 py-0.5 rounded-full text-[11px] font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors ml-auto">
+            Clear
+          </button>
         </div>
       </div>
 
@@ -125,6 +182,28 @@ const emit = defineEmits([
 const searchQuery = ref('')
 const selectedTags = ref([])
 const listRef = ref(null)
+const showFilters = ref(false)
+
+const filters = reactive({
+  searchContent: true,
+  dateRange: '',
+  hasDescription: false,
+  hasTags: false,
+  emptyOnly: false
+})
+
+const hasActiveFilters = computed(() => {
+  return !filters.searchContent || filters.dateRange !== '' || filters.hasDescription || filters.hasTags || filters.emptyOnly
+})
+
+const clearFilters = () => {
+  filters.searchContent = true
+  filters.dateRange = ''
+  filters.hasDescription = false
+  filters.hasTags = false
+  filters.emptyOnly = false
+  selectedTags.value = []
+}
 
 // ── Drag-to-reorder ─────────────────────────────────────
 
@@ -132,7 +211,7 @@ const draggingIndex = ref(null)
 const dropTargetIndex = ref(null)
 const dropPosition = ref(null)
 
-const isFiltering = computed(() => searchQuery.value.trim() !== '' || selectedTags.value.length > 0)
+const isFiltering = computed(() => searchQuery.value.trim() !== '' || selectedTags.value.length > 0 || hasActiveFilters.value)
 const canReorder = computed(() => !selectMode.value && !isFiltering.value)
 
 // -- Mouse (HTML5 drag) --
@@ -305,17 +384,42 @@ const filteredNotes = computed(() => {
   let result = props.notes
   const q = searchQuery.value.trim().toLowerCase()
   if (q) {
-    result = result.filter(n =>
-      (n.title || '').toLowerCase().includes(q) ||
-      (n.description || '').toLowerCase().includes(q) ||
-      (n.content || '').toLowerCase().includes(q) ||
-      (n.tags || []).some(t => t.includes(q))
-    )
+    result = result.filter(n => {
+      const matchTitle = (n.title || '').toLowerCase().includes(q)
+      const matchDesc = (n.description || '').toLowerCase().includes(q)
+      const matchTags = (n.tags || []).some(t => t.toLowerCase().includes(q))
+      const matchContent = filters.searchContent && (n.content || '').toLowerCase().includes(q)
+      return matchTitle || matchDesc || matchTags || matchContent
+    })
   }
   if (selectedTags.value.length) {
     result = result.filter(n =>
       selectedTags.value.every(t => (n.tags || []).includes(t))
     )
+  }
+  if (filters.dateRange) {
+    const now = Date.now()
+    const day = 86400000
+    result = result.filter(n => {
+      const updated = new Date(n.updatedAt).getTime()
+      const age = now - updated
+      switch (filters.dateRange) {
+        case 'today': return age < day
+        case 'week': return age < 7 * day
+        case 'month': return age < 30 * day
+        case 'older': return age >= 30 * day
+        default: return true
+      }
+    })
+  }
+  if (filters.hasDescription) {
+    result = result.filter(n => (n.description || '').trim().length > 0)
+  }
+  if (filters.hasTags) {
+    result = result.filter(n => (n.tags || []).length > 0)
+  }
+  if (filters.emptyOnly) {
+    result = result.filter(n => !(n.content || '').trim())
   }
   return result.slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 })
