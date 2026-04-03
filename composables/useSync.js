@@ -1,8 +1,9 @@
 /**
  * Composable for cloud sync. Pushes local notes to server and pulls remote changes.
  * Supports manual sync, auto-sync on interval, and debounced sync on note changes.
+ * Tracks deletions so they propagate across devices.
  */
-export const useSync = (auth, notes, saveNotes) => {
+export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => {
   const syncing = ref(false)
   const lastSyncedAt = ref(null)
   const syncError = ref(null)
@@ -12,7 +13,6 @@ export const useSync = (auth, notes, saveNotes) => {
   const AUTO_SYNC_INTERVAL = 2 * 60 * 1000 // 2 minutes
   const DEBOUNCE_DELAY = 5000 // 5 seconds after last change
 
-  // Restore last sync timestamp
   onMounted(() => {
     if (process.client) {
       lastSyncedAt.value = localStorage.getItem('last_synced_at') || null
@@ -38,12 +38,25 @@ export const useSync = (auth, notes, saveNotes) => {
       const data = await $fetch('/api/notes/sync', {
         method: 'POST',
         headers: auth.authHeaders.value,
-        body: { notes: clientNotes, lastSyncedAt: lastSyncedAt.value }
+        body: {
+          notes: clientNotes,
+          deletedClientIds: [...deletedIds.value],
+          lastSyncedAt: lastSyncedAt.value
+        }
       })
+
+      // Remove notes that were deleted on another device
+      if (data.deletedClientIds?.length) {
+        for (const id of data.deletedClientIds) {
+          const idx = notes.value.findIndex(n => n.id === id)
+          if (idx !== -1) notes.value.splice(idx, 1)
+        }
+      }
 
       // Merge pulled notes into local state
       for (const remote of data.pulled) {
-        const existing = notes.value.find(n => n.id === remote.clientId)
+        const localId = remote.clientId || remote.id.toString()
+        const existing = notes.value.find(n => n.id === localId)
         if (existing) {
           if (new Date(remote.updatedAt) > new Date(existing.updatedAt)) {
             existing.title = remote.title
@@ -54,7 +67,7 @@ export const useSync = (auth, notes, saveNotes) => {
           }
         } else {
           notes.value.push({
-            id: remote.clientId || remote.id.toString(),
+            id: localId,
             title: remote.title,
             description: remote.description,
             tags: remote.tags || [],
@@ -64,6 +77,9 @@ export const useSync = (auth, notes, saveNotes) => {
           })
         }
       }
+
+      // Deletions synced successfully — clear the queue
+      clearDeletedIds()
 
       lastSyncedAt.value = data.syncedAt
       localStorage.setItem('last_synced_at', data.syncedAt)
@@ -75,17 +91,14 @@ export const useSync = (auth, notes, saveNotes) => {
     }
   }
 
-  /** Debounced sync — called when notes change */
   const debouncedSync = () => {
     if (!auth.isLoggedIn.value) return
     clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() => sync(), DEBOUNCE_DELAY)
   }
 
-  // Start/stop auto-sync based on auth state
   const startAutoSync = () => {
     stopAutoSync()
-    // Initial sync on login
     sync()
     intervalId = setInterval(() => sync(), AUTO_SYNC_INTERVAL)
   }
@@ -96,23 +109,14 @@ export const useSync = (auth, notes, saveNotes) => {
     intervalId = null
   }
 
-  // Watch auth state to start/stop auto-sync
   watch(() => auth.isLoggedIn.value, (loggedIn) => {
-    if (loggedIn) {
-      startAutoSync()
-    } else {
-      stopAutoSync()
-    }
+    if (loggedIn) startAutoSync()
+    else stopAutoSync()
   }, { immediate: true })
 
-  // Watch notes for changes and trigger debounced sync
-  watch(notes, () => {
-    debouncedSync()
-  }, { deep: true })
+  watch(notes, () => debouncedSync(), { deep: true })
 
-  onBeforeUnmount(() => {
-    stopAutoSync()
-  })
+  onBeforeUnmount(() => stopAutoSync())
 
   return { syncing, lastSyncedAt, syncError, sync }
 }

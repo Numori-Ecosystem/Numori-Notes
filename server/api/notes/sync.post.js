@@ -5,24 +5,34 @@ import { query } from '../../utils/db.js'
  * POST /api/notes/sync — Bulk sync endpoint.
  *
  * Client sends:
- *   { notes: [...], lastSyncedAt: ISO_DATE | null }
+ *   { notes: [...], deletedClientIds: [...], lastSyncedAt: ISO_DATE | null }
  *
  * Server responds with:
- *   { pushed: [...], pulled: [...], syncedAt: ISO_DATE }
+ *   { pushed: [...], pulled: [...], deletedClientIds: [...], syncedAt: ISO_DATE }
  *
  * - `pushed`: server versions of notes the client sent (with server IDs)
- * - `pulled`: notes updated on server since lastSyncedAt that client doesn't have
+ * - `pulled`: notes on server that client doesn't have yet
+ * - `deletedClientIds`: client IDs that were deleted on server (no longer exist)
  */
 export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)
   const body = await readBody(event)
-  const { notes: clientNotes = [], lastSyncedAt } = body || {}
+  const { notes: clientNotes = [], deletedClientIds = [], lastSyncedAt } = body || {}
 
+  // 1. Delete notes the client deleted
+  if (deletedClientIds.length > 0) {
+    await query(
+      'DELETE FROM notes WHERE user_id = $1 AND client_id = ANY($2)',
+      [auth.userId, deletedClientIds]
+    )
+  }
+
+  // 2. Upsert each client note (skip any that were just deleted)
+  const deletedSet = new Set(deletedClientIds)
   const pushed = []
 
-  // Upsert each client note
   for (const note of clientNotes) {
-    if (!note.clientId) continue
+    if (!note.clientId || deletedSet.has(note.clientId)) continue
 
     const result = await query(`
       INSERT INTO notes (user_id, client_id, title, description, tags, content, created_at, updated_at)
@@ -58,22 +68,31 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Pull notes updated since last sync that weren't just pushed
-  const clientIds = clientNotes.map(n => n.clientId).filter(Boolean)
+  // 3. Find which client IDs no longer exist on server (deleted from another device)
+  const allClientIds = clientNotes.map(n => n.clientId).filter(Boolean)
+  let serverDeletedIds = []
+  if (allClientIds.length > 0) {
+    const existResult = await query(
+      'SELECT client_id FROM notes WHERE user_id = $1 AND client_id = ANY($2)',
+      [auth.userId, allClientIds]
+    )
+    const existingSet = new Set(existResult.rows.map(r => r.client_id))
+    // IDs the client sent that don't exist on server (and weren't just pushed — meaning they were deleted)
+    serverDeletedIds = allClientIds.filter(id => !existingSet.has(id) && !deletedSet.has(id))
+  }
+
+  // 4. Pull notes from server that client doesn't have
+  const clientIdSet = new Set(allClientIds)
   let pullSql = `
     SELECT id, client_id, title, description, tags, content, created_at, updated_at
     FROM notes WHERE user_id = $1
   `
   const pullParams = [auth.userId]
 
-  if (lastSyncedAt) {
-    pullSql += ` AND updated_at > $${pullParams.length + 1}`
-    pullParams.push(lastSyncedAt)
-  }
-
-  if (clientIds.length > 0) {
-    pullSql += ` AND (client_id IS NULL OR client_id != ALL($${pullParams.length + 1}))`
-    pullParams.push(clientIds)
+  // Only pull notes the client doesn't already have
+  if (allClientIds.length > 0) {
+    pullSql += ` AND (client_id IS NULL OR client_id != ALL($2))`
+    pullParams.push(allClientIds)
   }
 
   pullSql += ' ORDER BY updated_at DESC'
@@ -93,6 +112,7 @@ export default defineEventHandler(async (event) => {
   return {
     pushed,
     pulled,
+    deletedClientIds: serverDeletedIds,
     syncedAt: new Date().toISOString()
   }
 })

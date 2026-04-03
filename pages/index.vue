@@ -231,13 +231,13 @@
 </template>
 
 <script setup>
-const { notes, currentNoteId, currentNote, allTags, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes } = useNotes()
+const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds } = useNotes()
 const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
 const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()
 const welcomeWizard = useWelcomeWizard()
 const auth = useAuth()
-const { syncing, lastSyncedAt, sync } = useSync(auth, notes, saveNotes)
+const { syncing, lastSyncedAt, sync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds)
 
 // Keyboard shortcuts — must be declared before refs so handlers can reference them
 const { isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShortcuts({

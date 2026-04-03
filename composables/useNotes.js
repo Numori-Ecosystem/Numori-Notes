@@ -1,6 +1,7 @@
 export const useNotes = () => {
   const notes = ref([])
   const currentNoteId = ref(null)
+  const deletedIds = ref([]) // Track deleted note IDs for sync
 
   // Load notes from localStorage
   const loadNotes = () => {
@@ -9,18 +10,24 @@ export const useNotes = () => {
       if (stored) {
         try {
           notes.value = JSON.parse(stored)
-          // Don't auto-select a note - let user choose
         } catch (e) {
           console.error('Failed to load notes:', e)
           notes.value = []
         }
       }
 
-      // Create a default note if none exist
-      if (notes.value.length === 0) {
+      // Load deleted IDs
+      const storedDeleted = localStorage.getItem('deleted_note_ids')
+      if (storedDeleted) {
+        try { deletedIds.value = JSON.parse(storedDeleted) } catch { deletedIds.value = [] }
+      }
+
+      // Create a default note only if none exist AND user has never synced
+      // (prevents Welcome note from being recreated after sync)
+      const hasSynced = !!localStorage.getItem('last_synced_at')
+      if (notes.value.length === 0 && !hasSynced) {
         const defaultNote = createNote('Welcome', 'Notes with calculator features')
         notes.value.push(defaultNote)
-        // Don't auto-select - let user click on it
         saveNotes()
       }
     }
@@ -30,6 +37,20 @@ export const useNotes = () => {
   const saveNotes = () => {
     if (process.client) {
       localStorage.setItem('notes', JSON.stringify(notes.value))
+    }
+  }
+
+  const saveDeletedIds = () => {
+    if (process.client) {
+      localStorage.setItem('deleted_note_ids', JSON.stringify(deletedIds.value))
+    }
+  }
+
+  /** Clear the deleted IDs list (called after successful sync) */
+  const clearDeletedIds = () => {
+    deletedIds.value = []
+    if (process.client) {
+      localStorage.removeItem('deleted_note_ids')
     }
   }
 
@@ -147,7 +168,12 @@ Discounted: prev - 10%
     if (index !== -1) {
       notes.value.splice(index, 1)
 
-      // Select another note if we deleted the current one
+      // Track deletion for sync
+      if (!deletedIds.value.includes(id)) {
+        deletedIds.value.push(id)
+        saveDeletedIds()
+      }
+
       if (currentNoteId.value === id) {
         currentNoteId.value = notes.value.length > 0 ? notes.value[0].id : null
       }
@@ -193,11 +219,13 @@ Discounted: prev - 10%
     currentNoteId,
     currentNote,
     allTags,
+    deletedIds,
     addNote,
     deleteNote,
     updateNoteContent,
     updateNoteMeta,
     loadNotes,
-    saveNotes
+    saveNotes,
+    clearDeletedIds
   }
 }
