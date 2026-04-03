@@ -16,9 +16,9 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
   const lastSyncedAt = ref(null)
   const syncError = ref(null)
 
-  // Track when this client last synced to ignore SSE echoes
-  let lastSyncFinishedAt = 0
-  const SSE_IGNORE_WINDOW = 2000 // ignore SSE sync messages within 2s of our own sync
+  // Flag to ignore SSE messages triggered by our own sync
+  let expectingSelfEcho = false
+  let echoTimer = null
 
   let intervalId = null
   let debounceTimer = null
@@ -107,12 +107,16 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
       saveNotes()
 
       console.debug(`[sync] done (pulled=${data.pulled.length}, deleted=${data.deletedClientIds?.length || 0})`)
+
+      // Expect our own SSE echo within 500ms — ignore it
+      expectingSelfEcho = true
+      clearTimeout(echoTimer)
+      echoTimer = setTimeout(() => { expectingSelfEcho = false }, 500)
     } catch (err) {
       syncError.value = err.data?.statusMessage || err.message || 'Sync failed'
       console.debug(`[sync] error: ${syncError.value}`)
     } finally {
       syncing.value = false
-      lastSyncFinishedAt = Date.now()
     }
   }
 
@@ -154,9 +158,8 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
       try {
         const msg = JSON.parse(e.data)
         if (msg.type === 'sync') {
-          const timeSinceOurSync = Date.now() - lastSyncFinishedAt
-          if (syncing.value || timeSinceOurSync < SSE_IGNORE_WINDOW) {
-            console.debug(`[sync] SSE ignored (syncing=${syncing.value}, timeSince=${timeSinceOurSync}ms)`)
+          if (syncing.value || expectingSelfEcho) {
+            console.debug(`[sync] SSE ignored (syncing=${syncing.value}, selfEcho=${expectingSelfEcho})`)
             return
           }
           console.debug(`[sync] SSE triggering sync`)
