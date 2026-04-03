@@ -58,6 +58,10 @@ export default defineNuxtConfig({
       },
     ]
   },
+  runtimeConfig: {
+    jwtSecret: process.env.JWT_SECRET || 'change-me-in-production',
+    databaseUrl: process.env.DATABASE_URL || '',
+  },
   nitro: {
     prerender: {
       routes: ['/']
