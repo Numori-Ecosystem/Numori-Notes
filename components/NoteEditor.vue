@@ -391,6 +391,22 @@ const applyInlineMarkdown = (text, lineFrom, widgets) => {
   }
 }
 
+// --- Code block widget for fence lines ---
+class MdCodeBlockFenceWidget extends WidgetType {
+  constructor(lang) {
+    super()
+    this.lang = lang
+  }
+  toDOM() {
+    const span = document.createElement('span')
+    span.className = 'calcnotes-md-code-fence-label'
+    span.textContent = this.lang || ''
+    return span
+  }
+  eq(other) { return this.lang === other.lang }
+  ignoreEvent() { return false }
+}
+
 // --- Build markdown preview decorations ---
 const buildMdDecorations = (view) => {
   if (props.markdownMode === 'off') return Decoration.none
@@ -399,10 +415,67 @@ const buildMdDecorations = (view) => {
   const cursorLine = props.markdownMode === 'edit' ? doc.lineAt(view.state.selection.main.head).number : -1
   const widgets = []
 
+  // First pass: identify fenced code block ranges
+  const codeBlockRanges = [] // { startLn, endLn, lang }
+  let fenceStart = null
+  let fenceLang = ''
+  for (let ln = 1; ln <= doc.lines; ln++) {
+    const text = doc.line(ln).text
+    const trimmed = text.trim()
+    if (fenceStart === null) {
+      const fenceMatch = trimmed.match(/^```(\w*)$/)
+      if (fenceMatch) {
+        fenceStart = ln
+        fenceLang = fenceMatch[1] || ''
+      }
+    } else {
+      if (trimmed === '```') {
+        codeBlockRanges.push({ startLn: fenceStart, endLn: ln, lang: fenceLang })
+        fenceStart = null
+        fenceLang = ''
+      }
+    }
+  }
+  // Unclosed fence — treat rest of doc as code block
+  if (fenceStart !== null) {
+    codeBlockRanges.push({ startLn: fenceStart, endLn: doc.lines, lang: fenceLang })
+  }
+
+  // Helper to check if a line is inside a code block
+  const getCodeBlock = (ln) => codeBlockRanges.find(r => ln >= r.startLn && ln <= r.endLn)
+
   for (let ln = 1; ln <= doc.lines; ln++) {
     const docLine = doc.line(ln)
     const text = docLine.text
     const trimmed = text.trim()
+
+    // Handle fenced code block lines
+    const codeBlock = getCodeBlock(ln)
+    if (codeBlock) {
+      // In edit mode, if cursor is on any line of this block, show raw
+      if (props.markdownMode === 'edit' && cursorLine >= codeBlock.startLn && cursorLine <= codeBlock.endLn) continue
+
+      if (ln === codeBlock.startLn) {
+        // Opening fence: hide the ``` and show language label
+        widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.to))
+        if (codeBlock.lang) {
+          widgets.push(Decoration.widget({
+            widget: new MdCodeBlockFenceWidget(codeBlock.lang),
+            side: 1,
+          }).range(docLine.from))
+        }
+        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line calcnotes-md-code-block-first' }).range(docLine.from))
+      } else if (ln === codeBlock.endLn && trimmed === '```') {
+        // Closing fence: hide it, add bottom border styling
+        widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.to))
+        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line calcnotes-md-code-block-last' }).range(docLine.from))
+      } else {
+        // Content line inside code block
+        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line' }).range(docLine.from))
+      }
+      continue
+    }
+
     if (!trimmed || ln === cursorLine) continue
 
     // # Headers
@@ -1178,6 +1251,19 @@ const injectInlineStyles = () => {
     }
     .cm-theme-dark .calcnotes-md-link,
     .dark .calcnotes-md-link { color: #60a5fa !important; }
+    .calcnotes-md-code-block-line {
+      background: rgba(135,131,120,0.1) !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+      padding-left: 8px !important;
+    }
+    .cm-theme-dark .calcnotes-md-code-block-line,
+    .dark .calcnotes-md-code-block-line { background: rgba(255,255,255,0.06) !important; }
+    .calcnotes-md-code-block-first { border-radius: 6px 6px 0 0 !important; }
+    .calcnotes-md-code-block-last { border-radius: 0 0 6px 6px !important; }
+    .calcnotes-md-code-fence-label {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 0.75em !important; opacity: 0.5 !important; font-style: italic !important;
+    }
     .calcnotes-inline-copied-toast {
       position: absolute; pointer-events: none; z-index: 100;
       padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 500;
