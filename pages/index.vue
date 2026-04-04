@@ -11,6 +11,7 @@
       :can-redo="editorRef?.canRedo ?? false"
       @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
+      @indent="editorRef?.indentLine()" @outdent="editorRef?.outdentLine()"
       @undo="editorRef?.undo()" @redo="editorRef?.redo()"
       @update:inline-mode="showInlineResults = $event"
       @toggle-markdown-preview="showMarkdownPreview = !showMarkdownPreview"
@@ -166,6 +167,8 @@
           :can-undo="editorRef?.canUndo ?? false"
           :can-redo="editorRef?.canRedo ?? false"
           @apply-format="applyFormat"
+          @indent="editorRef?.indentLine()"
+          @outdent="editorRef?.outdentLine()"
           @undo="editorRef?.undo()"
           @redo="editorRef?.redo()" />
       </div>
@@ -334,6 +337,8 @@ if (import.meta.client && isAppleNative) {
     onFormat: (before, after) => editorRef.value?.wrapSelection(before, after),
     onUndo: () => editorRef.value?.undo(),
     onRedo: () => editorRef.value?.redo(),
+    onIndent: () => editorRef.value?.indentLine(),
+    onOutdent: () => editorRef.value?.outdentLine(),
     canUndo: () => editorRef.value?.canUndo ?? false,
     canRedo: () => editorRef.value?.canRedo ?? false,
   })

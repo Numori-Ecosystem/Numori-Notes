@@ -383,35 +383,42 @@ const buildMdDecorations = (view) => {
       continue
     }
 
-    // - [x] / - [ ] Checkboxes
-    const checkMatch = trimmed.match(/^- \[([ x])\]\s(.+)$/)
+    // - [x] / - [ ] Checkboxes (supports nesting via leading whitespace)
+    const checkMatch = text.match(/^(\s*)- \[([ x])\]\s(.+)$/)
     if (checkMatch) {
-      const checked = checkMatch[1] === 'x'
-      const prefixStr = checked ? '- [x] ' : '- [ ] '
-      const prefixStart = text.indexOf(prefixStr)
-      const prefixEnd = prefixStart + prefixStr.length
+      const indent = checkMatch[1].length
+      const checked = checkMatch[2] === 'x'
+      const prefixEnd = indent + (checked ? 6 : 6) // "- [x] " or "- [ ] " = 6 chars
       widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
+      const nestLevel = Math.floor(indent / 2)
+      const padStr = '\u2003'.repeat(nestLevel) // em-space per nesting level
       widgets.push(Decoration.widget({
-        widget: new MdPrefixWidget(checked ? '\u2611\u2009' : '\u2610\u2009', 'calcnotes-md-check-icon'),
+        widget: new MdPrefixWidget(padStr + (checked ? '\u2611\u2009' : '\u2610\u2009'), 'calcnotes-md-check-icon'),
         side: -1,
       }).range(docLine.from + prefixEnd))
       widgets.push(Decoration.mark({
         class: checked ? 'calcnotes-md-checked' : 'calcnotes-md-unchecked'
       }).range(docLine.from + prefixEnd, docLine.to))
+      applyInlineMarkdown(text.substring(prefixEnd), docLine.from + prefixEnd, widgets)
       continue
     }
 
-    // - List items
-    const listMatch = trimmed.match(/^- (.+)$/)
+    // - List items (supports nesting via leading whitespace)
+    const listMatch = text.match(/^(\s*)- (.+)$/)
     if (listMatch) {
-      const dashIdx = text.indexOf('- ')
-      const prefixEnd = dashIdx + 2
+      const indent = listMatch[1].length
+      const prefixEnd = indent + 2 // "- " = 2 chars
       widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
+      const nestLevel = Math.floor(indent / 2)
+      const bullets = ['\u2022', '\u25E6', '\u25AA', '\u25AB'] // ●, ◦, ▪, ▫
+      const bullet = bullets[Math.min(nestLevel, bullets.length - 1)]
+      const padStr = '\u2003'.repeat(nestLevel) // em-space per nesting level
       widgets.push(Decoration.widget({
-        widget: new MdPrefixWidget('\u2022\u2009', 'calcnotes-md-bullet'),
+        widget: new MdPrefixWidget(padStr + bullet + '\u2009', 'calcnotes-md-bullet'),
         side: -1,
       }).range(docLine.from + prefixEnd))
       widgets.push(Decoration.mark({ class: 'calcnotes-md-list-item' }).range(docLine.from + prefixEnd, docLine.to))
+      applyInlineMarkdown(text.substring(prefixEnd), docLine.from + prefixEnd, widgets)
       continue
     }
 
@@ -1019,9 +1026,39 @@ const wrapSelection = (before, after = before) => {
   editorView.focus()
 }
 
+const indentLine = () => {
+  if (!editorView) return
+  const line = editorView.state.doc.lineAt(editorView.state.selection.main.head)
+  editorView.dispatch({
+    changes: { from: line.from, insert: '  ' },
+    selection: EditorSelection.cursor(editorView.state.selection.main.head + 2),
+  })
+  editorView.focus()
+}
+
+const outdentLine = () => {
+  if (!editorView) return
+  const line = editorView.state.doc.lineAt(editorView.state.selection.main.head)
+  const text = line.text
+  if (text.startsWith('  ')) {
+    editorView.dispatch({
+      changes: { from: line.from, to: line.from + 2, insert: '' },
+      selection: EditorSelection.cursor(Math.max(line.from, editorView.state.selection.main.head - 2)),
+    })
+  } else if (text.startsWith('\t')) {
+    editorView.dispatch({
+      changes: { from: line.from, to: line.from + 1, insert: '' },
+      selection: EditorSelection.cursor(Math.max(line.from, editorView.state.selection.main.head - 1)),
+    })
+  }
+  editorView.focus()
+}
+
 defineExpose({
   insertText,
   wrapSelection,
+  indentLine,
+  outdentLine,
   canUndo,
   canRedo,
   undo: () => { if (editorView) { cmUndo(editorView); updateUndoRedoState(); editorView.focus() } },

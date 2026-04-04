@@ -40,6 +40,8 @@
           :can-undo="canUndo"
           :can-redo="canRedo"
           @apply-format="(before, after) => $emit('apply-format', before, after)"
+          @indent="$emit('indent')"
+          @outdent="$emit('outdent')"
           @undo="$emit('undo')"
           @redo="$emit('redo')" />
 
@@ -132,6 +134,8 @@ defineEmits([
   'show-meta',
   'show-templates',
   'apply-format',
+  'indent',
+  'outdent',
   'update:inline-mode',
   'toggle-markdown-preview',
   'undo',

@@ -30,6 +30,19 @@
       :title="btn.title">
       <Icon :name="btn.icon" class="w-5 h-5 block" />
     </button>
+    <!-- Separator -->
+    <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-1 flex-shrink-0"></div>
+    <!-- Indent / Outdent -->
+    <button @mousedown.prevent @click="$emit('indent')"
+      class="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 rounded-lg transition-colors flex-shrink-0 leading-none"
+      title="Indent (nest)">
+      <Icon name="mdi:format-indent-increase" class="w-5 h-5 block" />
+    </button>
+    <button @mousedown.prevent @click="$emit('outdent')"
+      class="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 rounded-lg transition-colors flex-shrink-0 leading-none"
+      title="Outdent (unnest)">
+      <Icon name="mdi:format-indent-decrease" class="w-5 h-5 block" />
+    </button>
     <div class="min-w-3 flex-shrink-0 flex-grow" aria-hidden="true">&nbsp;</div>
 
 
@@ -52,13 +65,15 @@ defineProps({
   },
 })
 
-defineEmits(['apply-format', 'undo', 'redo'])
+defineEmits(['apply-format', 'indent', 'outdent', 'undo', 'redo'])
 
 const buttons = [
   { before: '**', after: '**', title: 'Bold', icon: 'mdi:format-bold' },
   { before: '*', after: '*', title: 'Italic', icon: 'mdi:format-italic' },
   { before: '~~', after: '~~', title: 'Strikethrough', icon: 'mdi:format-strikethrough' },
-  { before: '# ', after: '', title: 'Heading', icon: 'mdi:format-header-1' },
+  { before: '# ', after: '', title: 'Heading 1', icon: 'mdi:format-header-1' },
+  { before: '## ', after: '', title: 'Heading 2', icon: 'mdi:format-header-2' },
+  { before: '### ', after: '', title: 'Heading 3', icon: 'mdi:format-header-3' },
   { before: '- ', after: '', title: 'List', icon: 'mdi:format-list-bulleted' },
   { before: '- [ ] ', after: '', title: 'Checklist', icon: 'mdi:checkbox-marked-outline' },
   { before: '> ', after: '', title: 'Quote', icon: 'mdi:format-quote-close' },
