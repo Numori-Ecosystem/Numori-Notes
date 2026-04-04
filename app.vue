@@ -8,6 +8,12 @@
 </template>
 
 <style>
+/* Disable elastic overscroll bounce on iOS / macOS Safari */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 /* Safe area insets for notched / rounded-corner devices */
 :root {
   --sat: env(safe-area-inset-top, 0px);
