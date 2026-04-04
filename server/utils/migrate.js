@@ -66,50 +66,50 @@ export async function migrate() {
 
   // Add avatar_url column if missing (for existing databases)
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add deletion_requested columns if missing
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE users ADD COLUMN IF NOT EXISTS deletion_requested_at TIMESTAMPTZ;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add sort_order column for manual ordering
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE notes ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add deleted_at column for soft-delete sync
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE notes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add collect_analytics flag to shared_notes
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS collect_analytics BOOLEAN NOT NULL DEFAULT FALSE;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add privacy_no_tracking flag to users (default TRUE — privacy on by default)
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_no_tracking BOOLEAN NOT NULL DEFAULT TRUE;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Share views table for analytics
@@ -134,111 +134,111 @@ export async function migrate() {
 
   // Add ip_address and event_type columns if missing (for existing databases)
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS ip_address TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS event_type TEXT NOT NULL DEFAULT 'view';
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add deleted_at to shared_notes for soft-delete (analytics persist)
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add viewer_fingerprint for identifying unique viewers across repeat visits
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS viewer_fingerprint TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add extra header columns for richer analytics
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS accept_language TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS dnt TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS sec_ch_ua TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add city and region columns for IP geolocation
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS city TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS region TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add encrypted flag to shared_notes for E2E encrypted shares
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS encrypted BOOLEAN NOT NULL DEFAULT FALSE;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Change notes.tags and shared_notes.tags column type from JSONB to TEXT
   // to support encrypted payloads (encrypted tags are JSON strings like { iv, ct }).
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE notes ALTER COLUMN tags TYPE TEXT USING tags::TEXT;
     EXCEPTION WHEN others THEN NULL;
-    END $$
+    END $do$
   `)
 
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE shared_notes ALTER COLUMN tags TYPE TEXT USING tags::TEXT;
     EXCEPTION WHEN others THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add source_client_id to shared_notes so we can match shares to local notes
   // without relying on title comparison (which breaks with encrypted titles)
   await query(`
-    DO $$ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS source_client_id TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$
+    END $do$
   `)
 
   // Add password_hint to shared_notes for password-protected shares
   await query(`
-    DO $ BEGIN
+    DO $do$ BEGIN
       ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS password_hint TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
-    END $
+    END $do$
   `)
 
   console.log('[migrate] Database tables ready')
