@@ -37,9 +37,7 @@
 
         <!-- Center: Markdown formatting (desktop only) -->
         <FormattingToolbar class="hidden lg:flex flex-1"
-          :show-markdown-preview="showMarkdownPreview"
-          @apply-format="(before, after) => $emit('apply-format', before, after)"
-          @toggle-markdown-preview="$emit('toggle-markdown-preview')" />
+          @apply-format="(before, after) => $emit('apply-format', before, after)" />
 
         <!-- Spacer on mobile -->
         <div class="flex-1 lg:hidden"></div>
