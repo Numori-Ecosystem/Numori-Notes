@@ -275,6 +275,78 @@ const buildInlineDecorations = (view) => {
   return Decoration.set(widgets)
 }
 
+// --- Inline markdown decoration helper ---
+const applyInlineMarkdown = (text, lineFrom, widgets) => {
+  // Collect inline spans to avoid overlapping ranges
+  const spans = []
+
+  // Inline code: `...`
+  const codeRe = /`([^`]+)`/g
+  let m
+  while ((m = codeRe.exec(text)) !== null) {
+    spans.push({ from: m.index, to: m.index + m[0].length, type: 'code', openLen: 1, closeLen: 1 })
+  }
+
+  // Bold: **...**
+  const boldRe = /\*\*(.+?)\*\*/g
+  while ((m = boldRe.exec(text)) !== null) {
+    spans.push({ from: m.index, to: m.index + m[0].length, type: 'bold', openLen: 2, closeLen: 2 })
+  }
+
+  // Strikethrough: ~~...~~
+  const strikeRe = /~~(.+?)~~/g
+  while ((m = strikeRe.exec(text)) !== null) {
+    spans.push({ from: m.index, to: m.index + m[0].length, type: 'strike', openLen: 2, closeLen: 2 })
+  }
+
+  // Italic: *...* (but not **)
+  const italicRe = /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g
+  while ((m = italicRe.exec(text)) !== null) {
+    spans.push({ from: m.index, to: m.index + m[0].length, type: 'italic', openLen: 1, closeLen: 1 })
+  }
+
+  // Links: [text](url)
+  const linkRe = /\[([^\]]+)\]\(([^)]+)\)/g
+  while ((m = linkRe.exec(text)) !== null) {
+    spans.push({ from: m.index, to: m.index + m[0].length, type: 'link', linkText: m[1], linkUrl: m[2], openLen: 1 })
+  }
+
+  // Sort by position, remove overlapping spans (first match wins)
+  spans.sort((a, b) => a.from - b.from)
+  const used = []
+  for (const s of spans) {
+    if (used.some(u => s.from < u.to && s.to > u.from)) continue
+    used.push(s)
+  }
+
+  const classMap = {
+    bold: 'calcnotes-md-bold',
+    italic: 'calcnotes-md-italic',
+    strike: 'calcnotes-md-strike',
+    code: 'calcnotes-md-inline-code',
+  }
+
+  for (const s of used) {
+    if (s.type === 'link') {
+      // Hide [
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(lineFrom + s.from, lineFrom + s.from + 1))
+      // Style link text
+      const textEnd = s.from + 1 + s.linkText.length
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-link', attributes: { title: s.linkUrl } }).range(lineFrom + s.from + 1, lineFrom + textEnd))
+      // Hide ](url)
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(lineFrom + textEnd, lineFrom + s.to))
+    } else {
+      const cls = classMap[s.type]
+      // Hide opening syntax
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(lineFrom + s.from, lineFrom + s.from + s.openLen))
+      // Style content
+      widgets.push(Decoration.mark({ class: cls }).range(lineFrom + s.from + s.openLen, lineFrom + s.to - s.closeLen))
+      // Hide closing syntax
+      widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(lineFrom + s.to - s.closeLen, lineFrom + s.to))
+    }
+  }
+}
+
 // --- Build markdown preview decorations ---
 const buildMdDecorations = (view) => {
   if (!props.showMarkdownPreview) return Decoration.none
@@ -296,6 +368,7 @@ const buildMdDecorations = (view) => {
       const prefixLen = text.indexOf(hashes) + hashes.length + 1
       widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixLen))
       widgets.push(Decoration.mark({ class: `calcnotes-md-h${hashes.length}` }).range(docLine.from + prefixLen, docLine.to))
+      applyInlineMarkdown(text.substring(prefixLen), docLine.from + prefixLen, widgets)
       continue
     }
 
@@ -357,6 +430,9 @@ const buildMdDecorations = (view) => {
       widgets.push(Decoration.mark({ class: 'calcnotes-md-quote' }).range(docLine.from + prefixEnd, docLine.to))
       continue
     }
+
+    // --- Inline markdown: bold, italic, strikethrough, code, links ---
+    applyInlineMarkdown(text, docLine.from, widgets)
   }
 
   return Decoration.set(widgets, true)
@@ -744,6 +820,22 @@ const injectInlineStyles = () => {
     .calcnotes-md-quote-bar { color: #FF6188 !important; font-style: normal !important; }
     .cm-theme-dark .calcnotes-md-quote-bar,
     .dark .calcnotes-md-quote-bar { color: #FF6188 !important; }
+    .calcnotes-md-bold { font-weight: 700 !important; }
+    .calcnotes-md-italic { font-style: italic !important; }
+    .calcnotes-md-strike { text-decoration: line-through !important; opacity: 0.6 !important; }
+    .calcnotes-md-inline-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+      background: rgba(135,131,120,0.15) !important; border-radius: 3px !important;
+      padding: 1px 4px !important; font-size: 0.9em !important;
+    }
+    .cm-theme-dark .calcnotes-md-inline-code,
+    .dark .calcnotes-md-inline-code { background: rgba(255,255,255,0.1) !important; }
+    .calcnotes-md-link {
+      color: #2563eb !important; text-decoration: underline !important;
+      text-underline-offset: 2px !important; cursor: pointer !important;
+    }
+    .cm-theme-dark .calcnotes-md-link,
+    .dark .calcnotes-md-link { color: #60a5fa !important; }
     .calcnotes-inline-copied-toast {
       position: absolute; pointer-events: none; z-index: 100;
       padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 500;
