@@ -749,10 +749,12 @@ watch(currentLine, () => {
 })
 
 // External content changes (switching notes, sync from other devices, inserting templates).
-// When the editor is live and content genuinely differs, we apply changes via
-// a CodeMirror transaction so cursor position, selection, scroll and undo
-// history are preserved. Setting localContent directly would cause
-// NuxtCodeMirror to replace the entire document (hard reload).
+// When the editor is live and content genuinely differs, we compute a minimal
+// diff (common prefix/suffix) and dispatch only the changed region as a CM
+// transaction. This lets CodeMirror map cursor/selection through the change
+// instead of resetting to position 0.
+// We also sync localContent *before* dispatching so NuxtCodeMirror's internal
+// watchEffect sees value === doc and doesn't fire a redundant full replacement.
 let suppressEmit = false
 
 watch(() => props.content, (newContent) => {
@@ -767,15 +769,34 @@ watch(() => props.content, (newContent) => {
       nextTick(() => { suppressEmit = false })
       return
     }
-    // Content genuinely changed (remote edit) — apply via CM transaction
-    // to preserve cursor, selection, scroll and undo history.
+
+    // Compute minimal diff: find common prefix and suffix
+    const oldStr = currentDoc
+    const newStr = newContent
+    let prefixLen = 0
+    const minLen = Math.min(oldStr.length, newStr.length)
+    while (prefixLen < minLen && oldStr[prefixLen] === newStr[prefixLen]) prefixLen++
+
+    let suffixLen = 0
+    const maxSuffix = minLen - prefixLen
+    while (
+      suffixLen < maxSuffix &&
+      oldStr[oldStr.length - 1 - suffixLen] === newStr[newStr.length - 1 - suffixLen]
+    ) suffixLen++
+
+    const from = prefixLen
+    const to = oldStr.length - suffixLen
+    const insert = newStr.slice(prefixLen, newStr.length - suffixLen)
+
+    // Sync the ref first so NuxtCodeMirror's watchEffect sees no diff
     suppressEmit = true
+    localContent.value = newContent
+
+    // Dispatch the minimal change — CM maps cursor/selection through it
     editorView.dispatch({
-      changes: { from: 0, to: currentDoc.length, insert: newContent },
+      changes: { from, to, insert },
     })
-    // The dispatch updates CM's doc which flows back through v-model
-    // into localContent. We suppress the emit so the parent doesn't
-    // re-save the same content it just gave us.
+
     nextTick(() => { suppressEmit = false })
     updateLines(newContent)
   } else {
