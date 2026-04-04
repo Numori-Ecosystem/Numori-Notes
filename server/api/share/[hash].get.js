@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
   const result = await query(`
     SELECT id, hash, title, description, tags, content, sharer_name, sharer_email,
-           anonymous, expires_at, created_at, collect_analytics, deleted_at
+           anonymous, expires_at, created_at, collect_analytics, deleted_at, encrypted
     FROM shared_notes WHERE hash = $1
   `, [hash])
 
@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
     description: row.description,
     tags: row.tags,
     content: row.content,
+    encrypted: row.encrypted === true,
     sharer: row.anonymous ? null : {
       name: row.sharer_name,
       email: row.sharer_email

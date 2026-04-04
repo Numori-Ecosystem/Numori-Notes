@@ -1,8 +1,17 @@
 /**
  * Authentication state and API calls.
  * Stores JWT in Dexie (appState table). Completely optional — app works without auth.
+ *
+ * E2E encryption: On login/register the user's password is used to derive
+ * two independent keys via PBKDF2 (see utils/crypto.js):
+ *   - authKey  → sent to the server for authentication (server stores hash(authKey))
+ *   - encKey   → non-extractable AES-GCM key kept in memory only, never sent to server
+ *
+ * The encKey is exposed via `encKey` ref so the sync composable can
+ * encrypt/decrypt notes transparently.
  */
 import db from '~/db.js'
+import { deriveAuthKey, deriveEncKey } from '~/utils/crypto.js'
 
 export const useAuth = () => {
   const { apiFetch } = useApi()
@@ -11,6 +20,9 @@ export const useAuth = () => {
   const token = ref(null)
   const loading = ref(false)
   const error = ref(null)
+
+  /** The non-extractable AES-GCM encryption key. Lives in memory only. */
+  const encKey = ref(null)
 
   const isLoggedIn = computed(() => !!token.value && !!user.value)
 
@@ -43,18 +55,24 @@ export const useAuth = () => {
       token.value = null
       await db.appState.delete('auth_token')
     }
+    // Note: encKey is NOT restored here — the user must enter their password
+    // (login) to derive it. On a page refresh the token restores the session
+    // but encKey will be null until the next login. The sync composable
+    // handles this gracefully.
   }
 
   const register = async (email, password, name = '') => {
     loading.value = true
     error.value = null
     try {
+      const authKeyHex = await deriveAuthKey(password)
       const data = await apiFetch('/api/auth/register', {
         method: 'POST',
-        body: { email, password, name }
+        body: { email, authKey: authKeyHex, name }
       })
       await _saveToken(data.token)
       user.value = data.user
+      encKey.value = await deriveEncKey(password)
       return data
     } catch (err) {
       error.value = err.data?.statusMessage || err.message || 'Registration failed'
@@ -68,12 +86,14 @@ export const useAuth = () => {
     loading.value = true
     error.value = null
     try {
+      const authKeyHex = await deriveAuthKey(password)
       const data = await apiFetch('/api/auth/login', {
         method: 'POST',
-        body: { email, password }
+        body: { email, authKey: authKeyHex }
       })
       await _saveToken(data.token)
       user.value = data.user
+      encKey.value = await deriveEncKey(password)
       return data
     } catch (err) {
       error.value = err.data?.statusMessage || err.message || 'Login failed'
@@ -86,6 +106,7 @@ export const useAuth = () => {
   const logout = async () => {
     token.value = null
     user.value = null
+    encKey.value = null
     await db.appState.bulkDelete(['auth_token', 'last_synced_at'])
   }
 
@@ -108,15 +129,52 @@ export const useAuth = () => {
     }
   }
 
-  const changePassword = async (currentPassword, newPassword) => {
+  /**
+   * Change password. Derives old and new encKeys, re-encrypts all notes
+   * client-side, and sends the re-encrypted dataset + new authKey hash
+   * to the server atomically.
+   *
+   * `onProgress(current, total)` is called during re-encryption so the
+   * UI can display a progress bar.
+   *
+   * On success the session is invalidated and the user must log in again.
+   */
+  const changePassword = async (currentPassword, newPassword, notes = [], onProgress = null) => {
     loading.value = true
     error.value = null
     try {
+      const { encryptNote, decryptNote, isEncrypted } = await import('~/utils/crypto.js')
+
+      const oldAuthKey = await deriveAuthKey(currentPassword)
+      const newAuthKey = await deriveAuthKey(newPassword)
+      const oldEncKey = await deriveEncKey(currentPassword)
+      const newEncKey = await deriveEncKey(newPassword)
+
+      // Re-encrypt every note: decrypt with old key, encrypt with new key
+      const reEncryptedNotes = []
+      for (let i = 0; i < notes.length; i++) {
+        let plain = notes[i]
+        // Only decrypt if the note is currently encrypted
+        if (isEncrypted(plain.content)) {
+          plain = await decryptNote(plain, oldEncKey)
+        }
+        const encrypted = await encryptNote(plain, newEncKey)
+        reEncryptedNotes.push(encrypted)
+        if (onProgress) onProgress(i + 1, notes.length)
+      }
+
       await apiFetch('/api/auth/password', {
         method: 'PUT',
         headers: authHeaders.value,
-        body: { currentPassword, newPassword }
+        body: {
+          currentAuthKey: oldAuthKey,
+          newAuthKey,
+          reEncryptedNotes
+        }
       })
+
+      // Invalidate session — force re-login
+      await logout()
     } catch (err) {
       error.value = err.data?.statusMessage || err.message || 'Password change failed'
       throw err
@@ -129,10 +187,11 @@ export const useAuth = () => {
     loading.value = true
     error.value = null
     try {
+      const authKeyHex = await deriveAuthKey(password)
       const data = await apiFetch('/api/auth/delete', {
         method: 'POST',
         headers: authHeaders.value,
-        body: { type, password }
+        body: { type, authKey: authKeyHex }
       })
       if (type === 'account') await logout()
       return data
@@ -154,7 +213,7 @@ export const useAuth = () => {
   onMounted(() => restore())
 
   return {
-    user, token, loading, error, isLoggedIn, authHeaders,
+    user, token, loading, error, isLoggedIn, authHeaders, encKey,
     register, login, logout, restore,
     updateProfile, changePassword, requestDeletion, refreshUser
   }

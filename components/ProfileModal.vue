@@ -187,6 +187,9 @@
 
               <!-- ═══ Change Password ═══ -->
               <div v-else-if="activeSection === 'password'" class="space-y-4">
+                <p class="text-xs text-gray-500 dark:text-gray-500">
+                  Changing your password will re-encrypt all your notes. This may take a moment.
+                </p>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Current Password</label>
                   <input v-model="currentPassword" type="password"
@@ -204,7 +207,20 @@
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
                   <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
                 </div>
-                <button @click="savePassword" :disabled="saving || !currentPassword || !newPassword || newPassword !== confirmNewPassword"
+
+                <!-- Re-encryption progress bar -->
+                <div v-if="reEncryptProgress" class="space-y-1">
+                  <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
+                    <span>Re-encrypting notes…</span>
+                    <span>{{ reEncryptProgress.current }} / {{ reEncryptProgress.total }}</span>
+                  </div>
+                  <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                    <div class="bg-primary-600 h-2 rounded-full transition-all duration-200"
+                      :style="{ width: `${(reEncryptProgress.current / reEncryptProgress.total) * 100}%` }" />
+                  </div>
+                </div>
+
+                <button @click="savePassword" :disabled="saving || !currentPassword || !newPassword || newPassword !== confirmNewPassword || newPassword.length < 8"
                   class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
                   <Icon v-if="saving" name="mdi:loading" class="w-4 h-4 animate-spin" />
                   Update Password
@@ -335,6 +351,7 @@ const editorCanvasSize = computed(() => {
 const currentPassword = ref('')
 const newPassword = ref('')
 const confirmNewPassword = ref('')
+const reEncryptProgress = ref(null)
 
 // Danger zone
 const dangerPassword = ref('')
@@ -451,9 +468,16 @@ const saveProfile = async () => {
 const savePassword = async () => {
   saving.value = true
   feedback.value = null
+  reEncryptProgress.value = null
   try {
-    await emit('change-password', { currentPassword: currentPassword.value, newPassword: newPassword.value })
-    showFeedback('Password updated')
+    await emit('change-password', {
+      currentPassword: currentPassword.value,
+      newPassword: newPassword.value,
+      onProgress: (current, total) => {
+        reEncryptProgress.value = { current, total }
+      }
+    })
+    showFeedback('Password updated. Please log in again.')
     currentPassword.value = ''
     newPassword.value = ''
     confirmNewPassword.value = ''
@@ -462,6 +486,7 @@ const savePassword = async () => {
     showFeedback(err?.data?.statusMessage || 'Failed to change password', 'error')
   } finally {
     saving.value = false
+    reEncryptProgress.value = null
   }
 }
 

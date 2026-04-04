@@ -28,6 +28,27 @@
       </div>
     </div>
 
+    <!-- Password prompt for encrypted notes without a key in the URL -->
+    <div v-else-if="needsPassword" class="flex-1 flex items-center justify-center px-6">
+      <div class="max-w-sm w-full space-y-4 text-center">
+        <Icon name="mdi:lock-outline" class="w-12 h-12 text-gray-400 mx-auto" />
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200">This note is password-protected</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-500">Enter the password to view this shared note.</p>
+        <div v-if="decryptError" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
+          {{ decryptError }}
+        </div>
+        <input v-model="passwordInput" type="password" placeholder="Share password"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
+          @keyup.enter="decryptWithPassword" />
+        <button @click="decryptWithPassword" :disabled="!passwordInput || decrypting"
+          class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
+          <Icon v-if="decrypting" name="mdi:loading" class="w-4 h-4 animate-spin" />
+          <Icon v-else name="mdi:lock-open-outline" class="w-4 h-4" />
+          Decrypt
+        </button>
+      </div>
+    </div>
+
     <!-- Shared note content -->
     <main v-else-if="note" class="flex-1 max-w-3xl mx-auto w-full px-4 py-6 space-y-4">
       <div class="space-y-1">
@@ -57,6 +78,8 @@
 </template>
 
 <script setup>
+import { deriveShareKey, decryptSharedNote, isEncrypted } from '~/utils/crypto.js'
+
 const route = useRoute()
 const hash = route.params.hash
 const { apiFetch } = useApi()
@@ -65,15 +88,76 @@ const note = ref(null)
 const loading = ref(true)
 const error = ref(null)
 
+// Encryption state
+const rawEncryptedData = ref(null) // raw server response when encrypted
+const needsPassword = ref(false)
+const passwordInput = ref('')
+const decryptError = ref(null)
+const decrypting = ref(false)
+
 onMounted(async () => {
   try {
-    note.value = await apiFetch(`/api/share/${hash}`)
+    const data = await apiFetch(`/api/share/${hash}`)
+
+    if (data.encrypted && isEncrypted(data.content)) {
+      // Check if a key is provided in the URL query parameter (passwordless sharing)
+      const urlKey = route.query.key
+      if (urlKey) {
+        // Passwordless sharing: the random password is in the URL.
+        // The encryption/decryption flow is identical to password-protected sharing.
+        // However, since the password travels in the URL, the server can see it —
+        // the intent here is light obfuscation in transit, not security against
+        // a server-side observer.
+        try {
+          const shareKey = await deriveShareKey(urlKey)
+          const decrypted = await decryptSharedNote(data, shareKey)
+          note.value = {
+            ...data,
+            title: decrypted.title,
+            description: decrypted.description,
+            tags: decrypted.tags,
+            content: decrypted.content
+          }
+        } catch {
+          error.value = 'Failed to decrypt this shared note. The link may be invalid.'
+        }
+      } else {
+        // Password-protected sharing: prompt the user for the password
+        rawEncryptedData.value = data
+        needsPassword.value = true
+      }
+    } else {
+      // Unencrypted (legacy) shared note
+      note.value = data
+    }
   } catch (err) {
     error.value = err.data?.statusMessage || 'This shared note could not be found.'
   } finally {
     loading.value = false
   }
 })
+
+const decryptWithPassword = async () => {
+  if (!passwordInput.value || !rawEncryptedData.value) return
+  decrypting.value = true
+  decryptError.value = null
+  try {
+    const shareKey = await deriveShareKey(passwordInput.value)
+    const decrypted = await decryptSharedNote(rawEncryptedData.value, shareKey)
+    note.value = {
+      ...rawEncryptedData.value,
+      title: decrypted.title,
+      description: decrypted.description,
+      tags: decrypted.tags,
+      content: decrypted.content
+    }
+    needsPassword.value = false
+  } catch {
+    decryptError.value = 'Incorrect password. Please try again.'
+  } finally {
+    decrypting.value = false
+  }
+}
 
 const importNote = async () => {
   if (!note.value) return

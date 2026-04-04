@@ -26,6 +26,12 @@
                 </button>
               </div>
 
+              <!-- Password hint for password-protected shares -->
+              <p v-if="usedSharePassword && sharePasswordMode === 'custom'" class="text-xs text-amber-600 dark:text-amber-400">
+                <Icon name="mdi:lock-outline" class="w-3 h-3 inline" />
+                This note is password-protected. Share the password separately with the recipient.
+              </p>
+
               <!-- Analytics link -->
               <button v-if="isLoggedIn" @click="$emit('open-analytics', activeHash)"
                 class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors">
@@ -84,6 +90,46 @@
                 Shared as {{ userName || userEmail }}
               </p>
 
+              <!-- Share password mode -->
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400">Encryption</label>
+                <div class="flex gap-2">
+                  <button @click="sharePasswordMode = 'none'"
+                    class="flex-1 px-3 py-2 text-xs rounded-lg border transition-colors"
+                    :class="sharePasswordMode === 'none'
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'">
+                    Link only
+                  </button>
+                  <button @click="sharePasswordMode = 'custom'"
+                    class="flex-1 px-3 py-2 text-xs rounded-lg border transition-colors"
+                    :class="sharePasswordMode === 'custom'
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'">
+                    <Icon name="mdi:lock-outline" class="w-3 h-3 inline" /> Password
+                  </button>
+                </div>
+                <p class="text-xs text-gray-400 dark:text-gray-600">
+                  <template v-if="sharePasswordMode === 'custom'">
+                    Recipient needs this password to view the note. Share it separately.
+                  </template>
+                  <template v-else>
+                    <!-- Passwordless sharing: key is embedded in the URL. Encrypted in transit
+                         but the server can see the key in the URL query parameter.
+                         This provides light obfuscation, not confidentiality against the server. -->
+                    A random key is embedded in the link. Encrypted in transit but not hidden from the server.
+                  </template>
+                </p>
+              </div>
+
+              <!-- Custom password input -->
+              <div v-if="sharePasswordMode === 'custom'">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Share password</label>
+                <input v-model="sharePassword" type="password"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
+                  placeholder="Enter a password for this share" />
+              </div>
+
               <!-- Expiration -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Expires after</label>
@@ -124,7 +170,7 @@
                 </label>
               </div>
 
-              <button @click="handleShare" :disabled="sharing"
+              <button @click="handleShare" :disabled="sharing || (sharePasswordMode === 'custom' && !sharePassword)"
                 class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
                 <Icon v-if="sharing" name="mdi:loading" class="w-4 h-4 animate-spin" />
                 <Icon v-else name="mdi:share-variant-outline" class="w-4 h-4" />
@@ -139,6 +185,8 @@
 </template>
 
 <script setup>
+import { encryptSharedNote, deriveShareKey, generateSharePassword } from '~/utils/crypto.js'
+
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
   note: { type: Object, default: null },
@@ -164,11 +212,21 @@ const error = ref(null)
 const newShareHash = ref(null)
 const copied = ref(false)
 
+// Encryption mode for shared notes
+const sharePasswordMode = ref('none') // 'none' = passwordless (random key in URL), 'custom' = user-set password
+const sharePassword = ref('')
+const usedSharePassword = ref(false)
+
 const activeHash = computed(() => newShareHash.value || props.existingHash)
 
 const activeShareUrl = computed(() => {
   if (!activeHash.value) return ''
-  return apiUrl(`/shared/${activeHash.value}`)
+  let url = apiUrl(`/shared/${activeHash.value}`)
+  // For passwordless shares, include the key in the URL
+  if (sharePassword.value && sharePasswordMode.value === 'none') {
+    url += `?key=${encodeURIComponent(sharePassword.value)}`
+  }
+  return url
 })
 
 watch(() => props.isOpen, (open) => {
@@ -182,6 +240,9 @@ watch(() => props.isOpen, (open) => {
     error.value = null
     newShareHash.value = null
     copied.value = false
+    sharePasswordMode.value = 'none'
+    sharePassword.value = ''
+    usedSharePassword.value = false
   }
 })
 
@@ -191,14 +252,42 @@ const handleShare = async () => {
   error.value = null
 
   try {
-    const body = {
+    // Determine the share password
+    let effectivePassword
+    if (sharePasswordMode.value === 'custom') {
+      effectivePassword = sharePassword.value
+    } else {
+      // Passwordless sharing: generate a random password.
+      // The key is appended to the URL as a query parameter.
+      // The encryption/decryption flow is identical to password-protected sharing,
+      // but since the password travels in the URL, the server can see it.
+      // The intent here is light obfuscation in transit, NOT security against
+      // a server-side observer.
+      effectivePassword = generateSharePassword()
+    }
+
+    // Derive the share encryption key (independent from user's personal encKey)
+    const shareKey = await deriveShareKey(effectivePassword)
+
+    // Encrypt the note data with the share key
+    const noteData = {
       title: props.note.title,
       description: props.note.description,
       tags: props.note.tags,
-      content: props.note.content,
+      content: props.note.content
+    }
+    const encryptedData = await encryptSharedNote(noteData, shareKey)
+
+    const body = {
+      title: encryptedData.title,
+      description: encryptedData.description,
+      tags: encryptedData.tags,
+      content: encryptedData.content,
+      encrypted: true,
       anonymous: anonymous.value,
       expiresInDays: expiresInDays.value,
-      collectAnalytics: collectAnalytics.value
+      collectAnalytics: collectAnalytics.value,
+      sourceClientId: props.note.id
     }
 
     if (!props.isLoggedIn && !anonymous.value) {
@@ -213,6 +302,14 @@ const handleShare = async () => {
     })
 
     newShareHash.value = data.hash
+    usedSharePassword.value = sharePasswordMode.value === 'custom'
+
+    // For passwordless sharing, append the random password to the URL
+    // so the recipient can derive the decryption key from it.
+    if (sharePasswordMode.value === 'none') {
+      // Store the password so the URL includes it
+      sharePassword.value = effectivePassword
+    }
   } catch (err) {
     error.value = err.data?.statusMessage || err.message || 'Failed to share'
   } finally {

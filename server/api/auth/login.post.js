@@ -2,12 +2,20 @@ import bcrypt from 'bcryptjs'
 import { query } from '../../utils/db.js'
 import { signJwt } from '../../utils/auth.js'
 
+/**
+ * POST /api/auth/login
+ *
+ * Body: { email, authKey }
+ *
+ * The client derives authKey from the user's password via PBKDF2.
+ * We compare it against hash(authKey) stored in the DB.
+ */
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { email, password } = body || {}
+  const { email, authKey } = body || {}
 
-  if (!email || !password) {
-    throw createError({ statusCode: 400, statusMessage: 'Email and password are required' })
+  if (!email || !authKey) {
+    throw createError({ statusCode: 400, statusMessage: 'Email and credentials are required' })
   }
 
   const emailNorm = email.toLowerCase().trim()
@@ -22,7 +30,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const user = result.rows[0]
-  const valid = await bcrypt.compare(password, user.password_hash)
+  const valid = await bcrypt.compare(authKey, user.password_hash)
 
   if (!valid) {
     throw createError({ statusCode: 401, statusMessage: 'Invalid email or password' })

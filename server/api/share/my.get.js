@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)
 
   const result = await query(`
-    SELECT hash, title, anonymous, expires_at, created_at, collect_analytics, deleted_at
+    SELECT hash, title, anonymous, expires_at, created_at, collect_analytics, deleted_at, source_client_id
     FROM shared_notes
     WHERE user_id = $1
     ORDER BY created_at DESC
@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
     expiresAt: row.expires_at,
     createdAt: row.created_at,
     collectAnalytics: row.collect_analytics,
-    isActive: !row.deleted_at
+    isActive: !row.deleted_at,
+    sourceClientId: row.source_client_id
   }))
 })

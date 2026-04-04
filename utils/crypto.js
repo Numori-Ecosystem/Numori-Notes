@@ -1,0 +1,230 @@
+/**
+ * End-to-end encryption utilities using the Web Crypto API.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * KEY DERIVATION
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * From a single user password we derive TWO independent keys via PBKDF2,
+ * each with its own salt so neither key reveals the other:
+ *
+ *   1. authKey   — sent to the server for authentication.
+ *                  The server stores hash(authKey), never the raw password.
+ *
+ *   2. encKey    — a non-extractable AES-GCM CryptoKey that lives in
+ *                  memory / sessionStorage only and NEVER leaves the client.
+ *
+ * Shared notes use a completely separate key derived from a share password
+ * (user-chosen or randomly generated) with its own salt.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ENCRYPTION FORMAT
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Encrypted payloads are JSON strings with the shape:
+ *   { iv: "<base64>", ct: "<base64>" }
+ *
+ * where `iv` is the 12-byte AES-GCM initialisation vector and `ct` is the
+ * ciphertext (including the 16-byte authentication tag appended by AES-GCM).
+ */
+
+// ── Salts (assumed pre-defined constants) ────────────────────────────────
+// These MUST be unique and stable. Changing them invalidates all derived keys.
+const AUTH_SALT = new TextEncoder().encode('calcnotes:auth-key-salt:v1')
+const ENC_SALT = new TextEncoder().encode('calcnotes:enc-key-salt:v1')
+const SHARE_SALT = new TextEncoder().encode('calcnotes:share-key-salt:v1')
+
+const PBKDF2_ITERATIONS = 600_000 // OWASP recommendation for PBKDF2-SHA256
+
+// ── Helpers ──────────────────────────────────────────────────────────────
+
+function toBase64(buffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+}
+
+function fromBase64(str) {
+  const bin = atob(str)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return bytes
+}
+
+/**
+ * Import a password string as a PBKDF2 base key.
+ */
+async function importPasswordKey(password) {
+  return crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits', 'deriveKey']
+  )
+}
+
+// ── Personal note key derivation ─────────────────────────────────────────
+
+/**
+ * Derive the authentication key (raw bytes exported as hex) from a password.
+ * This value is sent to the server instead of the plaintext password.
+ */
+export async function deriveAuthKey(password) {
+  const baseKey = await importPasswordKey(password)
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: AUTH_SALT, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    baseKey,
+    256
+  )
+  // Return as hex string for easy transport
+  return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+/**
+ * Derive the non-extractable AES-GCM encryption key from a password.
+ * This key NEVER leaves the client.
+ */
+export async function deriveEncKey(password) {
+  const baseKey = await importPasswordKey(password)
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: ENC_SALT, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false, // non-extractable
+    ['encrypt', 'decrypt']
+  )
+}
+
+// ── Shared note key derivation ───────────────────────────────────────────
+
+/**
+ * Derive a non-extractable AES-GCM key from a share password.
+ * The share password is either user-chosen (password-protected sharing)
+ * or randomly generated (passwordless sharing).
+ *
+ * This key is entirely independent from the user's personal encKey.
+ */
+export async function deriveShareKey(sharePassword) {
+  const baseKey = await importPasswordKey(sharePassword)
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: SHARE_SALT, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  )
+}
+
+/**
+ * Generate a cryptographically random password for passwordless sharing.
+ * Returns a URL-safe base64 string (22 chars ≈ 128 bits of entropy).
+ */
+export function generateSharePassword() {
+  const bytes = crypto.getRandomValues(new Uint8Array(16))
+  return toBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+// ── Encrypt / Decrypt ────────────────────────────────────────────────────
+
+/**
+ * Encrypt a plaintext string with an AES-GCM CryptoKey.
+ * Returns a JSON string: { iv, ct } (both base64-encoded).
+ */
+export async function encrypt(plaintext, key) {
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  const encoded = new TextEncoder().encode(plaintext)
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encoded
+  )
+  return JSON.stringify({
+    iv: toBase64(iv),
+    ct: toBase64(ciphertext)
+  })
+}
+
+/**
+ * Decrypt a payload previously produced by `encrypt()`.
+ * `encryptedStr` is the JSON string { iv, ct }.
+ * Returns the original plaintext string.
+ */
+export async function decrypt(encryptedStr, key) {
+  const { iv, ct } = JSON.parse(encryptedStr)
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: fromBase64(iv) },
+    key,
+    fromBase64(ct)
+  )
+  return new TextDecoder().decode(decrypted)
+}
+
+/**
+ * Check whether a string looks like an encrypted payload.
+ * Used to detect unencrypted (legacy) notes during migration.
+ */
+export function isEncrypted(str) {
+  if (!str || typeof str !== 'string') return false
+  try {
+    const parsed = JSON.parse(str)
+    return typeof parsed.iv === 'string' && typeof parsed.ct === 'string'
+  } catch {
+    return false
+  }
+}
+
+// ── Note-level encryption helpers ────────────────────────────────────────
+
+/**
+ * Encrypt the mutable fields of a note object before sending to the server.
+ * Returns a new object with encrypted title, description, tags, and content.
+ * Non-sensitive fields (clientId, sortOrder, timestamps) pass through unchanged.
+ */
+export async function encryptNote(note, key) {
+  const [title, description, tags, content] = await Promise.all([
+    encrypt(note.title || '', key),
+    encrypt(note.description || '', key),
+    encrypt(JSON.stringify(note.tags || []), key),
+    encrypt(note.content || '', key)
+  ])
+  return { ...note, title, description, tags, content }
+}
+
+/**
+ * Decrypt a note object received from the server.
+ * Returns a new object with plaintext title, description, tags, and content.
+ */
+export async function decryptNote(note, key) {
+  const [title, description, tagsStr, content] = await Promise.all([
+    decrypt(note.title, key),
+    decrypt(note.description, key),
+    decrypt(note.tags, key),
+    decrypt(note.content, key)
+  ])
+  return { ...note, title, description, tags: JSON.parse(tagsStr), content }
+}
+
+/**
+ * Encrypt fields of a shared note payload.
+ */
+export async function encryptSharedNote(data, key) {
+  const [title, description, tags, content] = await Promise.all([
+    encrypt(data.title || '', key),
+    encrypt(data.description || '', key),
+    encrypt(JSON.stringify(data.tags || []), key),
+    encrypt(data.content || '', key)
+  ])
+  return { ...data, title, description, tags, content, encrypted: true }
+}
+
+/**
+ * Decrypt a shared note payload.
+ */
+export async function decryptSharedNote(data, key) {
+  const [title, description, tagsStr, content] = await Promise.all([
+    decrypt(data.title, key),
+    decrypt(data.description, key),
+    decrypt(data.tags, key),
+    decrypt(data.content, key)
+  ])
+  return { ...data, title, description, tags: JSON.parse(tagsStr), content }
+}

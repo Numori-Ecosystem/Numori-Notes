@@ -268,6 +268,33 @@
 
     <SyncIndicator :syncing="syncing" />
 
+    <!-- Migration progress overlay (one-time encryption of legacy notes) -->
+    <Teleport to="body">
+      <Transition name="modal-backdrop">
+        <div v-if="migrationProgress" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div class="bg-white dark:bg-gray-925 rounded-lg max-w-sm w-full p-5 space-y-3">
+            <div class="flex items-center gap-2">
+              <Icon name="mdi:shield-lock-outline" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-200">Encrypting your notes</h3>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-500">
+              Setting up end-to-end encryption for your existing notes. This only happens once.
+            </p>
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
+                <span>Progress</span>
+                <span>{{ migrationProgress.current }} / {{ migrationProgress.total }}</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div class="bg-primary-600 h-2 rounded-full transition-all duration-200"
+                  :style="{ width: `${(migrationProgress.current / migrationProgress.total) * 100}%` }" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Focus mode exit button -->
     <button v-if="focusMode" @click="focusMode = false"
       class="fixed z-50 pl-2.5 pb-2.5 rounded-bl-xl text-gray-400 dark:text-gray-500 hover:bg-black/15 dark:hover:bg-white/15 hover:text-gray-700 dark:hover:text-gray-200 transition-colors focus-exit-enter"
@@ -286,7 +313,7 @@ const localePrefs = useLocalePreferences()
 const welcomeWizard = useWelcomeWizard()
 const auth = useAuth()
 const { apiFetch } = useApi()
-const { syncing, lastSyncedAt, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds)
+const { syncing, lastSyncedAt, syncError, migrationProgress, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds)
 
 // Wrapper: create note + instant sync
 const createNote = () => {
@@ -403,7 +430,10 @@ const loadSharedNotes = async () => {
     const analyticsMap = new Map()
     const ids = []
     for (const sn of shared) {
-      const match = notes.value.find(n => n.title === sn.title)
+      // Match by sourceClientId (E2E-safe) or fall back to title match (legacy)
+      const match = sn.sourceClientId
+        ? notes.value.find(n => n.id === sn.sourceClientId)
+        : notes.value.find(n => n.title === sn.title)
       if (match) {
         if (sn.isActive) {
           ids.push(match.id)
@@ -493,8 +523,21 @@ const handleUpdateProfile = async (data) => {
   await auth.updateProfile(data)
 }
 
-const handleChangePassword = async ({ currentPassword, newPassword }) => {
-  await auth.changePassword(currentPassword, newPassword)
+const handleChangePassword = async ({ currentPassword, newPassword, onProgress }) => {
+  // Fetch all server-side notes for re-encryption during password change.
+  // The auth.changePassword method will decrypt each with the old key
+  // and re-encrypt with the new key, then send them atomically.
+  const serverNotes = notes.value.map(n => ({
+    clientId: n.id,
+    title: n.title,
+    description: n.description,
+    tags: n.tags || [],
+    content: n.content,
+    sortOrder: n.sortOrder ?? 0,
+    createdAt: n.createdAt,
+    updatedAt: n.updatedAt
+  }))
+  await auth.changePassword(currentPassword, newPassword, serverNotes, onProgress)
 }
 
 const handleDeleteData = async (password) => {

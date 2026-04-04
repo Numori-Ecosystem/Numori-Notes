@@ -24,7 +24,7 @@ export async function migrate() {
       client_id   TEXT,
       title       TEXT NOT NULL DEFAULT 'Untitled Note',
       description TEXT NOT NULL DEFAULT '',
-      tags        JSONB NOT NULL DEFAULT '[]',
+      tags        TEXT NOT NULL DEFAULT '[]',
       content     TEXT NOT NULL DEFAULT '',
       created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -49,7 +49,7 @@ export async function migrate() {
       user_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
       title           TEXT NOT NULL DEFAULT 'Shared Note',
       description     TEXT NOT NULL DEFAULT '',
-      tags            JSONB NOT NULL DEFAULT '[]',
+      tags            TEXT NOT NULL DEFAULT '[]',
       content         TEXT NOT NULL DEFAULT '',
       sharer_name     TEXT,
       sharer_email    TEXT,
@@ -196,6 +196,39 @@ export async function migrate() {
   await query(`
     DO $$ BEGIN
       ALTER TABLE share_views ADD COLUMN IF NOT EXISTS region TEXT;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$
+  `)
+
+  // Add encrypted flag to shared_notes for E2E encrypted shares
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS encrypted BOOLEAN NOT NULL DEFAULT FALSE;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$
+  `)
+
+  // Change notes.tags and shared_notes.tags column type from JSONB to TEXT
+  // to support encrypted payloads (encrypted tags are JSON strings like { iv, ct }).
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE notes ALTER COLUMN tags TYPE TEXT USING tags::TEXT;
+    EXCEPTION WHEN others THEN NULL;
+    END $$
+  `)
+
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE shared_notes ALTER COLUMN tags TYPE TEXT USING tags::TEXT;
+    EXCEPTION WHEN others THEN NULL;
+    END $$
+  `)
+
+  // Add source_client_id to shared_notes so we can match shares to local notes
+  // without relying on title comparison (which breaks with encrypted titles)
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS source_client_id TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
     END $$
   `)

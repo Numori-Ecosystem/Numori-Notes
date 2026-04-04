@@ -3,33 +3,66 @@ import { requireAuth } from '../../utils/auth.js'
 import { query } from '../../utils/db.js'
 
 /**
- * PUT /api/auth/password — Change password. Requires current password.
+ * PUT /api/auth/password — Change password with atomic note re-encryption.
+ *
+ * Body: { currentAuthKey, newAuthKey, reEncryptedNotes }
+ *
+ * The client:
+ *   1. Derives old and new authKeys + encKeys from the passwords.
+ *   2. Re-encrypts every note (decrypt with old encKey, encrypt with new encKey).
+ *   3. Sends the re-encrypted notes + new authKey hash here.
+ *
+ * The server atomically:
+ *   1. Verifies the current authKey.
+ *   2. Updates the password hash to hash(newAuthKey).
+ *   3. Overwrites all note content with the re-encrypted data.
+ *
+ * After success the client invalidates the session and forces re-login.
  */
 export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)
   const body = await readBody(event)
-  const { currentPassword, newPassword } = body || {}
+  const { currentAuthKey, newAuthKey, reEncryptedNotes = [] } = body || {}
 
-  if (!currentPassword || !newPassword) {
-    throw createError({ statusCode: 400, statusMessage: 'Current and new password are required' })
+  if (!currentAuthKey || !newAuthKey) {
+    throw createError({ statusCode: 400, statusMessage: 'Current and new credentials are required' })
   }
 
-  if (newPassword.length < 8) {
-    throw createError({ statusCode: 400, statusMessage: 'New password must be at least 8 characters' })
-  }
-
+  // Verify current authKey
   const result = await query('SELECT password_hash FROM users WHERE id = $1', [auth.userId])
   if (result.rows.length === 0) {
     throw createError({ statusCode: 404, statusMessage: 'User not found' })
   }
 
-  const valid = await bcrypt.compare(currentPassword, result.rows[0].password_hash)
+  const valid = await bcrypt.compare(currentAuthKey, result.rows[0].password_hash)
   if (!valid) {
     throw createError({ statusCode: 401, statusMessage: 'Current password is incorrect' })
   }
 
-  const hash = await bcrypt.hash(newPassword, 12)
-  await query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [hash, auth.userId])
+  // Update password hash
+  const newHash = await bcrypt.hash(newAuthKey, 12)
+  await query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [newHash, auth.userId])
+
+  // Overwrite all notes with re-encrypted data
+  for (const note of reEncryptedNotes) {
+    if (!note.clientId) continue
+    await query(`
+      UPDATE notes SET
+        title = $1,
+        description = $2,
+        tags = $3,
+        content = $4,
+        updated_at = NOW()
+      WHERE user_id = $5 AND client_id = $6 AND deleted_at IS NULL
+    `, [
+      note.title,
+      note.description,
+      typeof note.tags === 'string' ? note.tags : JSON.stringify(note.tags),
+      note.content,
+      auth.userId,
+      note.clientId
+    ])
+  }
 
   return { updated: true }
 })

@@ -13,19 +13,21 @@ import { query } from '../../utils/db.js'
 export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)
   const body = await readBody(event)
-  const { type, password } = body || {}
+  const { type, authKey, password } = body || {}
 
-  if (!password) {
+  // Support both authKey (new E2E flow) and password (legacy)
+  const credential = authKey || password
+  if (!credential) {
     throw createError({ statusCode: 400, statusMessage: 'Password is required to confirm this action' })
   }
 
-  // Verify password
+  // Verify credential
   const userResult = await query('SELECT password_hash FROM users WHERE id = $1', [auth.userId])
   if (userResult.rows.length === 0) {
     throw createError({ statusCode: 404, statusMessage: 'User not found' })
   }
 
-  const valid = await bcrypt.compare(password, userResult.rows[0].password_hash)
+  const valid = await bcrypt.compare(credential, userResult.rows[0].password_hash)
   if (!valid) {
     throw createError({ statusCode: 401, statusMessage: 'Incorrect password' })
   }

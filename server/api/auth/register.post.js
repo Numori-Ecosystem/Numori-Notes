@@ -2,27 +2,34 @@ import bcrypt from 'bcryptjs'
 import { query } from '../../utils/db.js'
 import { signJwt } from '../../utils/auth.js'
 
+/**
+ * POST /api/auth/register
+ *
+ * Body: { email, authKey, name? }
+ *
+ * The client derives an authKey from the user's password via PBKDF2.
+ * We store hash(authKey) — the raw password never reaches the server.
+ */
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { email, name, password } = body || {}
+  const { email, authKey, name } = body || {}
 
-  if (!email || !password) {
-    throw createError({ statusCode: 400, statusMessage: 'Email and password are required' })
+  if (!email || !authKey) {
+    throw createError({ statusCode: 400, statusMessage: 'Email and credentials are required' })
   }
 
-  if (password.length < 8) {
-    throw createError({ statusCode: 400, statusMessage: 'Password must be at least 8 characters' })
+  if (authKey.length < 16) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid credentials' })
   }
 
   const emailNorm = email.toLowerCase().trim()
 
-  // Check if user already exists
   const existing = await query('SELECT id FROM users WHERE email = $1', [emailNorm])
   if (existing.rows.length > 0) {
     throw createError({ statusCode: 409, statusMessage: 'An account with this email already exists' })
   }
 
-  const passwordHash = await bcrypt.hash(password, 12)
+  const passwordHash = await bcrypt.hash(authKey, 12)
 
   const result = await query(
     'INSERT INTO users (email, name, password_hash) VALUES ($1, $2, $3) RETURNING id, email, name, created_at',
