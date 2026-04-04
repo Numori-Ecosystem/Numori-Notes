@@ -409,6 +409,35 @@ class MdCodeBlockFenceWidget extends WidgetType {
   ignoreEvent() { return false }
 }
 
+// --- Copy button widget for code blocks ---
+class MdCodeBlockCopyWidget extends WidgetType {
+  constructor(code) {
+    super()
+    this.code = code
+  }
+  toDOM() {
+    const btn = document.createElement('button')
+    btn.className = 'calcnotes-md-code-copy-btn'
+    btn.setAttribute('aria-label', 'Copy code')
+    btn.title = 'Copy code'
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`
+    btn.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      navigator.clipboard.writeText(this.code).catch(() => {})
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+      btn.classList.add('calcnotes-md-code-copy-btn--copied')
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`
+        btn.classList.remove('calcnotes-md-code-copy-btn--copied')
+      }, 1500)
+    })
+    return btn
+  }
+  eq(other) { return this.code === other.code }
+  ignoreEvent() { return false }
+}
+
 // --- Build markdown preview decorations ---
 const buildMdDecorations = (view) => {
   if (props.markdownMode === 'off') return Decoration.none
@@ -465,6 +494,18 @@ const buildMdDecorations = (view) => {
     }
   }
 
+  // Pre-compute max content line length per code block (for consistent width)
+  const codeBlockMaxLen = new Map()
+  for (const block of codeBlockRanges) {
+    const contentStart = block.startLn + 1
+    const contentEnd = block.endLn - (doc.line(block.endLn).text.trim() === '```' ? 1 : 0)
+    let maxLen = block.lang ? block.lang.length : 0
+    for (let ln = contentStart; ln <= contentEnd; ln++) {
+      maxLen = Math.max(maxLen, doc.line(ln).text.length)
+    }
+    codeBlockMaxLen.set(block, maxLen)
+  }
+
   for (let ln = 1; ln <= doc.lines; ln++) {
     const docLine = doc.line(ln)
     const text = docLine.text
@@ -477,7 +518,7 @@ const buildMdDecorations = (view) => {
       if (props.markdownMode === 'edit' && cursorLine >= codeBlock.startLn && cursorLine <= codeBlock.endLn) continue
 
       if (ln === codeBlock.startLn) {
-        // Opening fence: hide the ``` and show language label
+        // Opening fence: hide the ``` and show language label + copy button
         widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.to))
         if (codeBlock.lang) {
           widgets.push(Decoration.widget({
@@ -485,14 +526,28 @@ const buildMdDecorations = (view) => {
             side: 1,
           }).range(docLine.from))
         }
-        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line calcnotes-md-code-block-first' }).range(docLine.from))
+        // Collect code block content for copy button
+        const contentStartLn = codeBlock.startLn + 1
+        const contentEndLn = codeBlock.endLn - (doc.line(codeBlock.endLn).text.trim() === '```' ? 1 : 0)
+        const codeLines = []
+        for (let cl = contentStartLn; cl <= contentEndLn; cl++) {
+          codeLines.push(doc.line(cl).text)
+        }
+        widgets.push(Decoration.widget({
+          widget: new MdCodeBlockCopyWidget(codeLines.join('\n')),
+          side: 1,
+        }).range(docLine.from))
+        const blockW = (codeBlockMaxLen.get(codeBlock) || 0) + 8
+        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line calcnotes-md-code-block-first', attributes: { style: `width: ${blockW}ch` } }).range(docLine.from))
       } else if (ln === codeBlock.endLn && trimmed === '```') {
         // Closing fence: hide it, add bottom border styling
         widgets.push(Decoration.mark({ class: 'calcnotes-md-hidden-syntax' }).range(docLine.from, docLine.to))
-        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line calcnotes-md-code-block-last' }).range(docLine.from))
+        const blockW = (codeBlockMaxLen.get(codeBlock) || 0) + 8
+        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line calcnotes-md-code-block-last', attributes: { style: `width: ${blockW}ch` } }).range(docLine.from))
       } else {
         // Content line inside code block — apply syntax highlighting
-        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line' }).range(docLine.from))
+        const blockW = (codeBlockMaxLen.get(codeBlock) || 0) + 8
+        widgets.push(Decoration.line({ class: 'calcnotes-md-code-block-line', attributes: { style: `width: ${blockW}ch` } }).range(docLine.from))
 
         const spans = codeBlockHighlights.get(codeBlock)
         if (spans) {
@@ -737,7 +792,7 @@ const buildWordWrap = () =>
   props.localePreferences?.editorWordWrap ? EditorView.lineWrapping : []
 
 const buildScrollPastEnd = () =>
-  props.localePreferences?.editorScrollPastEnd !== false ? scrollPastEnd() : []
+  props.editable && props.localePreferences?.editorScrollPastEnd !== false ? scrollPastEnd() : []
 
 // --- Extensions array ---
 const cmExtensions = computed(() => [
@@ -1315,16 +1370,33 @@ const injectInlineStyles = () => {
     .calcnotes-md-code-block-line {
       background: rgba(135,131,120,0.1) !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-      padding-left: 8px !important;
+      padding-left: 12px !important;
+      padding-right: 12px !important;
+      margin-left: 8px !important;
     }
     .cm-theme-dark .calcnotes-md-code-block-line,
     .dark .calcnotes-md-code-block-line { background: rgba(255,255,255,0.06) !important; }
-    .calcnotes-md-code-block-first { border-radius: 6px 6px 0 0 !important; }
+    .calcnotes-md-code-block-first { border-radius: 6px 6px 0 0 !important; padding-top: 4px !important; }
     .calcnotes-md-code-block-last { border-radius: 0 0 6px 6px !important; }
     .calcnotes-md-code-fence-label {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       font-size: 0.75em !important; opacity: 0.5 !important; font-style: italic !important;
     }
+    .calcnotes-md-code-copy-btn {
+      float: right; margin-right: 0px; margin-top: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border: none; border-radius: 4px; cursor: pointer;
+      background: rgba(135,131,120,0.15); color: #6b7280;
+      opacity: 0.6; transition: opacity 0.15s ease, background 0.15s ease;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    }
+    .calcnotes-md-code-copy-btn:hover,
+    .calcnotes-md-code-copy-btn:focus { opacity: 1; background: rgba(135,131,120,0.3); }
+    .cm-theme-dark .calcnotes-md-code-copy-btn,
+    .dark .calcnotes-md-code-copy-btn { background: rgba(255,255,255,0.1); color: #9ca3af; }
+    .cm-theme-dark .calcnotes-md-code-copy-btn:hover,
+    .dark .calcnotes-md-code-copy-btn:hover { background: rgba(255,255,255,0.2); }
+    .calcnotes-md-code-copy-btn--copied { opacity: 1 !important; color: #22c55e !important; }
     /* highlight.js syntax colors — light (aligned with calcnotes palette) */
     .calcnotes-hl.hljs-keyword,
     .calcnotes-hl.hljs-selector-tag,

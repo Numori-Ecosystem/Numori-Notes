@@ -54,7 +54,7 @@
     </div>
 
     <!-- Shared note content -->
-    <main v-else-if="note" class="flex-1 max-w-3xl mx-auto w-full px-4 py-6 space-y-4 flex flex-col">
+    <main v-else-if="note" class="flex-1 max-w-3xl mx-auto w-full px-4 py-6 space-y-3 flex flex-col">
       <div class="space-y-1">
         <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-200">{{ note.title }}</h1>
         <p v-if="note.description" class="text-sm text-gray-500 dark:text-gray-500">{{ note.description }}</p>
@@ -69,60 +69,18 @@
         </div>
       </div>
 
-      <!-- Toolbar -->
-      <div class="flex items-center gap-1">
-        <!-- Markdown mode group -->
-        <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">Markdown</span>
-        <div class="inline-flex items-center bg-gray-200/50 dark:bg-gray-800 rounded-lg" role="group">
-          <button @click="renderMarkdown = true"
-            class="p-2 rounded-lg transition-all leading-none"
-            :class="renderMarkdown
-              ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
-            title="Render Markdown">
-            <Icon name="mdi:language-markdown" class="w-5 h-5 block" />
-          </button>
-          <button @click="renderMarkdown = false"
-            class="p-2 rounded-lg transition-all leading-none"
-            :class="!renderMarkdown
-              ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
-            title="Raw text">
-            <Icon name="mdi:format-text" class="w-5 h-5 block" />
-          </button>
-        </div>
-
-        <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-1"></div>
-
-        <!-- Inline results mode group -->
-        <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">Results</span>
-        <div class="inline-flex items-center bg-gray-200/50 dark:bg-gray-800 rounded-lg" role="group">
-          <button @click="resultsPosition = 'left'"
-            class="p-2 rounded-lg transition-all leading-none"
-            :class="resultsPosition === 'left'
-              ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
-            title="Results on left">
-            <Icon name="mdi:dock-left" class="w-5 h-5 block" />
-          </button>
-          <button @click="resultsPosition = 'off'"
-            class="p-2 rounded-lg transition-all leading-none"
-            :class="resultsPosition === 'off'
-              ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
-            title="Results off">
-            <Icon name="mdi:eye-off-outline" class="w-5 h-5 block" />
-          </button>
-          <button @click="resultsPosition = 'right'"
-            class="p-2 rounded-lg transition-all leading-none"
-            :class="resultsPosition === 'right'
-              ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-              : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'"
-            title="Results on right">
-            <Icon name="mdi:dock-right" class="w-5 h-5 block" />
-          </button>
-        </div>
-      </div>
+      <!-- Top toolbar -->
+      <SharedNoteToolbar
+        :render-markdown="renderMarkdown"
+        :results-position="resultsPosition"
+        :copied="copied"
+        @update:render-markdown="renderMarkdown = $event"
+        @update:results-position="resultsPosition = $event"
+        @copy="copyNoteToClipboard"
+        @export="handleExport"
+        @print="askExportOptions('print')"
+        @import="importNote"
+      />
 
       <!-- Editor -->
       <div class="flex-1 min-h-[300px] rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -137,12 +95,23 @@
         />
       </div>
 
-      <!-- Import into own notes -->
-      <button @click="importNote"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm self-start">
-        <Icon name="mdi:download" class="w-4 h-4" />
-        Import to my notes
-      </button>
+      <!-- Bottom toolbar -->
+      <SharedNoteToolbar
+        :render-markdown="renderMarkdown"
+        :results-position="resultsPosition"
+        :copied="copied"
+        :drop-up="true"
+        @update:render-markdown="renderMarkdown = $event"
+        @update:results-position="resultsPosition = $event"
+        @copy="copyNoteToClipboard"
+        @export="handleExport"
+        @print="askExportOptions('print')"
+        @import="importNote"
+      />
+
+      <ExportOptionsModal :is-open="showExportOptionsModal"
+        @close="showExportOptionsModal = false"
+        @confirm="handleExportConfirm" />
     </main>
   </div>
 </template>
@@ -169,6 +138,45 @@ const decrypting = ref(false)
 // View options
 const renderMarkdown = ref(true)
 const resultsPosition = ref('left')
+const copied = ref(false)
+const showExportOptionsModal = ref(false)
+const pendingExportAction = ref(null)
+
+const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, copyToClipboard, printNote } = useFileActions()
+const { evaluateLines } = useCalculator()
+
+const copyNoteToClipboard = async () => {
+  if (!note.value) return
+  await copyToClipboard(note.value)
+  copied.value = true
+  setTimeout(() => { copied.value = false }, 1500)
+}
+
+const handleExport = (format) => {
+  if (format === 'json') {
+    if (note.value) exportNoteAsJson(note.value)
+  } else {
+    askExportOptions(format)
+  }
+}
+
+const askExportOptions = (action) => {
+  pendingExportAction.value = action
+  showExportOptionsModal.value = true
+}
+
+const handleExportConfirm = (withResults) => {
+  showExportOptionsModal.value = false
+  if (!note.value) return
+  const calc = withResults ? evaluateLines : null
+  switch (pendingExportAction.value) {
+    case 'text': exportNoteAsText(note.value, calc); break
+    case 'markdown': exportNoteAsMarkdown(note.value, calc); break
+    case 'pdf': exportNoteAsPdf(note.value, calc); break
+    case 'print': printNote(note.value, calc); break
+  }
+  pendingExportAction.value = null
+}
 
 onMounted(async () => {
   try {
