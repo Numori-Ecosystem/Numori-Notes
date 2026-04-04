@@ -659,10 +659,37 @@ const cmExtensions = computed(() => [
       if (handleMdTouchEnd(event, view)) return true
       return handleResultTouch(event, view)
     },
-    contextmenu: (event) => {
-      if (props.markdownMode !== 'full') return false
+    contextmenu: (event, view) => {
+      if (props.markdownMode === 'off') return false
       const el = event.target
-      if (findLinkEl(el)) { event.preventDefault(); return true }
+      const linkEl = findLinkEl(el)
+      if (linkEl) {
+        event.preventDefault()
+        if (event.ctrlKey) {
+          const rect = view.dom.getBoundingClientRect()
+          const url = linkEl.getAttribute('data-href')
+          const text = linkEl.textContent
+          if (url) showLinkPopup(url, text, event.clientX - rect.left, event.clientY - rect.top)
+        }
+        return true
+      }
+      // Ctrl+click on checkbox (macOS contextmenu path)
+      if (event.ctrlKey) {
+        const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
+        if (pos != null) {
+          const line = view.state.doc.lineAt(pos)
+          const checkMatch = line.text.match(/^(\s*)- \[([ x])\]\s/)
+          if (checkMatch) {
+            event.preventDefault()
+            const bracketOffset = checkMatch[1].length + 3
+            const from = line.from + bracketOffset
+            const to = from + 1
+            const newChar = checkMatch[2] === 'x' ? ' ' : 'x'
+            view.dispatch({ changes: { from, to, insert: newChar } })
+            return true
+          }
+        }
+      }
       return false
     },
   }),
@@ -759,14 +786,13 @@ const triggerLinkPopup = (linkEl, view, x, y) => {
 }
 
 const handleMdClick = (event, view) => {
-  if (props.markdownMode !== 'full') return false
+  if (props.markdownMode === 'off') return false
   const el = event.target
 
-  // Link: require Cmd (mac) or Ctrl (other) click
+  // Link: require Ctrl+click
   const linkEl = findLinkEl(el)
   if (linkEl) {
-    const modHeld = isMac ? event.metaKey : event.ctrlKey
-    if (modHeld) {
+    if (event.ctrlKey) {
       event.preventDefault()
       triggerLinkPopup(linkEl, view, event.clientX, event.clientY)
       return true
@@ -793,6 +819,24 @@ const handleMdClick = (event, view) => {
     }
   }
 
+  // Ctrl+click on raw checklist text (edit mode, cursor line shows raw syntax)
+  if (event.ctrlKey) {
+    const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
+    if (pos != null) {
+      const line = view.state.doc.lineAt(pos)
+      const checkMatch = line.text.match(/^(\s*)- \[([ x])\]\s/)
+      if (checkMatch) {
+        event.preventDefault()
+        const bracketOffset = checkMatch[1].length + 3
+        const from = line.from + bracketOffset
+        const to = from + 1
+        const newChar = checkMatch[2] === 'x' ? ' ' : 'x'
+        view.dispatch({ changes: { from, to, insert: newChar } })
+        return true
+      }
+    }
+  }
+
   // Close link popup if clicking elsewhere
   if (linkPopup.show) closeLinkPopup()
 
@@ -801,7 +845,7 @@ const handleMdClick = (event, view) => {
 
 // Touch: long-press on link shows popup, tap on checkbox toggles
 const handleMdTouchStart = (event, view) => {
-  if (props.markdownMode !== 'full') return false
+  if (props.markdownMode === 'off') return false
   const touch = event.touches?.[0]
   if (!touch) return false
 
@@ -847,7 +891,7 @@ const handleMdTouchEnd = (event, view) => {
     return true
   }
 
-  if (props.markdownMode !== 'full') return false
+  if (props.markdownMode === 'off') return false
   const touch = event.changedTouches?.[0]
   if (!touch) return false
   const el = document.elementFromPoint(touch.clientX, touch.clientY)
