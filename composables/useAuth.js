@@ -87,9 +87,12 @@ export const useAuth = () => {
     error.value = null
     try {
       const authKeyHex = await deriveAuthKey(password)
+      // Send both authKey (for new/migrated accounts) and raw password
+      // (for legacy accounts). The server tries authKey first, falls back
+      // to password, and upgrades the hash on successful legacy login.
       const data = await apiFetch('/api/auth/login', {
         method: 'POST',
-        body: { email, authKey: authKeyHex }
+        body: { email, authKey: authKeyHex, password }
       })
       await _saveToken(data.token)
       user.value = data.user
@@ -168,6 +171,7 @@ export const useAuth = () => {
         headers: authHeaders.value,
         body: {
           currentAuthKey: oldAuthKey,
+          currentPassword: currentPassword,
           newAuthKey,
           reEncryptedNotes
         }
@@ -191,7 +195,7 @@ export const useAuth = () => {
       const data = await apiFetch('/api/auth/delete', {
         method: 'POST',
         headers: authHeaders.value,
-        body: { type, authKey: authKeyHex }
+        body: { type, authKey: authKeyHex, password }
       })
       if (type === 'account') await logout()
       return data
