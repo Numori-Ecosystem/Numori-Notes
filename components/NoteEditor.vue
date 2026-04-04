@@ -50,6 +50,7 @@ import { EditorView, Decoration, WidgetType, keymap as cmKeymap, scrollPastEnd, 
 import { StateField, StateEffect, Compartment, EditorSelection } from '@codemirror/state'
 import { foldGutter as cmFoldGutter, indentUnit } from '@codemirror/language'
 import { closeBrackets as cmCloseBrackets } from '@codemirror/autocomplete'
+import { undo as cmUndo, redo as cmRedo, undoDepth, redoDepth } from '@codemirror/commands'
 import { calcnotesLanguage, calcnotesLightTheme, calcnotesDarkTheme } from '~/composables/useCalcLanguage'
 import { formatDisplay } from '~/composables/useDisplayFormatter'
 
@@ -76,6 +77,14 @@ const editorRef = ref(null)
 const editorReady = ref(false)
 let editorView = null
 let inlineStylesInjected = false
+const canUndo = ref(false)
+const canRedo = ref(false)
+
+const updateUndoRedoState = () => {
+  if (!editorView) { canUndo.value = false; canRedo.value = false; return }
+  canUndo.value = undoDepth(editorView.state) > 0
+  canRedo.value = redoDepth(editorView.state) > 0
+}
 
 const { evaluateLines } = useCalculator()
 const colorMode = useColorMode()
@@ -495,6 +504,9 @@ const cmExtensions = computed(() => [
         })
       }
     }
+    if (update.docChanged || update.transactions.some(t => t.isUserEvent('undo') || t.isUserEvent('redo'))) {
+      updateUndoRedoState()
+    }
   }),
   // Click handler for inline results (copy on click)
   EditorView.domEventHandlers({
@@ -867,5 +879,9 @@ const wrapSelection = (before, after = before) => {
 defineExpose({
   insertText,
   wrapSelection,
+  canUndo,
+  canRedo,
+  undo: () => { if (editorView) { cmUndo(editorView); updateUndoRedoState(); editorView.focus() } },
+  redo: () => { if (editorView) { cmRedo(editorView); updateUndoRedoState(); editorView.focus() } },
 })
 </script>

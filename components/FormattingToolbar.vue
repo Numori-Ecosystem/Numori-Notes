@@ -1,5 +1,27 @@
 <template>
-  <div class="flex items-center justify-center gap-0.5 overflow-x-auto" :class="containerClass">
+  <div class="flex items-center gap-0.5 overflow-x-auto" :class="containerClass">
+    <div class="min-w-3 flex-shrink-0 flex-grow" aria-hidden="true">&nbsp;</div>
+    <!-- Undo / Redo -->
+    <button @mousedown.prevent @click="$emit('undo')"
+      :disabled="!canUndo"
+      class="p-2 rounded-lg transition-colors flex-shrink-0 leading-none"
+      :class="canUndo
+        ? 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800'
+        : 'text-gray-300 dark:text-gray-700 cursor-default'"
+      title="Undo">
+      <Icon name="mdi:undo" class="w-5 h-5 block" />
+    </button>
+    <button @mousedown.prevent @click="$emit('redo')"
+      :disabled="!canRedo"
+      class="p-2 rounded-lg transition-colors flex-shrink-0 leading-none"
+      :class="canRedo
+        ? 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800'
+        : 'text-gray-300 dark:text-gray-700 cursor-default'"
+      title="Redo">
+      <Icon name="mdi:redo" class="w-5 h-5 block" />
+    </button>
+    <!-- Separator -->
+    <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-1 flex-shrink-0"></div>
     <!-- Text editing buttons -->
     <button v-for="btn in buttons" :key="btn.title"
       @mousedown.prevent
@@ -8,6 +30,7 @@
       :title="btn.title">
       <Icon :name="btn.icon" class="w-5 h-5 block" />
     </button>
+    <div class="min-w-3 flex-shrink-0 flex-grow" aria-hidden="true">&nbsp;</div>
 
 
   </div>
@@ -19,9 +42,17 @@ defineProps({
     type: String,
     default: ''
   },
+  canUndo: {
+    type: Boolean,
+    default: false
+  },
+  canRedo: {
+    type: Boolean,
+    default: false
+  },
 })
 
-defineEmits(['apply-format'])
+defineEmits(['apply-format', 'undo', 'redo'])
 
 const buttons = [
   { before: '**', after: '**', title: 'Bold', icon: 'mdi:format-bold' },

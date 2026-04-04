@@ -7,8 +7,11 @@
       :mod-label="modLabel"
       :selection-count="selectedNoteIds.length"
       :is-logged-in="auth.isLoggedIn.value"
+      :can-undo="editorRef?.canUndo ?? false"
+      :can-redo="editorRef?.canRedo ?? false"
       @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
+      @undo="editorRef?.undo()" @redo="editorRef?.redo()"
       @update:inline-mode="showInlineResults = $event"
       @toggle-markdown-preview="showMarkdownPreview = !showMarkdownPreview"
       @toggle-focus="focusMode = true"
@@ -154,29 +157,18 @@
       </main>
     </div>
 
-    <!-- Mobile: toggle button (always visible) + collapsible formatting toolbar -->
+    <!-- Mobile: formatting toolbar -->
     <div v-if="currentNote" class="lg:hidden fixed left-0 right-0 z-10 transition-[bottom] duration-150 ease-out"
       :style="{ bottom: mobileKeyboardOffset + 'px' }">
-      <!-- Toggle chevron — absolutely positioned above the toolbar so it doesn't push content -->
-      <button @mousedown.prevent @click="showMobileToolbar = !showMobileToolbar"
-        class="absolute right-2 bottom-full px-1.5 pt-1 pb-0.5 bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-950 rounded-t-lg transition-colors z-50"
-        :title="showMobileToolbar ? 'Hide formatting toolbar' : 'Show formatting toolbar'">
-        <Icon :name="showMobileToolbar ? 'mdi:chevron-down' : 'mdi:chevron-up'" class="w-5 h-5 block" />
-      </button>
-      <!-- Collapsible toolbar -->
-      <Transition
-        enter-active-class="transition-all duration-200 ease-out"
-        enter-from-class="max-h-0 opacity-0"
-        enter-to-class="max-h-16 opacity-100"
-        leave-active-class="transition-all duration-150 ease-in"
-        leave-from-class="max-h-16 opacity-100"
-        leave-to-class="max-h-0 opacity-0">
-        <div v-if="showMobileToolbar" class="overflow-hidden bg-gray-50 dark:bg-gray-900"
-          :style="{ paddingBottom: mobileKeyboardOffset === 0 ? 'env(safe-area-inset-bottom, 0px)' : '0px', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
-          <FormattingToolbar container-class="px-2 py-1.5"
-            @apply-format="applyFormat" />
-        </div>
-      </Transition>
+      <div class="overflow-hidden bg-gray-50 dark:bg-gray-900"
+        :style="{ paddingBottom: mobileKeyboardOffset === 0 ? 'env(safe-area-inset-bottom, 0px)' : '0px', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
+        <FormattingToolbar container-class="px-2 py-1.5"
+          :can-undo="editorRef?.canUndo ?? false"
+          :can-redo="editorRef?.canRedo ?? false"
+          @apply-format="applyFormat"
+          @undo="editorRef?.undo()"
+          @redo="editorRef?.redo()" />
+      </div>
     </div>
 
     <!-- Modals -->
@@ -326,7 +318,6 @@ const showInlineResults = computed({
   get: () => localePrefs.preferences.inlineMode ?? 'left',
   set: (v) => { localePrefs.preferences.inlineMode = v; localePrefs.save() }
 })
-const showMobileToolbar = ref(true)
 const showMarkdownPreview = ref(false)
 const editorRef = ref(null)
 const mobileKeyboardOffset = ref(0)

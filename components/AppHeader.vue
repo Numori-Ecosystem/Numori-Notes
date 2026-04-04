@@ -37,7 +37,11 @@
 
         <!-- Center: Markdown formatting (desktop only) -->
         <FormattingToolbar class="hidden lg:flex flex-1"
-          @apply-format="(before, after) => $emit('apply-format', before, after)" />
+          :can-undo="canUndo"
+          :can-redo="canRedo"
+          @apply-format="(before, after) => $emit('apply-format', before, after)"
+          @undo="$emit('undo')"
+          @redo="$emit('redo')" />
 
         <!-- Spacer on mobile -->
         <div class="flex-1 lg:hidden"></div>
@@ -111,6 +115,14 @@ defineProps({
   isLoggedIn: {
     type: Boolean,
     default: false
+  },
+  canUndo: {
+    type: Boolean,
+    default: false
+  },
+  canRedo: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -122,6 +134,8 @@ defineEmits([
   'apply-format',
   'update:inline-mode',
   'toggle-markdown-preview',
+  'undo',
+  'redo',
   'file-new',
   'file-open',
   'file-duplicate',
