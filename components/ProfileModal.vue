@@ -192,19 +192,40 @@
                 </p>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Current Password</label>
-                  <input v-model="currentPassword" type="password"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
+                  <div class="relative">
+                    <input v-model="currentPassword" :type="showCurrentPassword ? 'text' : 'password'"
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
+                    <button type="button" @click="showCurrentPassword = !showCurrentPassword" tabindex="-1"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      :aria-label="showCurrentPassword ? 'Hide password' : 'Show password'">
+                      <Icon :name="showCurrentPassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">New Password</label>
-                  <input v-model="newPassword" type="password" minlength="8"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
+                  <div class="relative">
+                    <input v-model="newPassword" :type="showNewPassword ? 'text' : 'password'" minlength="8"
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
+                    <button type="button" @click="showNewPassword = !showNewPassword" tabindex="-1"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      :aria-label="showNewPassword ? 'Hide password' : 'Show password'">
+                      <Icon :name="showNewPassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
+                    </button>
+                  </div>
                   <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">At least 8 characters</p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Confirm New Password</label>
-                  <input v-model="confirmNewPassword" type="password"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
+                  <div class="relative">
+                    <input v-model="confirmNewPassword" :type="showConfirmNewPassword ? 'text' : 'password'"
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
+                    <button type="button" @click="showConfirmNewPassword = !showConfirmNewPassword" tabindex="-1"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      :aria-label="showConfirmNewPassword ? 'Hide password' : 'Show password'">
+                      <Icon :name="showConfirmNewPassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
+                    </button>
+                  </div>
                   <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
                 </div>
 
@@ -234,8 +255,15 @@
                 </p>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Confirm Password</label>
-                  <input v-model="dangerPassword" type="password"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
+                  <div class="relative">
+                    <input v-model="dangerPassword" :type="showDangerPassword ? 'text' : 'password'"
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm" />
+                    <button type="button" @click="showDangerPassword = !showDangerPassword" tabindex="-1"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      :aria-label="showDangerPassword ? 'Hide password' : 'Show password'">
+                      <Icon :name="showDangerPassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div class="space-y-2">
                   <button @click="handleDeleteData" :disabled="saving || !dangerPassword"
@@ -352,9 +380,13 @@ const currentPassword = ref('')
 const newPassword = ref('')
 const confirmNewPassword = ref('')
 const reEncryptProgress = ref(null)
+const showCurrentPassword = ref(false)
+const showNewPassword = ref(false)
+const showConfirmNewPassword = ref(false)
 
 // Danger zone
 const dangerPassword = ref('')
+const showDangerPassword = ref(false)
 
 // Shared notes
 const sharedNotes = ref([])

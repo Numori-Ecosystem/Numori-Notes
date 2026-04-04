@@ -41,9 +41,16 @@
         <div v-if="decryptError" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
           {{ decryptError }}
         </div>
-        <input v-model="passwordInput" type="password" placeholder="Share password"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
-          @keyup.enter="decryptWithPassword" />
+        <div class="relative">
+          <input v-model="passwordInput" :type="showPasswordInput ? 'text' : 'password'" placeholder="Share password"
+            class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
+            @keyup.enter="decryptWithPassword" />
+          <button type="button" @click="showPasswordInput = !showPasswordInput" tabindex="-1"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            :aria-label="showPasswordInput ? 'Hide password' : 'Show password'">
+            <Icon :name="showPasswordInput ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
+          </button>
+        </div>
         <button @click="decryptWithPassword" :disabled="!passwordInput || decrypting"
           class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
           <Icon v-if="decrypting" name="mdi:loading" class="w-4 h-4 animate-spin" />
@@ -134,6 +141,7 @@ const passwordInput = ref('')
 const passwordHint = ref(null)
 const decryptError = ref(null)
 const decrypting = ref(false)
+const showPasswordInput = ref(false)
 
 // View options
 const renderMarkdown = ref(true)

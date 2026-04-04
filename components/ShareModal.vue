@@ -126,9 +126,16 @@
               <div v-if="sharePasswordMode === 'custom'" class="space-y-2">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Share password</label>
-                  <input v-model="sharePassword" type="password"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
-                    placeholder="Enter a password for this share" />
+                  <div class="relative">
+                    <input v-model="sharePassword" :type="showSharePassword ? 'text' : 'password'"
+                      class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
+                      placeholder="Enter a password for this share" />
+                    <button type="button" @click="showSharePassword = !showSharePassword" tabindex="-1"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      :aria-label="showSharePassword ? 'Hide password' : 'Show password'">
+                      <Icon :name="showSharePassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Password hint <span class="font-normal text-gray-400 dark:text-gray-600">(optional)</span></label>
@@ -225,6 +232,7 @@ const sharePasswordMode = ref('none') // 'none' = passwordless (random key in UR
 const sharePassword = ref('')
 const passwordHint = ref('')
 const usedSharePassword = ref(false)
+const showSharePassword = ref(false)
 
 const activeHash = computed(() => newShareHash.value || props.existingHash)
 
