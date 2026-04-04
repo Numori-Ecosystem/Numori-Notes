@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
   const emailNorm = email.toLowerCase().trim()
 
   const result = await query(
-    'SELECT id, email, name, password_hash, created_at FROM users WHERE email = $1',
+    'SELECT id, email, name, password_hash, avatar_url, created_at FROM users WHERE email = $1',
     [emailNorm]
   )
 
@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
   const token = await signJwt({ userId: user.id, email: user.email }, secret)
 
   return {
-    user: { id: user.id, email: user.email, name: user.name, createdAt: user.created_at },
+    user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatar_url, createdAt: user.created_at },
     token
   }
 })

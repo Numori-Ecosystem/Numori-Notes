@@ -1324,6 +1324,7 @@ const injectInlineStyles = () => {
   const style = document.createElement('style')
   style.id = 'calcnotes-inline-styles'
   style.textContent = `
+    .cm-scroller { overscroll-behavior: none; -webkit-overflow-scrolling: auto; }
     .calcnotes-inline-result { color: #CC2D56; font-style: italic; opacity: 0.75; cursor: pointer; }
     .cm-theme-dark .calcnotes-inline-result,
     .dark .calcnotes-inline-result { color: #FF6188; opacity: 0.7; }
