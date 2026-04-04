@@ -306,6 +306,8 @@
 </template>
 
 <script setup>
+import db from '~/db.js'
+
 const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes } = useNotes()
 const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
 const { evaluateLines } = useCalculator()
@@ -510,8 +512,20 @@ const handleRegister = async ({ email, password, name }) => {
   } catch { /* error shown in modal */ }
 }
 
-const handleLogout = () => {
+/** Clear all local notes from IndexedDB — called on logout, password change, account deletion.
+ *  Logs out first to ensure no sync can fire while we wipe local data. */
+const clearLocalData = async () => {
+  // Logout first so sync guards (isLoggedIn / encKey checks) block any
+  // in-flight or queued sync from pushing an empty notes array to the server.
   auth.logout()
+  notes.value = []
+  currentNoteId.value = null
+  await db.notes.clear()
+  await db.appState.delete('deleted_note_ids')
+}
+
+const handleLogout = async () => {
+  await clearLocalData()
 }
 
 const handleShowProfile = () => {
@@ -538,6 +552,10 @@ const handleChangePassword = async ({ currentPassword, newPassword, onProgress }
     updatedAt: n.updatedAt
   }))
   await auth.changePassword(currentPassword, newPassword, serverNotes, onProgress)
+  // changePassword calls logout() internally — clear local data and show login
+  await clearLocalData()
+  showProfileModal.value = false
+  showAuthModal.value = true
 }
 
 const handleDeleteData = async (password) => {
@@ -547,6 +565,7 @@ const handleDeleteData = async (password) => {
 
 const handleDeleteAccount = async (password) => {
   await auth.requestDeletion('account', password)
+  await clearLocalData()
   showProfileModal.value = false
 }
 
