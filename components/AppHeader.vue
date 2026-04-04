@@ -30,7 +30,8 @@
             @copy="$emit('file-copy')"
             @print="$emit('file-print')" />
           <ViewDropdown
-            @toggle-markdown-preview="$emit('toggle-markdown-preview')"
+            :markdown-mode="markdownMode"
+            @update:markdown-mode="(mode) => $emit('update:markdown-mode', mode)"
             @templates="$emit('show-templates')"
             @about="$emit('file-about')" />
         </div>
@@ -102,9 +103,9 @@ defineProps({
     type: String,
     default: 'left'
   },
-  showMarkdownPreview: {
-    type: Boolean,
-    default: false
+  markdownMode: {
+    type: String,
+    default: 'off'
   },
   modLabel: {
     type: String,
@@ -137,7 +138,7 @@ defineEmits([
   'indent',
   'outdent',
   'update:inline-mode',
-  'toggle-markdown-preview',
+  'update:markdown-mode',
   'undo',
   'redo',
   'file-new',

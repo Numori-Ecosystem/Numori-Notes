@@ -97,6 +97,8 @@ const DEFAULT_PREFERENCES = {
   significantFigures: 6,
   autoCopyResult: true,
   copyAnimationStyle: 'scale-pop',
+  // Markdown
+  markdownMode: 'full',
 }
 
 export const useLocalePreferences = () => {

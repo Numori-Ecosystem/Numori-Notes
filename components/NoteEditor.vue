@@ -62,7 +62,7 @@ const props = defineProps({
   inlineAlign: { type: String, default: null },
   bordered: { type: Boolean, default: false },
   localePreferences: { type: Object, default: null },
-  showMarkdownPreview: { type: Boolean, default: false },
+  markdownMode: { type: String, default: 'full' },
   shortcutHandlers: { type: Object, default: null }
 })
 
@@ -349,10 +349,10 @@ const applyInlineMarkdown = (text, lineFrom, widgets) => {
 
 // --- Build markdown preview decorations ---
 const buildMdDecorations = (view) => {
-  if (!props.showMarkdownPreview) return Decoration.none
+  if (props.markdownMode === 'off') return Decoration.none
 
   const doc = view.state.doc
-  const cursorLine = doc.lineAt(view.state.selection.main.head).number
+  const cursorLine = props.markdownMode === 'edit' ? doc.lineAt(view.state.selection.main.head).number : -1
   const widgets = []
 
   for (let ln = 1; ln <= doc.lines; ln++) {
@@ -745,7 +745,7 @@ useIntervalFn(tickLiveTime, 1000)
 watch(displayLines, () => {
   nextTick(() => {
     updateInlineDecorations()
-    if (props.showMarkdownPreview) updateMarkdownPreview()
+    if (props.markdownMode !== 'off') updateMarkdownPreview()
   })
 })
 
@@ -753,12 +753,12 @@ watch(() => props.showInline, () => updateInlineDecorations())
 watch(() => props.inlineAlign, () => updateInlineDecorations())
 watch(() => props.localePreferences?.inlineResultAlign, () => updateInlineDecorations())
 
-// Markdown preview toggle
-watch(() => props.showMarkdownPreview, () => nextTick(() => updateMarkdownPreview()))
+// Markdown mode change
+watch(() => props.markdownMode, () => nextTick(() => updateMarkdownPreview()))
 
-// Cursor line change → re-render markdown (reveal raw on cursor line)
+// Cursor line change → re-render markdown (reveal raw on cursor line in edit mode)
 watch(currentLine, () => {
-  if (props.showMarkdownPreview && editorView) {
+  if (props.markdownMode === 'edit' && editorView) {
     nextTick(() => updateMarkdownPreview())
   }
 })

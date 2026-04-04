@@ -3,7 +3,7 @@
     <!-- Mobile-friendly Toolbar -->
     <div class="transition-all duration-300 ease-in-out flex-shrink-0 relative z-30"
       :class="focusMode ? 'max-h-0 overflow-hidden opacity-0' : 'max-h-40 opacity-100'">
-      <AppHeader :current-note="currentNote" :inline-mode="showInlineResults" :show-markdown-preview="showMarkdownPreview"
+      <AppHeader :current-note="currentNote" :inline-mode="showInlineResults" :markdown-mode="markdownMode"
       :mod-label="modLabel"
       :selection-count="selectedNoteIds.length"
       :is-logged-in="auth.isLoggedIn.value"
@@ -14,7 +14,7 @@
       @indent="editorRef?.indentLine()" @outdent="editorRef?.outdentLine()"
       @undo="editorRef?.undo()" @redo="editorRef?.redo()"
       @update:inline-mode="showInlineResults = $event"
-      @toggle-markdown-preview="showMarkdownPreview = !showMarkdownPreview"
+      @update:markdown-mode="markdownMode = $event"
       @toggle-focus="focusMode = true"
       @show-templates="showTemplates = true"
       @file-new="createNote"
@@ -118,7 +118,7 @@
         <NoteEditor v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-inline="showInlineResults !== 'off'"
           :inline-align="showInlineResults === 'off' ? 'left' : showInlineResults"
           :locale-preferences="localePrefs.preferences"
-          :show-markdown-preview="showMarkdownPreview"
+          :markdown-mode="markdownMode"
           :shortcut-handlers="shortcutHandlers"
           @update:content="updateContent"
           :placeholder="'Start typing... Try: 10 + 20, or use # for headers, // for comments'" />
@@ -321,7 +321,10 @@ const showInlineResults = computed({
   get: () => localePrefs.preferences.inlineMode ?? 'left',
   set: (v) => { localePrefs.preferences.inlineMode = v; localePrefs.save() }
 })
-const showMarkdownPreview = ref(false)
+const markdownMode = computed({
+  get: () => localePrefs.preferences.markdownMode ?? 'full',
+  set: (v) => { localePrefs.preferences.markdownMode = v; localePrefs.save() }
+})
 const editorRef = ref(null)
 const mobileKeyboardOffset = ref(0)
 const showAuthModal = ref(false)

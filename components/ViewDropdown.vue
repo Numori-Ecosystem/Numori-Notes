@@ -18,7 +18,16 @@
       <div v-show="open"
         class="absolute left-0 mt-1 w-48 sm:w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-50">
 
-        <DropdownItem icon="mdi:language-markdown" label="Markdown Preview" @click="action('toggle-markdown-preview')" />
+        <div class="px-3 py-1.5 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Markdown</div>
+        <button v-for="opt in mdOptions" :key="opt.value"
+          @click="setMarkdownMode(opt.value)"
+          class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm transition-colors"
+          :class="markdownMode === opt.value
+            ? 'text-gray-900 dark:text-gray-100'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'">
+          <Icon :key="opt.value + '-' + markdownMode" :name="markdownMode === opt.value ? 'mdi:radiobox-marked' : 'mdi:radiobox-blank'" class="w-4 h-4 block flex-shrink-0" />
+          <span>{{ opt.label }}</span>
+        </button>
 
         <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
 
@@ -33,14 +42,33 @@
 </template>
 
 <script setup>
+const props = defineProps({
+  markdownMode: {
+    type: String,
+    default: 'off',
+    validator: (v) => ['off', 'edit', 'full'].includes(v),
+  },
+})
+
 const emit = defineEmits([
-  'toggle-markdown-preview',
+  'update:markdown-mode',
   'templates',
   'about',
 ])
 
+const mdOptions = [
+  { value: 'full', label: 'Render Markdown' },
+  { value: 'edit', label: 'Edit & Render Markdown' },
+  { value: 'off', label: "Don't Render Markdown" },
+]
+
 const open = ref(false)
 const dropdownRef = ref(null)
+
+const setMarkdownMode = (mode) => {
+  open.value = false
+  emit('update:markdown-mode', mode)
+}
 
 const action = (name) => {
   open.value = false
