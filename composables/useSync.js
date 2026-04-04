@@ -81,10 +81,10 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
         const existing = notes.value.find(n => n.id === localId)
         if (existing) {
           if (new Date(remote.updatedAt) > new Date(existing.updatedAt)) {
-            existing.title = remote.title
-            existing.description = remote.description
-            existing.tags = remote.tags
-            existing.content = remote.content
+            if (existing.title !== remote.title) existing.title = remote.title
+            if (existing.description !== remote.description) existing.description = remote.description
+            if (JSON.stringify(existing.tags) !== JSON.stringify(remote.tags)) existing.tags = remote.tags
+            if (existing.content !== remote.content) existing.content = remote.content
             existing.updatedAt = remote.updatedAt
           }
           existing.sortOrder = remote.sortOrder ?? existing.sortOrder
