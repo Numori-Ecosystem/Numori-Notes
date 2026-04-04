@@ -27,6 +27,13 @@ beforeEach(() => {
   mockOptionalAuth.mockResolvedValue(null)
 })
 
+// Helper: queue ALTER TABLE response, then the actual SELECT response
+const mockSelectResult = (result) => {
+  mockQuery
+    .mockResolvedValueOnce({ rows: [] }) // ALTER TABLE ensurePasswordHintColumn
+    .mockResolvedValueOnce(result)        // SELECT shared_notes
+}
+
 describe('GET /api/share/:hash', () => {
   it('rejects invalid hash length', async () => {
     getRouterParam.mockReturnValue('short')
@@ -40,13 +47,13 @@ describe('GET /api/share/:hash', () => {
 
   it('returns 404 for non-existent hash', async () => {
     getRouterParam.mockReturnValue('a'.repeat(32))
-    mockQuery.mockResolvedValueOnce({ rows: [] })
+    mockSelectResult({ rows: [] })
     await expect(handler({})).rejects.toThrow('Shared note not found')
   })
 
   it('returns 410 for soft-deleted share', async () => {
     getRouterParam.mockReturnValue('a'.repeat(32))
-    mockQuery.mockResolvedValueOnce({
+    mockSelectResult({
       rows: [{
         id: 1, hash: 'a'.repeat(32), title: 't', description: '', tags: '[]',
         content: 'c', sharer_name: null, sharer_email: null, anonymous: true,
@@ -59,7 +66,7 @@ describe('GET /api/share/:hash', () => {
 
   it('returns 410 for expired share', async () => {
     getRouterParam.mockReturnValue('a'.repeat(32))
-    mockQuery.mockResolvedValueOnce({
+    mockSelectResult({
       rows: [{
         id: 1, hash: 'a'.repeat(32), title: 't', description: '', tags: '[]',
         content: 'c', sharer_name: null, sharer_email: null, anonymous: true,
@@ -72,7 +79,7 @@ describe('GET /api/share/:hash', () => {
 
   it('returns encrypted=true for encrypted shares', async () => {
     getRouterParam.mockReturnValue('b'.repeat(32))
-    mockQuery.mockResolvedValueOnce({
+    mockSelectResult({
       rows: [{
         id: 1, hash: 'b'.repeat(32),
         title: '{"iv":"a","ct":"b"}',
@@ -93,7 +100,7 @@ describe('GET /api/share/:hash', () => {
 
   it('returns encrypted=false for legacy shares', async () => {
     getRouterParam.mockReturnValue('c'.repeat(32))
-    mockQuery.mockResolvedValueOnce({
+    mockSelectResult({
       rows: [{
         id: 1, hash: 'c'.repeat(32),
         title: 'Plain Title', description: 'desc', tags: '["tag"]',
@@ -112,7 +119,7 @@ describe('GET /api/share/:hash', () => {
 
   it('hides sharer info for anonymous shares', async () => {
     getRouterParam.mockReturnValue('d'.repeat(32))
-    mockQuery.mockResolvedValueOnce({
+    mockSelectResult({
       rows: [{
         id: 1, hash: 'd'.repeat(32),
         title: 'Anon', description: '', tags: '[]', content: 'c',

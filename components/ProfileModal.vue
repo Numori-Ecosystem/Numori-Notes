@@ -522,8 +522,22 @@ const loadSharedNotes = async () => {
   loadingShared.value = true
   try {
     if (!props.authHeaders?.Authorization) return
-    sharedNotes.value = await apiFetch('/api/share/my', {
+    const notes = await apiFetch('/api/share/my', {
       headers: props.authHeaders
+    })
+
+    // Resolve encrypted titles from local notes using sourceClientId
+    const { default: db } = await import('~/db.js')
+    const localNotes = await db.notes.toArray()
+    const localMap = new Map(localNotes.map(n => [n.id, n]))
+
+    sharedNotes.value = notes.map(sn => {
+      const local = sn.sourceClientId ? localMap.get(sn.sourceClientId) : null
+      const isEncryptedTitle = sn.title && sn.title.startsWith('{') && sn.title.includes('"iv"')
+      return {
+        ...sn,
+        title: isEncryptedTitle && local ? (local.title || 'Untitled') : sn.title
+      }
     })
   } catch {
     sharedNotes.value = []

@@ -22,7 +22,12 @@ const handler = (await import('../../server/api/share/index.post.js')).default
 beforeEach(() => {
   vi.clearAllMocks()
   mockOptionalAuth.mockResolvedValue(null) // unauthenticated by default
+  // Default: resolve with empty rows (covers migration ALTER TABLE + INSERT calls)
+  mockQuery.mockResolvedValue({ rows: [] })
 })
+
+// Helper: find the INSERT call (the one whose SQL starts with INSERT)
+const findInsertCall = () => mockQuery.mock.calls.find(c => typeof c[0] === 'string' && c[0].includes('INSERT'))
 
 describe('POST /api/share', () => {
   it('rejects empty body', async () => {
@@ -44,14 +49,12 @@ describe('POST /api/share', () => {
       sourceClientId: 'client-1'
     })
 
-    mockQuery.mockResolvedValueOnce({ rows: [] })
-
     const result = await handler({})
     expect(result.hash).toBeDefined()
     expect(result.hash).toHaveLength(32)
 
     // Verify INSERT params
-    const insertCall = mockQuery.mock.calls[0]
+    const insertCall = findInsertCall()
     const params = insertCall[1]
     expect(params[2]).toBe(encTitle) // title stored as encrypted string
     expect(params[4]).toBe(encTags) // tags stored as encrypted string
@@ -66,22 +69,20 @@ describe('POST /api/share', () => {
       content: 'content',
       tags: ['a', 'b']
     })
-    mockQuery.mockResolvedValueOnce({ rows: [] })
 
     await handler({})
 
-    const params = mockQuery.mock.calls[0][1]
+    const params = findInsertCall()[1]
     expect(params[4]).toBe('["a","b"]')
     expect(params[11]).toBe(false) // not encrypted
   })
 
   it('sets encrypted=false when not specified', async () => {
     readBody.mockResolvedValue({ title: 'Test', content: 'c' })
-    mockQuery.mockResolvedValueOnce({ rows: [] })
 
     await handler({})
 
-    const params = mockQuery.mock.calls[0][1]
+    const params = findInsertCall()[1]
     expect(params[11]).toBe(false)
   })
 
@@ -90,11 +91,12 @@ describe('POST /api/share', () => {
     readBody.mockResolvedValue({ title: 'Test', content: 'c' })
     mockQuery
       .mockResolvedValueOnce({ rows: [{ name: 'Alice', email: 'alice@example.com' }] }) // user lookup
-      .mockResolvedValueOnce({ rows: [] }) // INSERT
+      .mockResolvedValueOnce({ rows: [] }) // ALTER TABLE ensurePasswordHintColumn
+      // INSERT uses default mockResolvedValue
 
     await handler({})
 
-    const insertParams = mockQuery.mock.calls[1][1]
+    const insertParams = findInsertCall()[1]
     expect(insertParams[1]).toBe(42) // user_id
     expect(insertParams[6]).toBe('Alice') // sharer_name
     expect(insertParams[7]).toBe('alice@example.com') // sharer_email
@@ -103,11 +105,10 @@ describe('POST /api/share', () => {
   it('hides identity when anonymous', async () => {
     mockOptionalAuth.mockResolvedValue({ userId: 42 })
     readBody.mockResolvedValue({ title: 'Test', content: 'c', anonymous: true })
-    mockQuery.mockResolvedValueOnce({ rows: [] })
 
     await handler({})
 
-    const params = mockQuery.mock.calls[0][1]
+    const params = findInsertCall()[1]
     expect(params[1]).toBeNull() // user_id
     expect(params[6]).toBeNull() // sharer_name
     expect(params[7]).toBeNull() // sharer_email
@@ -116,21 +117,19 @@ describe('POST /api/share', () => {
 
   it('stores sourceClientId as null when not provided', async () => {
     readBody.mockResolvedValue({ title: 'Test', content: 'c' })
-    mockQuery.mockResolvedValueOnce({ rows: [] })
 
     await handler({})
 
-    const params = mockQuery.mock.calls[0][1]
+    const params = findInsertCall()[1]
     expect(params[12]).toBeNull()
   })
 
   it('clamps expiration to 1-30 days', async () => {
     readBody.mockResolvedValue({ title: 'Test', content: 'c', expiresInDays: 999 })
-    mockQuery.mockResolvedValueOnce({ rows: [] })
 
     await handler({})
 
-    const params = mockQuery.mock.calls[0][1]
+    const params = findInsertCall()[1]
     const expiresAt = new Date(params[9])
     const now = new Date()
     const diffDays = (expiresAt - now) / 86400000

@@ -2,6 +2,11 @@ import { randomBytes } from 'node:crypto'
 import { optionalAuth } from '../../utils/auth.js'
 import { query } from '../../utils/db.js'
 
+// Ensure password_hint column exists (idempotent, safe to call on every request)
+async function ensurePasswordHintColumn() {
+  await query(`ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS password_hint TEXT`).catch(() => {})
+}
+
 /**
  * POST /api/share — Share a note. No account required.
  *
@@ -51,25 +56,20 @@ export default defineEventHandler(async (event) => {
   // Tags may be an encrypted string or an array
   const tagsValue = typeof tags === 'string' ? tags : JSON.stringify(tags || [])
 
-  await query(`
-    INSERT INTO shared_notes (hash, user_id, title, description, tags, content, sharer_name, sharer_email, anonymous, expires_at, collect_analytics, encrypted, source_client_id, password_hint)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-  `, [
-    hash,
-    userId,
-    title || 'Shared Note',
-    description || '',
-    tagsValue,
-    content || '',
-    name,
-    email,
-    isAnonymous,
-    expiresAt,
-    collectAnalytics === true,
-    encrypted === true,
-    body.sourceClientId || null,
-    passwordHint || null
-  ])
+  const hint = passwordHint || null
+
+  await ensurePasswordHintColumn()
+
+  const columns = ['hash', 'user_id', 'title', 'description', 'tags', 'content', 'sharer_name', 'sharer_email', 'anonymous', 'expires_at', 'collect_analytics', 'encrypted', 'source_client_id']
+  const params = [hash, userId, title || 'Shared Note', description || '', tagsValue, content || '', name, email, isAnonymous, expiresAt, collectAnalytics === true, encrypted === true, body.sourceClientId || null]
+
+  if (hint) {
+    columns.push('password_hint')
+    params.push(hint)
+  }
+
+  const placeholders = params.map((_, i) => `$${i + 1}`).join(', ')
+  await query(`INSERT INTO shared_notes (${columns.join(', ')}) VALUES (${placeholders})`, params)
 
   return { hash }
 })

@@ -2,6 +2,11 @@ import { createHash } from 'node:crypto'
 import { query } from '../../utils/db.js'
 import { optionalAuth } from '../../utils/auth.js'
 
+// Ensure password_hint column exists (idempotent, safe to call on every request)
+async function ensurePasswordHintColumn() {
+  await query(`ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS password_hint TEXT`).catch(() => {})
+}
+
 /**
  * GET /api/share/:hash — Retrieve a shared note by its hash.
  * No authentication required. Records a view if analytics are enabled.
@@ -12,6 +17,8 @@ export default defineEventHandler(async (event) => {
   if (!hash || hash.length !== 32) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid share link' })
   }
+
+  await ensurePasswordHintColumn()
 
   const result = await query(`
     SELECT id, hash, title, description, tags, content, sharer_name, sharer_email,
