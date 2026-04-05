@@ -31,36 +31,159 @@ npm run dev                 # http://localhost:3000
 ## Project structure
 
 ```
-├── app.vue                    # Root app component
+├── app.vue                        # Root app component
+├── db.js                          # Dexie (IndexedDB) database schema
 ├── pages/
-│   └── index.vue              # Main (only) page — SPA
+│   ├── index.vue                  # Main SPA page — editor, sidebar, modals
+│   └── shared/
+│       └── [hash].vue             # Public shared-note viewer
 ├── components/
-│   ├── AppHeader.vue          # Top bar with title and settings
-│   ├── NoteEditor.vue         # CodeMirror editor wrapper with calc integration
-│   ├── NotesList.vue          # Sidebar note list with CRUD
-│   ├── NoteMetaModal.vue      # Note rename/metadata modal
-│   ├── SettingsDropdown.vue   # Settings menu (theme, language, help)
-│   ├── HelpModal.vue          # In-app documentation modal
-│   ├── ShortcutsModal.vue     # Keyboard shortcuts reference
-│   ├── TemplatesModal.vue     # Calculation templates picker
-│   ├── LanguageSwitcher.vue   # i18n locale selector
-│   └── ThemeSwitcher.vue      # Light/dark mode toggle
+│   ├── AboutModal.vue             # About / credits modal
+│   ├── AccountMenu.vue            # User account dropdown
+│   ├── AppHeader.vue              # Top bar with title, menus, and actions
+│   ├── AuthModal.vue              # Login / register modal
+│   ├── AvatarEditor.vue           # Avatar upload / crop
+│   ├── ConfirmBulkDeleteModal.vue # Bulk-delete confirmation
+│   ├── ConfirmDeleteModal.vue     # Single-delete confirmation
+│   ├── DropdownItem.vue           # Reusable dropdown menu item
+│   ├── DropdownSubmenu.vue        # Nested dropdown submenu
+│   ├── ExportOptionsModal.vue     # Export format picker
+│   ├── FileDropdown.vue           # File menu dropdown
+│   ├── FormattingToolbar.vue      # Markdown formatting toolbar
+│   ├── HelpModal.vue              # In-app documentation modal
+│   ├── LanguageSwitcher.vue       # i18n locale selector
+│   ├── MainSidebar.vue            # Notes list sidebar with search, tags, CRUD
+│   ├── NoteEditor.vue             # CodeMirror editor wrapper with calc integration
+│   ├── NoteListItem.vue           # Single note row in the sidebar
+│   ├── NoteMetaModal.vue          # Note rename / metadata / share modal
+│   ├── ProfileModal.vue           # User profile, password change, data deletion
+│   ├── SettingsModal.vue          # Locale and display preferences
+│   ├── ShareAnalyticsModal.vue    # Shared note view analytics
+│   ├── SharedNoteToolbar.vue      # Toolbar for the public shared-note page
+│   ├── ShareModal.vue             # Share a note (password, link, analytics)
+│   ├── SidebarFooter.vue          # Sidebar bottom bar (account, settings)
+│   ├── SyncIndicator.vue          # Sync status indicator
+│   ├── TemplatesModal.vue         # Calculation templates picker
+│   ├── ThemeSwitcher.vue          # Light / dark mode toggle
+│   ├── ViewDropdown.vue           # View menu dropdown
+│   └── WelcomeWizard.vue          # First-run onboarding wizard
 ├── composables/
-│   ├── useCalculator.js       # Core calculator engine (all math/units/currency logic)
-│   ├── useCalcLanguage.js       # Custom CodeMirror language definition + tokenizer
-│   ├── useNotes.js            # Note persistence (Dexie/IndexedDB) and state
-│   └── useTemplates.js        # Predefined calculation templates
-├── locales/                   # i18n translation files
-│   ├── en-GB.json
-│   ├── es-ES.json
-│   └── pages/index/           # Page-scoped translations
+│   ├── calculator/                # Calculator engine modules
+│   │   ├── index.js               # Main entry — line-by-line pipeline
+│   │   ├── aggregation.js         # sum / total / average
+│   │   ├── constants.js           # pi, e, tau, phi, etc.
+│   │   ├── currency.js            # Live exchange rates + conversion
+│   │   ├── datetime.js            # Date / time / duration / timezone
+│   │   ├── math.js                # Arithmetic, functions, trig, bitwise
+│   │   ├── scales.js              # k, M, billion, trillion, SI prefixes
+│   │   └── units.js               # Unit conversion (length, weight, …)
+│   ├── useApi.js                  # API fetch wrapper (app-level)
+│   ├── useApiBase.js              # Base fetch helper (shared with shared page)
+│   ├── useAuth.js                 # Auth state, key derivation, session persistence
+│   ├── useCalcLanguage.js         # Custom CodeMirror language (calcnotes)
+│   ├── useCalculator.js           # Calculator composable (delegates to calculator/)
+│   ├── useCodeHighlight.js        # Syntax highlighting helpers
+│   ├── useDisplayFormatter.js     # Number / result display formatting
+│   ├── useFileActions.js          # Export, import, duplicate, print
+│   ├── useKeyboardShortcuts.js    # Global keyboard shortcut bindings
+│   ├── useLocalePreferences.js    # Locale and display preferences state
+│   ├── useNativeKeyboardToolbar.ts # iOS native keyboard accessory bridge
+│   ├── useNotes.js                # Note CRUD + IndexedDB persistence
+│   ├── usePlatform.js             # Platform detection (web, ios, android)
+│   ├── useSync.js                 # Cloud sync with E2E encryption
+│   ├── useTemplates.js            # Predefined calculation templates
+│   └── useWelcomeWizard.js        # First-run wizard state
+├── utils/
+│   ├── crypto.js                  # E2E encryption: key derivation, AES-GCM encrypt/decrypt
+│   └── keyboard-toolbar.ts        # Native keyboard toolbar utilities
+├── plugins/
+│   ├── pwa.client.ts              # PWA service worker registration
+│   └── statusbar.client.ts        # Mobile status bar styling
+├── server/
+│   ├── api/
+│   │   ├── auth/
+│   │   │   ├── register.post.js   # POST /api/auth/register — create account
+│   │   │   ├── login.post.js      # POST /api/auth/login — authenticate
+│   │   │   ├── me.get.js          # GET  /api/auth/me — validate session
+│   │   │   ├── profile.put.js     # PUT  /api/auth/profile — update profile
+│   │   │   ├── password.put.js    # PUT  /api/auth/password — change password + re-encrypt
+│   │   │   ├── privacy.put.js     # PUT  /api/auth/privacy — tracking preferences
+│   │   │   └── delete.post.js     # POST /api/auth/delete — delete data or account
+│   │   ├── notes/
+│   │   │   ├── index.get.js       # GET  /api/notes — list notes
+│   │   │   ├── index.post.js      # POST /api/notes — create / upsert note
+│   │   │   ├── [id].put.js        # PUT  /api/notes/:id — update note
+│   │   │   ├── [id].delete.js     # DELETE /api/notes/:id — soft-delete note
+│   │   │   └── sync.post.js       # POST /api/notes/sync — bulk sync endpoint
+│   │   ├── share/
+│   │   │   ├── index.post.js      # POST /api/share — create shared note
+│   │   │   ├── my.get.js          # GET  /api/share/my — list user's shares
+│   │   │   ├── [hash].get.js      # GET  /api/share/:hash — view shared note
+│   │   │   ├── [hash].delete.js   # DELETE /api/share/:hash — unshare
+│   │   │   └── [hash]/
+│   │   │       ├── analytics.get.js    # GET  — view analytics
+│   │   │       ├── analytics.delete.js # DELETE — clear analytics
+│   │   │       └── import.post.js      # POST — record import event
+│   │   └── sync/
+│   │       └── events.get.js      # GET /api/sync/events — SSE endpoint
+│   ├── middleware/
+│   │   └── cors.js                # CORS headers for API routes
+│   ├── plugins/
+│   │   └── migrate.js             # Auto-run DB migrations on startup
+│   └── utils/
+│       ├── auth.js                # JWT sign / verify, requireAuth helper
+│       ├── db.js                  # PostgreSQL connection pool + query helper
+│       ├── migrate.js             # SQL migration runner
+│       └── syncBroadcast.js       # SSE broadcast to connected clients
+├── locales/
+│   ├── en-GB.json                 # English translations
+│   ├── es-ES.json                 # Spanish translations
+│   └── pages/
+│       ├── index/                 # Page-scoped translations (main page)
+│       └── shared-hash/           # Page-scoped translations (shared page)
 ├── tests/
-│   └── useCalculator.test.js  # 221 unit tests for the calculator engine
-├── nuxt.config.ts             # Nuxt configuration (SSR disabled, modules, i18n)
-├── tailwind.config.js         # Tailwind with custom color palette
-├── vitest.config.js           # Vitest configuration
-├── Dockerfile                 # Multi-stage production build
-└── docker-compose.yml         # Local Postgres (for future backend features)
+│   ├── calculator/                # Calculator engine tests (by module)
+│   │   ├── helpers.js             # Shared test helpers
+│   │   ├── aggregation.test.js
+│   │   ├── arithmetic.test.js
+│   │   ├── currency.test.js
+│   │   ├── datetime.test.js
+│   │   ├── fuelconsumption.test.js
+│   │   ├── functions.test.js
+│   │   ├── localePreferences.test.js
+│   │   ├── spaceless_units.test.js
+│   │   ├── units.test.js
+│   │   └── variables.test.js
+│   ├── server/                    # Server API tests
+│   │   ├── auth-delete.test.js
+│   │   ├── auth-login.test.js
+│   │   ├── auth-password.test.js
+│   │   ├── auth-register.test.js
+│   │   ├── share-create.test.js
+│   │   ├── share-get.test.js
+│   │   └── sync.test.js
+│   ├── calcLanguage.test.js       # CodeMirror language tests
+│   ├── codeHighlight.test.js      # Syntax highlighting tests
+│   ├── crypto.test.js             # Crypto unit tests
+│   ├── crypto-integration.test.js # Crypto integration tests
+│   ├── fileActions.test.js        # Export / import tests
+│   ├── localePreferences.test.js  # Locale preferences tests
+│   └── logout-safety.test.js      # Logout + sync guard tests
+├── public/
+│   ├── favicon.ico
+│   ├── icon-192x192.svg
+│   ├── icon-512x512.svg
+│   ├── manifest.webmanifest
+│   ├── robots.txt
+│   └── sw.js                      # Service worker for PWA
+├── nuxt.config.ts                 # Nuxt configuration (SSR disabled, modules, i18n)
+├── tailwind.config.js             # Tailwind with custom color palette
+├── vitest.config.js               # Vitest configuration
+├── capacitor.config.ts            # Capacitor config (iOS + Android)
+├── Dockerfile                     # Multi-stage production build
+├── docker-compose.yml             # Production Postgres
+├── docker-compose.dev.yml         # Local dev Postgres
+└── mise.toml                      # Node.js version pinning
 ```
 
 ## Architecture
