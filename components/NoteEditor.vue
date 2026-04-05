@@ -1679,5 +1679,6 @@ defineExpose({
   copyLinkName,
   undo: () => { if (editorView) { cmUndo(editorView); updateUndoRedoState(); editorView.focus() } },
   redo: () => { if (editorView) { cmRedo(editorView); updateUndoRedoState(); editorView.focus() } },
+  blur: () => { if (editorView) { editorView.contentDOM.blur() } },
 })
 </script>

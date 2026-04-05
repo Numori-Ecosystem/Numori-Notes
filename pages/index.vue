@@ -169,13 +169,15 @@
       <div class="overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-xl"
         :style="{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
         <FormattingToolbar container-class="px-2 py-1.5"
+          :show-dismiss="hasVirtualKeyboard"
           :can-undo="editorRef?.canUndo ?? false"
           :can-redo="editorRef?.canRedo ?? false"
           @apply-format="applyFormat"
           @indent="editorRef?.indentLine()"
           @outdent="editorRef?.outdentLine()"
           @undo="editorRef?.undo()"
-          @redo="editorRef?.redo()" />
+          @redo="editorRef?.redo()"
+          @dismiss-keyboard="editorRef?.blur()" />
       </div>
     </div>
 
@@ -356,6 +358,7 @@ const showShareModal = ref(false)
 // On native apps (iOS / Android), hide the HTML toolbar — native keyboard toolbar is used instead
 const { platform, isNative: isNativePlatform } = usePlatform()
 const isNativeApp = platform === 'ios' || platform === 'android'
+const { hasVirtualKeyboard } = useHasVirtualKeyboard()
 
 // Browser: sync focus mode with fullscreen
 if (import.meta.client && platform === 'web') {
