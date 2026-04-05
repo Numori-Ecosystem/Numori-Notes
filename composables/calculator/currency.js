@@ -168,7 +168,7 @@ const replaceCurrencyTokens = (expr, symbolMatches, currencyVarsInExpr, codeCurr
     }
   }
 
-  result = replaceCodeCurrencies(result, allSameCurrency ? currencyVarsInExpr[0]?.currency || symbolMatches[0]?.currency : null)
+  result = replaceCodeCurrencies(result, allSameCurrency ? currencyVarsInExpr[0]?.currency || symbolMatches[0]?.currency || codeCurrencyMatches[0]?.currency : null)
 
   return result
 }

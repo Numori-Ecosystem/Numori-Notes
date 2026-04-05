@@ -135,7 +135,28 @@ export const useCalculator = () => {
       previousResult.value = result.value
       previousResultCurrency.value = result.currency || null
     } catch (error) {
-      // Fallback: extract trailing number (with optional currency) from plain text
+      // Fallback 1: strip leading text label and retry expression evaluation
+      // e.g. "Arwen 900 eur + 20 eur" → evaluate "900 eur + 20 eur" = 920 EUR
+      const exprMatch = input.match(/^[a-zA-Z\s]+?(?=\d)(.+)$/)
+      if (exprMatch) {
+        const strippedExpr = exprMatch[1].trim()
+        // Only retry if the stripped expression contains an operator (arithmetic, not just a plain value)
+        if (/[+\-*/]/.test(strippedExpr)) {
+          try {
+            const result = evaluateExpression(strippedExpr, index, allResults)
+            if (result.display) {
+              line.type = 'label'
+              line.result = result.display
+              if (result.hideResult) line.hideResult = true
+              previousResult.value = result.value
+              previousResultCurrency.value = result.currency || null
+              return
+            }
+          } catch (e) { /* fall through to extractTrailingNumber */ }
+        }
+      }
+
+      // Fallback 2: extract trailing number (with optional currency) from plain text
       // e.g. "Arwen 900 eur" → 900 EUR, "transporte Kaisa 2000" → 2000
       const extracted = extractTrailingNumber(input)
       if (extracted) {
