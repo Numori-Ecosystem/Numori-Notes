@@ -239,7 +239,7 @@ flowchart LR
     PBKDF2a --> AK[authKey — hex]
     PBKDF2e --> EK[encKey — AES-256-GCM CryptoKey]
     AK -->|sent to server| SRV[(Server: bcrypt hash)]
-    EK -->|never leaves client| LOCAL[Client memory + sessionStorage]
+    EK -->|never leaves client| LOCAL[Client memory + IndexedDB]
 ```
 
 ### Registration & login
@@ -266,24 +266,24 @@ sequenceDiagram
     end
 
     U->>U: store JWT in IndexedDB
-    U->>U: store exported encKey bytes in sessionStorage
+    U->>U: store exported encKey bytes in IndexedDB
 ```
 
 On login the server tries `authKey` first. For legacy accounts (created before E2E), it falls back to the raw password and transparently upgrades the stored hash to `bcrypt(authKey)`.
 
 ### Session persistence across page refresh
 
-The JWT token is persisted in IndexedDB and survives page refreshes. The `encKey` (raw AES-256 key bytes, base64-encoded) is stored in `sessionStorage`, which is tab-scoped and cleared when the tab/window closes.
+The JWT token and the exported `encKey` bytes (base64-encoded) are both persisted in IndexedDB via the Dexie `appState` table. This means the session survives page refreshes, tab closures, and browser restarts. Both are cleared on logout.
 
-On page load, `restore()` recovers the JWT from IndexedDB, validates it against the server (`GET /api/auth/me`), and re-imports the `encKey` from `sessionStorage`. If either is missing, the user must log in again.
+On page load, `restore()` recovers the JWT from IndexedDB, validates it against the server (`GET /api/auth/me`), and re-imports the `encKey` from IndexedDB. If either is missing or the token is invalid, the user must log in again.
 
 ```mermaid
 flowchart TD
     LOAD[Page load / refresh] --> JWT{JWT in IndexedDB?}
     JWT -- No --> GUEST[Guest mode — local only]
     JWT -- Yes --> VERIFY[GET /api/auth/me]
-    VERIFY -- 401 --> CLEAR[Clear token + key] --> GUEST
-    VERIFY -- 200 --> KEY{encKey in sessionStorage?}
+    VERIFY -- 401 --> CLEAR[Clear token + key from IndexedDB] --> GUEST
+    VERIFY -- 200 --> KEY{encKey in IndexedDB?}
     KEY -- Yes --> IMPORT[Import AES key from bytes] --> READY[Sync enabled]
     KEY -- No --> NOSYNC[Logged in but sync paused — re-login required]
 ```
@@ -356,9 +356,9 @@ The following items are known trade-offs or areas for future improvement:
 
 1. **Hardcoded PBKDF2 salts** — The three salts (`AUTH_SALT`, `ENC_SALT`, `SHARE_SALT`) are static strings compiled into the client bundle. Ideally, salts should be per-user and stored server-side. This is acceptable for now because the salts serve to domain-separate the three derived keys (not to prevent rainbow tables — PBKDF2's iteration count handles that), but per-user salts would be stronger.
 
-2. **Derived key in sessionStorage** — The raw AES-256 key bytes are stored in `sessionStorage` (base64-encoded) to survive page refreshes. While `sessionStorage` is tab-scoped and not shared across tabs or persisted to disk, it is accessible to any JavaScript running in the same origin. An XSS vulnerability could exfiltrate the key. Alternatives considered:
+2. **Derived key in IndexedDB** — The raw AES-256 key bytes are stored in IndexedDB (base64-encoded via the Dexie `appState` table) to survive page refreshes and tab closures. Unlike `sessionStorage`, this persists across browser sessions until the user explicitly logs out. The key is accessible to any JavaScript running in the same origin, so an XSS vulnerability could exfiltrate it. Alternatives considered:
    - Non-extractable CryptoKey (original approach) — prevents export but is lost on refresh, breaking sync.
-   - IndexedDB with CryptoKey objects — some browsers support storing non-extractable CryptoKeys in IndexedDB, but support is inconsistent.
+   - `sessionStorage` — tab-scoped and cleared on tab close, but doesn't survive tab closures or browser restarts, forcing frequent re-logins.
    - Service Worker vault — would isolate the key from the main thread but adds significant complexity.
 
 3. **No key rotation mechanism** — There is no periodic key rotation. The `encKey` only changes when the user changes their password. A future improvement could introduce versioned keys.

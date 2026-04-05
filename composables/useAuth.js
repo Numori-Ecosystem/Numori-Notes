@@ -25,25 +25,24 @@ export const useAuth = () => {
   const encKey = ref(null)
 
   /**
-   * Persist the derived key material in sessionStorage so we can restore
-   * encKey after a page refresh. sessionStorage is tab-scoped and cleared
-   * when the tab closes. We store the raw AES key bytes (base64), never
-   * the user's password.
+   * Persist the derived key material in IndexedDB (appState table) so we
+   * can restore encKey after a page refresh. We store the raw AES key
+   * bytes as a base64 string, never the user's password.
    */
-  const _saveSessionKey = async (key) => {
+  const _saveEncKey = async (key) => {
     if (import.meta.client) {
       const b64 = await exportKey(key)
-      sessionStorage.setItem('_enc_k', b64)
+      await db.appState.put({ key: 'enc_key', value: b64 })
     }
   }
-  const _clearSessionKey = () => {
-    if (import.meta.client) sessionStorage.removeItem('_enc_k')
+  const _clearEncKey = async () => {
+    if (import.meta.client) await db.appState.delete('enc_key')
   }
-  const _restoreSessionKey = async () => {
+  const _restoreEncKey = async () => {
     if (!import.meta.client) return null
-    const b64 = sessionStorage.getItem('_enc_k')
-    if (!b64) return null
-    return importKey(b64)
+    const row = await db.appState.get('enc_key')
+    if (!row?.value) return null
+    return importKey(row.value)
   }
 
   const isLoggedIn = computed(() => !!token.value && !!user.value)
@@ -73,12 +72,12 @@ export const useAuth = () => {
       user.value = await apiFetch('/api/auth/me', {
         headers: { Authorization: `Bearer ${row.value}` }
       })
-      // Restore encKey from session-stored key material (survives refresh)
-      encKey.value = await _restoreSessionKey()
+      // Restore encKey from IndexedDB (survives refresh)
+      encKey.value = await _restoreEncKey()
     } catch {
       token.value = null
       encKey.value = null
-      _clearSessionKey()
+      await _clearEncKey()
       await db.appState.delete('auth_token')
     }
   }
@@ -95,7 +94,7 @@ export const useAuth = () => {
       await _saveToken(data.token)
       user.value = data.user
       encKey.value = await deriveEncKey(password)
-      await _saveSessionKey(encKey.value)
+      await _saveEncKey(encKey.value)
       return data
     } catch (err) {
       error.value = err.data?.statusMessage || err.message || 'Registration failed'
@@ -120,7 +119,7 @@ export const useAuth = () => {
       await _saveToken(data.token)
       user.value = data.user
       encKey.value = await deriveEncKey(password)
-      await _saveSessionKey(encKey.value)
+      await _saveEncKey(encKey.value)
       return data
     } catch (err) {
       error.value = err.data?.statusMessage || err.message || 'Login failed'
@@ -134,8 +133,7 @@ export const useAuth = () => {
     token.value = null
     user.value = null
     encKey.value = null
-    _clearSessionKey()
-    await db.appState.bulkDelete(['auth_token', 'last_synced_at'])
+    await db.appState.bulkDelete(['auth_token', 'last_synced_at', 'enc_key'])
   }
 
   const updateProfile = async ({ name, email, avatarUrl }) => {
