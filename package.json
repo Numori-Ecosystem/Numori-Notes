@@ -4,7 +4,18 @@
   "private": true,
   "version": "0.1.0",
   "description": "Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.",
-  "author": "Numori contributors",
+  "authors": [
+    {
+      "name": "Erik Bjerke",
+      "email": "contact@erikbjerke.com",
+      "url": "https://erikbjerke.com"
+    },
+    {
+      "name": "TheProcedural Software Ltd",
+      "email": "contact@theprocedural.com",
+      "url": "https://theprocedural.com"
+    }
+  ],
   "license": "AGPL-3.0",
   "homepage": "https://github.com/Erik-Bjerke/Numori",
   "repository": {
