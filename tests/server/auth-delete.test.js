@@ -79,16 +79,19 @@ describe('POST /api/auth/delete', () => {
     expect(mockQuery).toHaveBeenCalledTimes(3)
   })
 
-  it('handles type=account — marks for deletion', async () => {
+  it('handles type=account — deletes account and all data', async () => {
     const authKey = 'key'
     const hash = await bcrypt.hash(authKey, 4)
     readBody.mockResolvedValue({ type: 'account', authKey })
     mockQuery
       .mockResolvedValueOnce({ rows: [{ password_hash: hash }] })
-      .mockResolvedValueOnce({ rows: [] }) // UPDATE deletion_requested_at
+      .mockResolvedValueOnce({ rows: [] }) // DELETE shared_notes
+      .mockResolvedValueOnce({ rows: [] }) // DELETE notes
+      .mockResolvedValueOnce({ rows: [] }) // DELETE users
 
     const result = await handler({})
-    expect(result).toEqual({ deleted: 'account_requested' })
+    expect(result).toEqual({ deleted: 'account' })
+    expect(mockQuery).toHaveBeenCalledTimes(4)
   })
 
   it('rejects invalid type', async () => {

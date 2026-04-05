@@ -219,7 +219,7 @@ export const useAuth = () => {
       if (type === 'account') await logout()
       return data
     } catch (err) {
-      error.value = err.data?.statusMessage || err.message || 'Deletion request failed'
+      error.value = err.data?.statusMessage || err.message || 'Deletion failed'
       throw err
     } finally {
       loading.value = false

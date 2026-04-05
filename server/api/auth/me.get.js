@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)
 
   const result = await query(
-    'SELECT id, email, name, avatar_url, deletion_requested_at, created_at, privacy_no_tracking FROM users WHERE id = $1',
+    'SELECT id, email, name, avatar_url, created_at, privacy_no_tracking FROM users WHERE id = $1',
     [auth.userId]
   )
 
@@ -24,7 +24,6 @@ export default defineEventHandler(async (event) => {
     email: user.email,
     name: user.name,
     avatarUrl: user.avatar_url,
-    deletionRequestedAt: user.deletion_requested_at,
     createdAt: user.created_at,
     privacyNoTracking: user.privacy_no_tracking,
     stats: {

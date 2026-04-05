@@ -78,12 +78,6 @@
                   </button>
                 </div>
 
-                <!-- Deletion requested warning -->
-                <div v-if="user?.deletionRequestedAt"
-                  class="px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200">
-                  ⚠️ Account deletion requested. Contact support to cancel.
-                </div>
-
                 <!-- Menu items -->
                 <nav class="space-y-0.5">
                   <button @click="activeSection = 'password'"
@@ -277,9 +271,9 @@
                     class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
                     <Icon v-if="saving" name="mdi:loading" class="w-4 h-4 animate-spin" />
                     <Icon v-else name="mdi:account-remove-outline" class="w-4 h-4" />
-                    Request Account Deletion
+                    Delete Account
                   </button>
-                  <p class="text-xs text-gray-500 dark:text-gray-500">Marks your account for permanent deletion. All data will be removed.</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500">Permanently deletes your account and all associated data. This cannot be undone.</p>
                 </div>
               </div>
 
@@ -545,7 +539,7 @@ const handleDeleteAccount = async () => {
   try {
     await emit('delete-account', dangerPassword.value)
   } catch (err) {
-    showFeedback(err?.data?.statusMessage || 'Failed to request deletion', 'error')
+    showFeedback(err?.data?.statusMessage || 'Failed to delete account', 'error')
     saving.value = false
   }
 }

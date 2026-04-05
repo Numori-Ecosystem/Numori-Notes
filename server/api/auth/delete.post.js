@@ -3,12 +3,11 @@ import { requireAuth } from '../../utils/auth.js'
 import { query } from '../../utils/db.js'
 
 /**
- * POST /api/auth/delete — Request account deletion or delete data.
+ * POST /api/auth/delete — Delete account data or the entire account.
  * Body: { type: 'account' | 'data', password }
  *
  * - 'data': Deletes all notes and shared notes but keeps the account.
- * - 'account': Marks account for deletion (sets deletion_requested_at).
- *              A background job or manual process handles final removal.
+ * - 'account': Permanently deletes the account and all associated data immediately.
  */
 export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)
@@ -39,9 +38,11 @@ export default defineEventHandler(async (event) => {
   }
 
   if (type === 'account') {
-    // Mark for deletion — cascade will clean up notes/shares
-    await query('UPDATE users SET deletion_requested_at = NOW() WHERE id = $1', [auth.userId])
-    return { deleted: 'account_requested' }
+    // Permanently delete account and all associated data
+    await query('DELETE FROM shared_notes WHERE user_id = $1', [auth.userId])
+    await query('DELETE FROM notes WHERE user_id = $1', [auth.userId])
+    await query('DELETE FROM users WHERE id = $1', [auth.userId])
+    return { deleted: 'account' }
   }
 
   throw createError({ statusCode: 400, statusMessage: 'Type must be "account" or "data"' })
