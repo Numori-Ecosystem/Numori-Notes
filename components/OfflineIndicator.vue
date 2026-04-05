@@ -1,13 +1,13 @@
 <template>
   <Transition
     enter-active-class="transition-all duration-300 ease-out"
-    enter-from-class="opacity-0 -translate-y-full"
-    enter-to-class="opacity-100 translate-y-0"
+    enter-from-class="max-h-0 opacity-0"
+    enter-to-class="max-h-16 opacity-100"
     leave-active-class="transition-all duration-200 ease-in"
-    leave-from-class="opacity-100 translate-y-0"
-    leave-to-class="opacity-0 -translate-y-full">
+    leave-from-class="max-h-16 opacity-100"
+    leave-to-class="max-h-0 opacity-0">
     <div v-if="offline"
-      class="fixed top-0 left-0 right-0 z-50 bg-amber-500 dark:bg-amber-600 text-white text-xs font-medium"
+      class="flex-shrink-0 overflow-hidden bg-amber-500 dark:bg-amber-600 text-white text-xs font-medium"
       :style="{ paddingTop: 'env(safe-area-inset-top, 0px)' }"
       role="status">
       <div class="flex items-center justify-center gap-2 px-4 py-1.5">

@@ -1,5 +1,8 @@
 <template>
   <div class="h-screen flex flex-col bg-white dark:bg-gray-925 overscroll-none">
+    <!-- Offline banner — in-flow so it pushes content down -->
+    <OfflineIndicator :offline="!sw.isOnline.value" />
+
     <!-- Mobile-friendly Toolbar -->
     <div class="transition-all duration-300 ease-in-out flex-shrink-0 relative z-30"
       :class="focusMode ? 'max-h-0 overflow-hidden opacity-0' : 'max-h-40 opacity-100'">
@@ -269,8 +272,6 @@
       @show-notes="handleShowNotes" />
 
     <SyncIndicator :syncing="syncing" />
-
-    <OfflineIndicator :offline="!sw.isOnline.value" />
 
     <UpdateNotification
       :visible="sw.updateAvailable.value"
