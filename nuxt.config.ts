@@ -35,7 +35,8 @@ export default defineNuxtConfig({
     'nuxt-i18n-micro',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
-    'nuxt-codemirror'
+    'nuxt-codemirror',
+    '~/modules/version'
   ],
   icon: {
     clientBundle: {

@@ -1,9 +1,8 @@
 /**
  * Composable for PWA update detection and online/offline status.
  *
- * On web: detects when a new service worker is waiting and offers to reload.
- * On native (Capacitor): fetches /version.json from the server and compares
- * against the native binary version. If behind, directs to the app store.
+ * Web: listens for SW update events AND polls /version.json as a fallback.
+ * Native (Capacitor): polls /version.json and compares against the binary version.
  */
 export const useServiceWorker = () => {
   const updateAvailable = ref(false)
@@ -22,15 +21,21 @@ export const useServiceWorker = () => {
 
   const isNative = platform === 'android' || platform === 'ios'
 
+  // The version baked into this build at compile time
+  const buildVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'
+
   /** Apply the update — reload for web, open store for native */
   const applyUpdate = () => {
     if (isNative && storeUrl.value) {
       window.open(storeUrl.value, '_blank')
       return
     }
-    // Tell the waiting SW to activate
+    // Tell the waiting SW to activate, which triggers controllerchange → reload
     if (swRegistration?.waiting) {
       swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
+    } else {
+      // Fallback: just reload — the new SW will activate on next load
+      window.location.reload()
     }
   }
 
@@ -45,14 +50,18 @@ export const useServiceWorker = () => {
       updateAvailable.value = true
     })
 
-    // For native apps: poll version.json to detect new releases
     if (isNative) {
-      // Check on startup after a short delay, then every 30 minutes
+      // Native: poll version.json against the binary version
       setTimeout(() => checkNativeUpdate(), 5000)
       setInterval(() => checkNativeUpdate(), 30 * 60 * 1000)
+    } else {
+      // Web: poll version.json as a fallback alongside SW update detection
+      setTimeout(() => checkWebUpdate(), 10000)
+      setInterval(() => checkWebUpdate(), 30 * 60 * 1000)
     }
   }
 
+  /** Native: compare binary version against server's version.json */
   async function checkNativeUpdate() {
     if (!storeUrl.value) return
     try {
@@ -60,17 +69,33 @@ export const useServiceWorker = () => {
       const info = await App.getInfo()
       const currentVersion = info.version
 
-      const apiBase = config.public.apiBase || window.location.origin
-      const res = await fetch(`${apiBase}/version.json`, { cache: 'no-store' })
-      if (!res.ok) return
-      const data = await res.json()
-
-      if (data.version && data.version !== currentVersion) {
+      const data = await fetchVersionJson()
+      if (data?.version && data.version !== currentVersion) {
         updateAvailable.value = true
       }
     } catch {
       // Can't check — silently ignore
     }
+  }
+
+  /** Web: compare the build-time version against server's version.json */
+  async function checkWebUpdate() {
+    if (updateAvailable.value) return // already showing
+    try {
+      const data = await fetchVersionJson()
+      if (data?.version && data.version !== buildVersion) {
+        updateAvailable.value = true
+      }
+    } catch {
+      // Can't check — silently ignore
+    }
+  }
+
+  async function fetchVersionJson() {
+    const apiBase = config.public.apiBase || window.location.origin
+    const res = await fetch(`${apiBase}/version.json`, { cache: 'no-store' })
+    if (!res.ok) return null
+    return res.json()
   }
 
   return { updateAvailable, isOnline, isNative, storeUrl, applyUpdate, dismissUpdate }
