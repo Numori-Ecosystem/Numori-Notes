@@ -1,13 +1,14 @@
 <template>
   <div class="h-screen bg-white dark:bg-gray-925 flex flex-col overflow-hidden">
     <!-- Fixed top area: header -->
-    <header class="flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3">
-      <div class="max-w-3xl mx-auto flex items-center justify-between">
+    <header class="flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-3">
+      <div class="max-w-5xl mx-auto flex items-center justify-between relative">
         <a href="/" class="text-sm text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
           <Icon name="mdi:arrow-left" class="w-4 h-4" />
           Calc Notes
         </a>
-        <span class="text-xs text-gray-500 dark:text-gray-500">Shared Note</span>
+        <span class="text-xs text-gray-500 dark:text-gray-500 absolute left-1/2 -translate-x-1/2">Shared Note</span>
+        <ThemeSwitcher />
       </div>
     </header>
 
@@ -62,23 +63,28 @@
 
     <!-- Shared note content -->
     <template v-else-if="note">
-      <!-- Fixed top info + toolbar -->
-      <div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-925">
-        <div class="max-w-3xl mx-auto w-full px-4 py-3 space-y-2">
-          <div class="space-y-1">
-            <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-200">{{ note.title }}</h1>
-            <p v-if="note.description" class="text-sm text-gray-500 dark:text-gray-500">{{ note.description }}</p>
-            <div v-if="note.sharer" class="text-xs text-gray-500 dark:text-gray-500">
-              Shared by {{ note.sharer.name || note.sharer.email || 'someone' }}
+      <!-- Fixed top: note info + toolbar -->
+      <div class="flex-shrink-0 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <!-- Note meta -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <h1 class="text-base font-semibold text-gray-900 dark:text-gray-200 truncate">{{ note.title }}</h1>
+              <div v-if="note.tags?.length" class="hidden sm:flex items-center gap-1.5 flex-shrink-0">
+                <span v-for="tag in note.tags" :key="tag"
+                  class="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                  {{ tag }}
+                </span>
+              </div>
             </div>
-            <div v-if="note.tags?.length" class="flex flex-wrap gap-1.5 pt-1">
-              <span v-for="tag in note.tags" :key="tag"
-                class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                {{ tag }}
-              </span>
+            <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+              <span v-if="note.description" class="truncate">{{ note.description }}</span>
+              <span v-if="note.description && note.sharer" class="flex-shrink-0">&middot;</span>
+              <span v-if="note.sharer" class="flex-shrink-0">{{ note.sharer.name || note.sharer.email || 'someone' }}</span>
             </div>
           </div>
 
+          <!-- Toolbar -->
           <SharedNoteToolbar
             :render-markdown="renderMarkdown"
             :results-position="resultsPosition"
@@ -94,17 +100,19 @@
       </div>
 
       <!-- Editor fills remaining height, only CM scrolls -->
-      <main class="flex-1 overflow-hidden flex flex-col">
-        <NoteEditor
-          :content="note.content"
-          :editable="false"
-          :show-inline="resultsPosition !== 'off'"
-          :inline-align="resultsPosition === 'off' ? 'left' : resultsPosition"
-          :markdown-mode="renderMarkdown ? 'full' : 'off'"
-          :bordered="false"
-          placeholder=""
-        />
-      </main>
+      <div class="flex-1 overflow-hidden shared-gutter-pattern">
+        <main class="h-full flex flex-col max-w-5xl mx-auto w-full bg-white dark:bg-gray-925 relative z-0 shared-editor-shadow">
+          <NoteEditor
+            :content="note.content"
+            :editable="false"
+            :show-inline="resultsPosition !== 'off'"
+            :inline-align="resultsPosition === 'off' ? 'left' : resultsPosition"
+            :markdown-mode="renderMarkdown ? 'full' : 'off'"
+            :bordered="false"
+            placeholder=""
+          />
+        </main>
+      </div>
 
       <ExportOptionsModal :is-open="showExportOptionsModal"
         @close="showExportOptionsModal = false"
@@ -248,3 +256,36 @@ const importNote = async () => {
 }
 </script>
 
+<style scoped>
+.shared-gutter-pattern {
+  background-color: #f5f0f1;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 24px,
+    #ff618812 24px,
+    #ff618812 25px
+  );
+}
+
+:root.dark .shared-gutter-pattern,
+.dark .shared-gutter-pattern {
+  background-color: #141218;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 24px,
+    #ff618810 24px,
+    #ff618810 25px
+  );
+}
+
+.shared-editor-shadow {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+:root.dark .shared-editor-shadow,
+.dark .shared-editor-shadow {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+</style>

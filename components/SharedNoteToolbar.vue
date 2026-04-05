@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-wrap items-center gap-1 bg-gray-100 dark:bg-gray-900 rounded-lg px-2 py-1.5">
+  <div class="flex flex-wrap items-center gap-1 sm:flex-nowrap">
     <!-- Left: View controls — spread to edges on mobile -->
     <div class="flex items-center justify-between min-[480px]:justify-start gap-1 w-full min-[480px]:w-auto">
       <div class="inline-flex items-center bg-gray-200/50 dark:bg-gray-800 rounded-lg" role="group">
