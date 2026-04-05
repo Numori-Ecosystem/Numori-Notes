@@ -30,9 +30,11 @@ Built with Nuxt 4, Vue 3, CodeMirror, Tailwind CSS, and Dexie.js.
 
 ```bash
 cp .env.example .env       # configure environment (see .env.example)
-npm install
+npm install --include=dev   # --include=dev is required (see note below)
 npm run dev                 # http://localhost:3000
 ```
+
+> **Note:** If your npm config has `omit=dev` set (e.g. for cleaner `npm audit` output), devDependencies like `@capacitor/cli` and `vitest` won't be installed by default. Use `npm install --include=dev` to ensure everything is available.
 
 ## Scripts
 
