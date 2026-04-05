@@ -21,7 +21,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
   const lastSyncedAt = ref(null)
   const syncError = ref(null)
   const pendingNoteIds = ref(new Set())
-  const isOnline = ref(import.meta.client ? navigator.onLine : true)
+  const isOnline = useOnlineStatus()
 
   const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -38,19 +38,13 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
     if (import.meta.client) {
       const row = await db.appState.get('last_synced_at')
       lastSyncedAt.value = row?.value || null
-
-      // Track online/offline status
-      window.addEventListener('online', onOnline)
-      window.addEventListener('offline', onOffline)
     }
   })
 
-  const onOnline = () => {
-    isOnline.value = true
-    // Flush any pending changes when back online
-    if (pendingNoteIds.value.size > 0) syncNow()
-  }
-  const onOffline = () => { isOnline.value = false }
+  // Flush pending changes when connectivity returns
+  watch(isOnline, (online) => {
+    if (online && pendingNoteIds.value.size > 0) syncNow()
+  })
 
   const sync = async (source = 'unknown') => {
     if (!auth.isLoggedIn.value) return
@@ -272,8 +266,6 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
     disconnectSSE()
     if (import.meta.client) {
       window.removeEventListener('beforeunload', onBeforeUnload)
-      window.removeEventListener('online', onOnline)
-      window.removeEventListener('offline', onOffline)
     }
   })
 

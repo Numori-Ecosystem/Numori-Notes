@@ -7,7 +7,7 @@
  */
 export const useServiceWorker = () => {
   const updateAvailable = ref(false)
-  const isOnline = ref(import.meta.client ? navigator.onLine : true)
+  const isOnline = useOnlineStatus()
 
   let swRegistration = null
 
@@ -44,10 +44,6 @@ export const useServiceWorker = () => {
       swRegistration = e.detail?.registration || null
       updateAvailable.value = true
     })
-
-    // Online/offline tracking
-    window.addEventListener('online', () => { isOnline.value = true })
-    window.addEventListener('offline', () => { isOnline.value = false })
 
     // For native apps: poll version.json to detect new releases
     if (isNative) {
