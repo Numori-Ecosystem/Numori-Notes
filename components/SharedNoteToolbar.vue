@@ -52,71 +52,73 @@
     <!-- Spacer: collapses to full-width break on narrow screens -->
     <div class="flex-1 basis-full min-[480px]:basis-0"></div>
 
-    <!-- Right: Actions -->
-    <button @click="$emit('import')"
-      class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-      title="Import to my notes">
-      <Icon name="mdi:download" class="w-4 h-4 block" />
-      <span class="hidden sm:inline">Import</span>
-    </button>
-
-    <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-0.5"></div>
-
-    <button @click="handleCopy"
-      class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors"
-      :title="copied ? 'Copied!' : 'Copy to clipboard'">
-      <Icon :name="copied ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4 block" :class="copied ? 'text-green-500' : ''" />
-      <span class="hidden sm:inline">{{ copied ? 'Copied' : 'Copy' }}</span>
-    </button>
-
-    <div class="relative" ref="exportMenuRef">
-      <button @click="showExportMenu = !showExportMenu"
-        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors"
-        title="Export note">
-        <Icon name="mdi:export" class="w-4 h-4 block" />
-        <span class="hidden sm:inline">Export</span>
-        <Icon name="mdi:chevron-down" class="w-3 h-3 block transition-transform" :class="{ 'rotate-180': showExportMenu }" />
+    <!-- Right: Actions — distributed evenly on mobile, end-aligned on wider -->
+    <div class="flex items-center justify-around min-[480px]:justify-end gap-1 w-full min-[480px]:w-auto">
+      <button @click="$emit('import')"
+        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+        title="Import to my notes">
+        <Icon name="mdi:download" class="w-4 h-4 block" />
+        <span class="hidden sm:inline">Import</span>
       </button>
-      <Transition
-        enter-active-class="transition duration-100 ease-out"
-        enter-from-class="opacity-0 scale-95"
-        enter-to-class="opacity-100 scale-100"
-        leave-active-class="transition duration-75 ease-in"
-        leave-from-class="opacity-100 scale-100"
-        leave-to-class="opacity-0 scale-95">
-        <div v-if="showExportMenu"
-          :class="['absolute right-0 mt-1 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 w-52', dropUp ? 'bottom-full mb-1' : 'top-full']">
-          <button @click="emitExport('text')"
-            class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-            <Icon name="mdi:file-document-outline" class="w-4 h-4 block flex-shrink-0" />
-            <span>Text (.txt)</span>
-          </button>
-          <button @click="emitExport('markdown')"
-            class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-            <Icon name="mdi:language-markdown-outline" class="w-4 h-4 block flex-shrink-0" />
-            <span>Markdown (.md)</span>
-          </button>
-          <button @click="emitExport('pdf')"
-            class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-            <Icon name="mdi:file-pdf-box" class="w-4 h-4 block flex-shrink-0" />
-            <span>PDF</span>
-          </button>
-          <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
-          <button @click="emitExport('json')"
-            class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-            <Icon name="mdi:code-json" class="w-4 h-4 block flex-shrink-0" />
-            <span>Export as JSON</span>
-          </button>
-        </div>
-      </Transition>
-    </div>
 
-    <button @click="$emit('print')"
-      class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors"
-      title="Print">
-      <Icon name="mdi:printer" class="w-4 h-4 block" />
-      <span class="hidden sm:inline">Print</span>
-    </button>
+      <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-0.5 hidden min-[480px]:block"></div>
+
+      <button @click="handleCopy"
+        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors"
+        :title="copied ? 'Copied!' : 'Copy to clipboard'">
+        <Icon :name="copied ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4 block" :class="copied ? 'text-green-500' : ''" />
+        <span class="hidden sm:inline">{{ copied ? 'Copied' : 'Copy' }}</span>
+      </button>
+
+      <div class="relative" ref="exportMenuRef">
+        <button @click="showExportMenu = !showExportMenu"
+          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors"
+          title="Export note">
+          <Icon name="mdi:export" class="w-4 h-4 block" />
+          <span class="hidden sm:inline">Export</span>
+          <Icon name="mdi:chevron-down" class="w-3 h-3 block transition-transform" :class="{ 'rotate-180': showExportMenu }" />
+        </button>
+        <Transition
+          enter-active-class="transition duration-100 ease-out"
+          enter-from-class="opacity-0 scale-95"
+          enter-to-class="opacity-100 scale-100"
+          leave-active-class="transition duration-75 ease-in"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-95">
+          <div v-if="showExportMenu"
+            :class="['absolute right-0 mt-1 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 w-52', dropUp ? 'bottom-full mb-1' : 'top-full']">
+            <button @click="emitExport('text')"
+              class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+              <Icon name="mdi:file-document-outline" class="w-4 h-4 block flex-shrink-0" />
+              <span>Text (.txt)</span>
+            </button>
+            <button @click="emitExport('markdown')"
+              class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+              <Icon name="mdi:language-markdown-outline" class="w-4 h-4 block flex-shrink-0" />
+              <span>Markdown (.md)</span>
+            </button>
+            <button @click="emitExport('pdf')"
+              class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+              <Icon name="mdi:file-pdf-box" class="w-4 h-4 block flex-shrink-0" />
+              <span>PDF</span>
+            </button>
+            <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+            <button @click="emitExport('json')"
+              class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+              <Icon name="mdi:code-json" class="w-4 h-4 block flex-shrink-0" />
+              <span>Export as JSON</span>
+            </button>
+          </div>
+        </Transition>
+      </div>
+
+      <button @click="$emit('print')"
+        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-800 transition-colors"
+        title="Print">
+        <Icon name="mdi:printer" class="w-4 h-4 block" />
+        <span class="hidden sm:inline">Print</span>
+      </button>
+    </div>
   </div>
 </template>
 
