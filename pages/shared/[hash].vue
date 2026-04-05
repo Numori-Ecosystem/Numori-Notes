@@ -264,6 +264,7 @@ const importNote = async () => {
   height: auto !important;
 }
 .shared-editor-wrapper :deep(.cm-scroller) {
-  overflow: visible !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
 }
 </style>

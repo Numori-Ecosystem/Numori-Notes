@@ -1,28 +1,34 @@
 /**
  * Tests for sum/total/average used inside larger expressions (e.g., "Salary - sum").
  * Regression: sum only worked standalone or at the start of an expression.
+ *
+ * Key rule: sum aggregates lines above until the nearest empty line.
+ * Empty lines act as group separators.
  */
 import { describe, it, expect } from 'vitest'
 import { calcLines, calcLinesLastNum } from './helpers'
 
 describe('Sum inside expressions (not standalone)', () => {
-  it('variable minus sum: Salario - sum', () => {
+  it('variable minus sum with empty line separator', () => {
     const results = calcLines([
       'Salario = 1457',
+      '',
       'Gasolina: 120',
       'Seguro: 60',
       'Ho: 20',
       'Comida: 200',
       'Abril = Salario - sum',
     ])
-    // sum of lines 1-4 = 120+60+20+200 = 400
+    // Empty line separates Salario from expenses
+    // sum of lines 2-5 = 120+60+20+200 = 400
     // Salario - sum = 1457 - 400 = 1057
-    expect(parseFloat(results[5])).toBe(1057)
+    expect(parseFloat(results[6])).toBe(1057)
   })
 
-  it('variable minus sum with currency', () => {
+  it('variable minus sum with currency and empty line separator', () => {
     const results = calcLines([
       'Salario = €1457',
+      '',
       'Gasolina: €120',
       'Seguro coche: €60',
       'Ho: €20',
@@ -31,7 +37,7 @@ describe('Sum inside expressions (not standalone)', () => {
     ])
     // sum = 120+60+20+200 = 400 EUR, Salario = 1457 EUR
     // 1457 - 400 = 1057
-    expect(parseFloat(results[5])).toBeCloseTo(1057, 0)
+    expect(parseFloat(results[6])).toBeCloseTo(1057, 0)
   })
 
   it('number minus sum', () => {
@@ -65,15 +71,16 @@ describe('Sum inside expressions (not standalone)', () => {
     expect(parseFloat(results[2])).toBe(60)
   })
 
-  it('variable plus sum', () => {
+  it('variable plus sum with empty line separator', () => {
     const results = calcLines([
       'bonus = 500',
+      '',
       '100',
       '200',
       'bonus + sum',
     ])
     // sum = 100+200 = 300, bonus + sum = 500 + 300 = 800
-    expect(parseFloat(results[3])).toBe(800)
+    expect(parseFloat(results[4])).toBe(800)
   })
 
   it('parenthesized expression with sum', () => {
@@ -109,16 +116,17 @@ describe('Sum inside expressions (not standalone)', () => {
     expect(parseFloat(results[13])).toBe(709)
   })
 
-  it('average inside expression: variable - average', () => {
+  it('average inside expression with empty line separator', () => {
     const results = calcLines([
       'target = 100',
+      '',
       '80',
       '90',
       '70',
       'diff = target - average',
     ])
     // average = (80+90+70)/3 = 80, target - average = 100 - 80 = 20
-    expect(parseFloat(results[4])).toBe(20)
+    expect(parseFloat(results[5])).toBe(20)
   })
 
   it('avg inside expression: 2 * avg', () => {
@@ -130,5 +138,41 @@ describe('Sum inside expressions (not standalone)', () => {
     ])
     // avg = 20, 2 * 20 = 40
     expect(parseFloat(results[3])).toBe(40)
+  })
+
+  it('standalone sum includes assignment lines', () => {
+    const results = calcLines([
+      'Alquiler = 475',
+      'Comida = 200',
+      'Gasolina = 120',
+      'sum',
+    ])
+    // sum should include all assignment values: 475+200+120 = 795
+    expect(parseFloat(results[3])).toBe(795)
+  })
+
+  it('standalone sum with currency assignments', () => {
+    const results = calcLines([
+      'Alquiler = €475',
+      'Comida = €200',
+      'Gasolina = €120',
+      'sum',
+    ])
+    expect(parseFloat(results[3])).toBe(795)
+    expect(results[3]).toMatch(/EUR/)
+  })
+
+  it('full Ismael budget scenario', () => {
+    const results = calcLines([
+      'Salario = 1457',
+      'Alquiler = 475',
+      'Comida = 200',
+      'Gasolina = 120',
+      'Seguro_coche = 60',
+      'Ho = 20',
+      'sum',
+    ])
+    // sum = 1457+475+200+120+60+20 = 2332
+    expect(parseFloat(results[6])).toBe(2332)
   })
 })

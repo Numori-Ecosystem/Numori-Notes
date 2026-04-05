@@ -130,7 +130,6 @@ export const useCalculator = () => {
       const result = evaluateExpression(input, index, allResults)
       line.result = result.display
       if (result.hideResult) line.hideResult = true
-      if (result.isAssignment) line.isAssignment = true
       if (result.liveTime) { line.liveTime = true; line.iana = result.iana || null }
       previousResult.value = result.value
       previousResultCurrency.value = result.currency || null
@@ -184,7 +183,7 @@ export const useCalculator = () => {
           variables.value._ppi = result.value
         }
 
-        return { ...result, isAssignment: true }
+        return result
       }
     }
 
