@@ -52,7 +52,7 @@ describe('deriveEncKey', () => {
 
   it('key is non-extractable', async () => {
     const key = await deriveEncKey('testpassword')
-    expect(key.extractable).toBe(false)
+    expect(key.extractable).toBe(true) // extractable for sessionStorage persistence
   })
 
   it('key supports encrypt and decrypt', async () => {

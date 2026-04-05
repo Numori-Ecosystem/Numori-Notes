@@ -60,6 +60,8 @@ describe('POST /api/notes/sync', () => {
     mockQuery.mockResolvedValueOnce({ rows: [] })
     // 4. Pull all active notes
     mockQuery.mockResolvedValueOnce({ rows: [] })
+    // 5. SELECT welcome_created
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] })
 
     await handler({})
 
@@ -92,6 +94,7 @@ describe('POST /api/notes/sync', () => {
     })
     mockQuery.mockResolvedValueOnce({ rows: [] }) // server-deleted IDs
     mockQuery.mockResolvedValueOnce({ rows: [] }) // pull
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] }) // welcome_created
 
     await handler({})
 
@@ -109,11 +112,13 @@ describe('POST /api/notes/sync', () => {
     mockQuery.mockResolvedValueOnce({ rows: [] })
     // 2. Pull query (no notes to check for server-deleted since clientNotes is empty)
     mockQuery.mockResolvedValueOnce({ rows: [] })
+    // 3. SELECT welcome_created
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] })
 
     await handler({})
 
-    // Only 2 queries: soft-delete + pull (no shared_notes cascade)
-    expect(mockQuery).toHaveBeenCalledTimes(2)
+    // 3 queries: soft-delete + pull + welcome_created
+    expect(mockQuery).toHaveBeenCalledTimes(3)
     // First query is the soft-delete UPDATE
     expect(mockQuery.mock.calls[0][0]).toContain('UPDATE notes SET deleted_at')
     expect(mockQuery.mock.calls[0][1]).toEqual([1, ['n1', 'n2']])
@@ -138,11 +143,13 @@ describe('POST /api/notes/sync', () => {
     mockQuery.mockResolvedValueOnce({ rows: [{ client_id: 'n1' }] })
     // 3. Pull query
     mockQuery.mockResolvedValueOnce({ rows: [] })
+    // 4. SELECT welcome_created
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] })
 
     const result = await handler({})
 
-    // 3 queries: check deleted + server-deleted IDs + pull (no INSERT because note is deleted)
-    expect(mockQuery).toHaveBeenCalledTimes(3)
+    // 4 queries: check deleted + server-deleted IDs + pull + welcome_created
+    expect(mockQuery).toHaveBeenCalledTimes(4)
     expect(result.pushed).toEqual([])
   })
 
@@ -162,6 +169,8 @@ describe('POST /api/notes/sync', () => {
         updated_at: '2025-01-01'
       }]
     })
+    // SELECT welcome_created
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] })
 
     const result = await handler({})
 
@@ -178,6 +187,7 @@ describe('POST /api/notes/sync', () => {
       broadcast: true
     })
     mockQuery.mockResolvedValueOnce({ rows: [] }) // pull
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] }) // welcome_created
 
     await handler({})
 
@@ -190,7 +200,8 @@ describe('POST /api/notes/sync', () => {
       deletedClientIds: [],
       broadcast: false
     })
-    mockQuery.mockResolvedValueOnce({ rows: [] })
+    mockQuery.mockResolvedValueOnce({ rows: [] }) // pull
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] }) // welcome_created
 
     await handler({})
 
@@ -211,6 +222,8 @@ describe('POST /api/notes/sync', () => {
     mockQuery.mockResolvedValueOnce({ rows: [{ client_id: 'n1' }] })
     // 4. Pull
     mockQuery.mockResolvedValueOnce({ rows: [] })
+    // 5. SELECT welcome_created
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] })
 
     const result = await handler({})
     expect(result.deletedClientIds).toEqual(['n1'])

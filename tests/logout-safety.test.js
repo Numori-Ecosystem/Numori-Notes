@@ -45,13 +45,15 @@ describe('empty push does not delete server notes', () => {
         { id: 3, client_id: 'n3', title: 'Note 3', description: '', tags: '[]', content: 'c3', sort_order: 2, created_at: '2025-01-01', updated_at: '2025-01-01' }
       ]
     })
+    // SELECT welcome_created
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] })
 
     const result = await syncHandler({})
 
     expect(result.pulled).toHaveLength(3)
     expect(result.deletedClientIds).toEqual([])
-    // Only the pull query ran — no soft-delete UPDATE
-    expect(mockQuery).toHaveBeenCalledTimes(1)
+    // pull + welcome_created queries — no soft-delete UPDATE
+    expect(mockQuery).toHaveBeenCalledTimes(2)
     expect(mockQuery.mock.calls[0][0]).not.toContain('deleted_at = NOW()')
   })
 
@@ -76,6 +78,8 @@ describe('empty push does not delete server notes', () => {
         { id: 3, client_id: 'n3', title: 'Note 3', description: '', tags: '[]', content: 'c3', sort_order: 2, created_at: '2025-01-01', updated_at: '2025-01-01' }
       ]
     }) // pull
+    // SELECT welcome_created
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] })
 
     const result = await syncHandler({})
 
@@ -99,6 +103,8 @@ describe('empty push does not delete server notes', () => {
         { id: 3, client_id: 'n3', title: 'Note 3', description: '', tags: '[]', content: 'c3', sort_order: 2, created_at: '2025-01-01', updated_at: '2025-01-01' }
       ]
     }) // pull
+    // SELECT welcome_created
+    mockQuery.mockResolvedValueOnce({ rows: [{ welcome_created: false }] })
 
     const result = await syncHandler({})
 

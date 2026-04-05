@@ -71,6 +71,7 @@ const EXPECTED_DEFAULTS = {
   significantFigures: 6,
   autoCopyResult: true,
   copyAnimationStyle: 'scale-pop',
+  showResultsInCodeBlocks: false,
   markdownMode: 'full',
 }
 
