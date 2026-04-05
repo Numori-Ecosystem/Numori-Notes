@@ -74,6 +74,11 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       routes: ['/']
+    },
+    routeRules: {
+      '/.well-known/apple-app-site-association': {
+        headers: { 'Content-Type': 'application/json' }
+      }
     }
   },
   runtimeConfig: {
