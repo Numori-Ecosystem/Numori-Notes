@@ -87,6 +87,9 @@ export default defineNuxtConfig({
     }
   },
   vite: {
+    define: {
+      __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
+    },
     build: {
       sourcemap: false,
       rollupOptions: {

@@ -24,6 +24,7 @@
               <!-- App info -->
               <div class="text-center space-y-1">
                 <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">Numori</p>
+                <p class="text-xs text-gray-500 dark:text-gray-500">v{{ appVersion }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-500">Made with ❤️ and code from Manchester, England</p>
                 <a href="https://github.com/Erik-Bjerke/Numori" target="_blank" rel="noopener noreferrer"
                   class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline">
@@ -52,7 +53,7 @@
               <!-- License -->
               <div class="space-y-1">
                 <p class="font-semibold text-gray-900 dark:text-gray-300">License</p>
-                <p>GNU General Public License v3.0 (GPL-3.0)</p>
+                <p>GNU Affero General Public License v3.0 (AGPL-3.0)</p>
               </div>
 
               <!-- Third-party licenses -->
@@ -72,8 +73,9 @@
                   <li><a href="https://s00d.github.io/nuxt-i18n-micro" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">nuxt-i18n-micro</a></li>
                   <li><a href="https://nuxt.com/modules/nuxt-codemirror" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">nuxt-codemirror</a></li>
                   <li><a href="https://codemirror.net" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">CodeMirror</a> (commands, language, state, view)</li>
-                  <li><a href="https://capacitorjs.com" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Capacitor</a> (core, android, ios, filesystem, share, status-bar)</li>
+                  <li><a href="https://capacitorjs.com" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Capacitor</a> (core, app, android, ios, filesystem, share, status-bar)</li>
                   <li><a href="https://dexie.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Dexie.js</a></li>
+                  <li><a href="https://highlightjs.org" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">highlight.js</a></li>
                   <li><a href="https://github.com/dcodeIO/bcrypt.js" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">bcryptjs</a></li>
                   <li><a href="https://node-postgres.com" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">pg (node-postgres)</a></li>
                   <li><a href="https://vitest.dev" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">Vitest</a></li>
@@ -104,4 +106,6 @@ defineProps({
 })
 
 defineEmits(['close'])
+
+const appVersion = __APP_VERSION__
 </script>
