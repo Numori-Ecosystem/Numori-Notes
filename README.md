@@ -1,8 +1,25 @@
-# numori
+# Numori — notes that calculate
 
-A free and open-source natural language calculator with notes. Built with Nuxt 4, Vue 3, and CodeMirror.
+**Free, open-source notes app with a built-in natural language calculator.**
 
-Write calculations naturally alongside notes, with live results, unit conversions, currency exchange, and more — all client-side in the browser.
+Do math with natural language and get results in real time as you type. Just write `200 GBP in EUR` or `15% of 340` and the answer appears inline. Cloud sync with end-to-end encryption, export to multiple formats, and full i18n support — all 100% free and open source (AGPLv3). Your data stays yours.
+
+### What it does
+
+- **Natural language math** — type `half of 500`, `30% off 89.99`, `sqrt(144)`, or `3 hours 20 min + 45 min` and see results live as you write
+- **Full notepad** — markdown support, multiple notes, tags, search, templates, and export to PDF, HTML, Markdown, and plain text
+- **45+ currencies with live rates** — `100 GBP in JPY` just works, updated on every session
+- **Unit conversions** — length, weight, volume, temperature, area, speed, data, time, CSS units, and more
+- **Date & time** — `days until christmas`, `today + 3 weeks`, timezone conversions
+- **Variables** — `rent = 1200` then use `rent` in later lines
+- **Aggregation** — `sum` and `average` across previous lines
+- **Cloud sync with E2E encryption** — optional account, end-to-end encrypted, the server never sees your notes
+- **Works everywhere** — PWA for desktop and mobile browsers, plus native iOS and Android via Capacitor
+- **Offline-first** — everything runs client-side with IndexedDB; no internet required for core features
+- **Share notes** — password-protected shared links with view analytics
+- **i18n** — English and Spanish, easy to add more
+
+Built with Nuxt 4, Vue 3, CodeMirror, Tailwind CSS, and Dexie.js.
 
 ## Prerequisites
 
@@ -478,4 +495,4 @@ Arithmetic, word operators, variables, percentages (9 operations), math function
 
 ## License
 
-GPLv3 — see [LICENSE](LICENSE) for details.
+AGPLv3 — see [LICENSE](LICENSE) for details.

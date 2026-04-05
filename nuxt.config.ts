@@ -4,16 +4,22 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   app: {
     head: {
-      title: 'numori',
+      title: 'Numori — notes that calculate',
       htmlAttrs: { lang: 'en' },
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover' },
-        { name: 'description', content: 'A smart notepad that instantly solves math as you type — powered by natural language.' },
+        { name: 'description', content: 'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
-        { name: 'apple-mobile-web-app-title', content: 'numori' },
-        { name: 'application-name', content: 'numori' },
-        { name: 'theme-color', content: '#ffffff' }
+        { name: 'apple-mobile-web-app-title', content: 'Numori' },
+        { name: 'application-name', content: 'Numori' },
+        { name: 'theme-color', content: '#ffffff' },
+        { name: 'og:title', content: 'Numori — notes that calculate' },
+        { name: 'og:description', content: 'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.' },
+        { name: 'og:type', content: 'website' },
+        { name: 'twitter:card', content: 'summary' },
+        { name: 'twitter:title', content: 'Numori — notes that calculate' },
+        { name: 'twitter:description', content: 'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.' }
       ],
       link: [
         { rel: 'manifest', href: '/manifest.webmanifest' },
