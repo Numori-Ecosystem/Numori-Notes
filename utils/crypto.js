@@ -30,9 +30,9 @@
 
 // ── Salts (assumed pre-defined constants) ────────────────────────────────
 // These MUST be unique and stable. Changing them invalidates all derived keys.
-const AUTH_SALT = new TextEncoder().encode('numori:auth-key-salt:v1')
-const ENC_SALT = new TextEncoder().encode('numori:enc-key-salt:v1')
-const SHARE_SALT = new TextEncoder().encode('numori:share-key-salt:v1')
+const AUTH_SALT = new TextEncoder().encode('w8765nygwhfmw98t:auth-key-salt:v1')
+const ENC_SALT = new TextEncoder().encode('w8765nygwhfmw98t:enc-key-salt:v1')
+const SHARE_SALT = new TextEncoder().encode('w8765nygwhfmw98t:share-key-salt:v1')
 
 const PBKDF2_ITERATIONS = 600_000 // OWASP recommendation for PBKDF2-SHA256
 
