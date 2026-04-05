@@ -20,7 +20,7 @@ import { notifySync } from '../../utils/syncBroadcast.js'
 export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)
   const body = await readBody(event)
-  const { notes: clientNotes = [], deletedClientIds = [], sessionId, broadcast } = body || {}
+  const { notes: clientNotes = [], deletedClientIds = [], sessionId, broadcast, welcomeCreated } = body || {}
 
   const deletedSet = new Set(deletedClientIds)
 
@@ -134,10 +134,21 @@ export default defineEventHandler(async (event) => {
     notifySync(auth.userId, sessionId || null)
   }
 
+  // ── Welcome-note flag: persist on server so it survives device resets ──
+  if (welcomeCreated) {
+    await query(
+      'UPDATE users SET welcome_created = TRUE WHERE id = $1 AND welcome_created = FALSE',
+      [auth.userId]
+    )
+  }
+  const wcRow = await query('SELECT welcome_created FROM users WHERE id = $1', [auth.userId])
+  const serverWelcomeCreated = wcRow.rows[0]?.welcome_created ?? false
+
   return {
     pushed,
     pulled,
     deletedClientIds: serverDeletedIds,
-    syncedAt: new Date().toISOString()
+    syncedAt: new Date().toISOString(),
+    welcomeCreated: serverWelcomeCreated
   }
 })

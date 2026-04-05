@@ -67,13 +67,17 @@ export const useNotes = () => {
       try { deletedIds.value = JSON.parse(row.value) } catch { deletedIds.value = [] }
     }
 
-    // Create a default note only if none exist AND user has never synced
+    // Create a default note only if none exist, user has never synced,
+    // AND the welcome note hasn't been created before.
     const syncRow = await db.appState.get('last_synced_at')
     const hasSynced = !!syncRow?.value
-    if (notes.value.length === 0 && !hasSynced) {
+    const welcomeRow = await db.appState.get('welcome_note_created')
+    const welcomeAlreadyCreated = !!welcomeRow?.value
+    if (notes.value.length === 0 && !hasSynced && !welcomeAlreadyCreated) {
       const defaultNote = createNote('Welcome', 'Notes with calculator features')
       await db.notes.put(defaultNote)
       notes.value = [defaultNote]
+      await db.appState.put({ key: 'welcome_note_created', value: '1' })
     }
 
     // Start live reactivity after initial load

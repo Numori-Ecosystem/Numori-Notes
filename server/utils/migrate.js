@@ -241,5 +241,13 @@ export async function migrate() {
     END $do$
   `)
 
+  // Track whether the welcome note has been created for this user
+  await query(`
+    DO $do$ BEGIN
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS welcome_created BOOLEAN NOT NULL DEFAULT FALSE;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $do$
+  `)
+
   console.log('[migrate] Database tables ready')
 }

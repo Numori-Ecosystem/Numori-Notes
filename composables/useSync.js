@@ -90,6 +90,10 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
         encryptedClientNotes.push(encrypted)
       }
 
+      // Read local welcome flag to push to server
+      const welcomeRow = await db.appState.get('welcome_note_created')
+      const localWelcomeCreated = !!welcomeRow?.value
+
       const data = await apiFetch('/api/notes/sync', {
         method: 'POST',
         headers: auth.authHeaders.value,
@@ -98,7 +102,8 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
           deletedClientIds: [...deletedIds.value],
           lastSyncedAt: lastSyncedAt.value,
           sessionId,
-          broadcast: shouldBroadcast
+          broadcast: shouldBroadcast,
+          welcomeCreated: localWelcomeCreated
         }
       })
 
@@ -158,6 +163,11 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
       lastSyncedAt.value = data.syncedAt
       await db.appState.put({ key: 'last_synced_at', value: data.syncedAt })
       await saveNotes()
+
+      // Persist welcome flag from server so a new device won't re-create it
+      if (data.welcomeCreated) {
+        await db.appState.put({ key: 'welcome_note_created', value: '1' })
+      }
 
       if (shouldBroadcast) {
         expectingSelfEcho = true
