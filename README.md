@@ -58,7 +58,6 @@ npm run dev                 # http://localhost:3000
 │       └── [hash].vue             # Public shared-note viewer
 ├── components/
 │   ├── AboutModal.vue             # About / credits modal
-│   ├── AccountMenu.vue            # User account dropdown
 │   ├── AppHeader.vue              # Top bar with title, menus, and actions
 │   ├── AuthModal.vue              # Login / register modal
 │   ├── AvatarEditor.vue           # Avatar upload / crop
@@ -71,7 +70,7 @@ npm run dev                 # http://localhost:3000
 │   ├── FormattingToolbar.vue      # Markdown formatting toolbar
 │   ├── HelpModal.vue              # In-app documentation modal
 │   ├── LanguageSwitcher.vue       # i18n locale selector
-│   ├── MainSidebar.vue            # Notes list sidebar with search, tags, CRUD
+│   ├── MainSidebar.vue            # Notes list sidebar with search, tags, CRUD, and account menu
 │   ├── NoteEditor.vue             # CodeMirror editor wrapper with calc integration
 │   ├── NoteListItem.vue           # Single note row in the sidebar
 │   ├── NoteMetaModal.vue          # Note rename / metadata / share modal
@@ -80,11 +79,10 @@ npm run dev                 # http://localhost:3000
 │   ├── ShareAnalyticsModal.vue    # Shared note view analytics
 │   ├── SharedNoteToolbar.vue      # Toolbar for the public shared-note page
 │   ├── ShareModal.vue             # Share a note (password, link, analytics)
-│   ├── SidebarFooter.vue          # Sidebar bottom bar (account, settings)
 │   ├── SyncIndicator.vue          # Sync status indicator
 │   ├── TemplatesModal.vue         # Calculation templates picker
 │   ├── ThemeSwitcher.vue          # Light / dark mode toggle
-│   ├── ViewDropdown.vue           # View menu dropdown
+│   ├── ViewDropdown.vue           # View menu dropdown (zoom, markdown, theme toggle)
 │   └── WelcomeWizard.vue          # First-run onboarding wizard
 ├── composables/
 │   ├── calculator/                # Calculator engine modules
