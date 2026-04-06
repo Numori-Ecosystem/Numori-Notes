@@ -1,7 +1,8 @@
 <template>
   <div class="h-screen bg-white dark:bg-gray-925 flex flex-col overflow-hidden">
     <!-- Fixed top area: header -->
-    <header class="flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-3">
+    <header class="flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-3"
+      :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
       <div class="max-w-5xl mx-auto flex items-center justify-between relative">
         <a href="/" class="text-sm text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
           <Icon name="mdi:arrow-left" class="w-4 h-4" />
@@ -64,7 +65,8 @@
     <!-- Shared note content -->
     <template v-else-if="note">
       <!-- Fixed top: note info + toolbar -->
-      <div class="flex-shrink-0 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-700">
+      <div class="flex-shrink-0 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-700"
+        :style="{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
         <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <!-- Note meta -->
           <div class="flex-1 min-w-0">
@@ -100,7 +102,8 @@
       </div>
 
       <!-- Editor fills remaining height, only CM scrolls -->
-      <div class="flex-1 overflow-hidden shared-gutter-pattern">
+      <div class="flex-1 overflow-hidden shared-gutter-pattern"
+        :style="{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }">
         <main class="h-full flex flex-col max-w-5xl mx-auto w-full bg-white dark:bg-gray-925 relative z-0 shared-editor-shadow">
           <NoteEditor
             :content="note.content"
