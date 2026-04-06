@@ -49,9 +49,16 @@ export const useServiceWorker = () => {
 
   /**
    * Fetch /version.json from the server, bypassing all caches.
+   * On native Capacitor, we MUST use apiBase (the remote server) because
+   * window.location.origin points to the local bundled assets.
    */
   async function fetchLatestVersion() {
-    const origin = config.public.apiBase || window.location.origin
+    const origin = isNative
+      ? config.public.apiBase
+      : (config.public.apiBase || window.location.origin)
+
+    if (!origin) return null // native without apiBase configured — can't check
+
     const url = `${origin}/version.json?_=${Date.now()}`
     const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) return null
