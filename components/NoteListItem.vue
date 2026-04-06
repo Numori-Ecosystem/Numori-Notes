@@ -115,6 +115,16 @@
               View analytics
             </button>
             <div class="my-1 border-t border-gray-200 dark:border-gray-700" />
+            <button v-if="note.archived" @click.stop="handleAction('unarchive')"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <Icon name="mdi:package-up" class="w-4 h-4" />
+              Unarchive
+            </button>
+            <button v-else @click.stop="handleAction('archive')"
+              class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <Icon name="mdi:archive-outline" class="w-4 h-4" />
+              Archive
+            </button>
             <button @click.stop="handleAction('properties')"
               class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <Icon name="mdi:information-outline" class="w-4 h-4" />
@@ -145,7 +155,7 @@ const props = defineProps({
   pending: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['select', 'delete', 'toggle-select', 'share', 'unshare', 'properties', 'open-analytics', 'duplicate', 'export', 'copy-to-clipboard', 'print'])
+const emit = defineEmits(['select', 'delete', 'toggle-select', 'share', 'unshare', 'properties', 'open-analytics', 'duplicate', 'export', 'copy-to-clipboard', 'print', 'archive', 'unarchive'])
 
 const { copy: clipboardCopy } = useClipboard()
 const { apiUrl } = useApi()
@@ -195,6 +205,8 @@ const handleAction = (action) => {
   else if (action === 'export') emit('export', props.note.id)
   else if (action === 'copy-to-clipboard') emit('copy-to-clipboard', props.note.id)
   else if (action === 'print') emit('print', props.note.id)
+  else if (action === 'archive') emit('archive', props.note.id)
+  else if (action === 'unarchive') emit('unarchive', props.note.id)
 }
 
 const handleCopyLink = async () => {

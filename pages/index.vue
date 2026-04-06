@@ -68,7 +68,11 @@
             @duplicate-note="handleDuplicateById"
             @export-note="handleExportById"
             @copy-to-clipboard="handleCopyById"
-            @print-note="handlePrintById" />
+            @print-note="handlePrintById"
+            @archive-note="handleArchiveNote"
+            @unarchive-note="handleUnarchiveNote"
+            @bulk-archive="handleBulkArchive"
+            @bulk-unarchive="handleBulkUnarchive" />
         </div>
         </aside>
 
@@ -115,7 +119,11 @@
               @duplicate-note="handleDuplicateById"
               @export-note="handleExportById"
               @copy-to-clipboard="handleCopyById"
-              @print-note="handlePrintById" />
+              @print-note="handlePrintById"
+              @archive-note="handleArchiveNote"
+              @unarchive-note="handleUnarchiveNote"
+              @bulk-archive="handleBulkArchive"
+              @bulk-unarchive="handleBulkUnarchive" />
             </div>
           </aside>
         </Transition>
@@ -295,7 +303,7 @@
 <script setup>
 import db from '~/db.js'
 
-const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes } = useNotes()
+const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes, archiveNote, unarchiveNote, bulkArchive, bulkUnarchive } = useNotes()
 const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
 const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()
@@ -545,6 +553,7 @@ const handleChangePassword = async ({ currentPassword, newPassword, onProgress }
     tags: n.tags || [],
     content: n.content,
     sortOrder: n.sortOrder ?? 0,
+    archived: n.archived ?? false,
     createdAt: n.createdAt,
     updatedAt: n.updatedAt
   }))
@@ -868,6 +877,26 @@ const handlePrintById = (id) => {
   const note = findNote(id)
   if (!note) return
   printNote(note)
+}
+
+const handleArchiveNote = (id) => {
+  archiveNote(id)
+  syncNow(id)
+}
+
+const handleUnarchiveNote = (id) => {
+  unarchiveNote(id)
+  syncNow(id)
+}
+
+const handleBulkArchive = (ids) => {
+  bulkArchive(ids)
+  syncNow()
+}
+
+const handleBulkUnarchive = (ids) => {
+  bulkUnarchive(ids)
+  syncNow()
 }
 </script>
 

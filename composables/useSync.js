@@ -78,6 +78,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
           tags: n.tags || [],
           content: n.content,
           sortOrder: n.sortOrder ?? 0,
+          archived: n.archived ?? false,
           createdAt: n.createdAt,
           updatedAt: n.updatedAt
         }
@@ -121,6 +122,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
             if (existing.description !== decrypted.description) existing.description = decrypted.description
             if (JSON.stringify(existing.tags) !== JSON.stringify(decrypted.tags)) existing.tags = decrypted.tags
             if (existing.content !== decrypted.content) existing.content = decrypted.content
+            if (existing.archived !== (decrypted.archived ?? false)) existing.archived = decrypted.archived ?? false
             existing.updatedAt = decrypted.updatedAt
           }
           existing.sortOrder = decrypted.sortOrder ?? existing.sortOrder
@@ -132,6 +134,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
             tags: decrypted.tags || [],
             content: decrypted.content,
             sortOrder: decrypted.sortOrder ?? 0,
+            archived: decrypted.archived ?? false,
             createdAt: decrypted.createdAt,
             updatedAt: decrypted.updatedAt
           })

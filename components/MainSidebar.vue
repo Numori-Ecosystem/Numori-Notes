@@ -24,9 +24,19 @@
           </div>
           <div class="flex items-center gap-2">
             <button @click="toggleSelectAll"
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+              class="flex-shrink-0 flex items-center justify-center px-3 py-2 rounded-lg transition-colors bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              :title="allSelected ? 'Deselect All' : 'Select All'">
               <Icon :name="allSelected ? 'mdi:checkbox-marked-outline' : 'mdi:checkbox-blank-outline'" class="w-5 h-5" />
-              {{ allSelected ? 'Deselect All' : 'Select All' }}
+            </button>
+            <button v-if="showArchive" @click="bulkUnarchive" :disabled="selectedIds.size === 0"
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-primary-600 hover:bg-primary-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
+              <Icon name="mdi:package-up" class="w-5 h-5" />
+              Unarchive
+            </button>
+            <button v-else @click="bulkArchive" :disabled="selectedIds.size === 0"
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-gray-600 hover:bg-gray-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
+              <Icon name="mdi:archive-outline" class="w-5 h-5" />
+              Archive
             </button>
             <button @click="bulkDelete" :disabled="selectedIds.size === 0"
               class="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
@@ -69,6 +79,15 @@
           <Icon :name="showFilters ? 'mdi:filter-variant-remove' : 'mdi:filter-variant'"
             class="w-4 h-4 block transition-transform duration-200"
             :class="{ 'rotate-180': showFilters }" />
+        </button>
+        <button v-if="hasArchivedNotes" @click="showArchive = !showArchive"
+          class="flex-shrink-0 p-1.5 rounded-lg transition-all duration-200 leading-none"
+          :class="showArchive
+            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+          title="Archive">
+          <Icon :name="showArchive ? 'mdi:archive' : 'mdi:archive-outline'"
+            class="w-4 h-4 block" />
         </button>
       </div>
 
@@ -146,7 +165,7 @@
     <!-- Notes List -->
     <div class="flex-1 overflow-y-auto" ref="listRef">
       <div v-if="filteredNotes.length === 0" class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-        No notes found
+        {{ showArchive ? 'No archived notes' : 'No notes found' }}
       </div>
       <div v-for="(note, index) in filteredNotes" :key="note.id"
         :data-index="index"
@@ -179,6 +198,8 @@
           @export="id => $emit('export-note', id)"
           @copy-to-clipboard="id => $emit('copy-to-clipboard', id)"
           @print="id => $emit('print-note', id)"
+          @archive="id => $emit('archive-note', id)"
+          @unarchive="id => $emit('unarchive-note', id)"
           @toggle-select="toggleNoteSelection" />
       </div>
     </div>
@@ -287,13 +308,22 @@ const emit = defineEmits([
   'show-auth', 'logout', 'edit-profile',
   'bulk-delete', 'selection-change', 'reorder',
   'share-note', 'unshare-note', 'show-properties', 'open-analytics',
-  'duplicate-note', 'export-note', 'copy-to-clipboard', 'print-note'
+  'duplicate-note', 'export-note', 'copy-to-clipboard', 'print-note',
+  'archive-note', 'unarchive-note', 'bulk-archive', 'bulk-unarchive'
 ])
 
 const searchQuery = ref('')
 const selectedTags = ref([])
 const listRef = ref(null)
 const showFilters = ref(false)
+const showArchive = ref(false)
+
+const hasArchivedNotes = computed(() => props.notes.some(n => n.archived))
+
+// Auto-exit archive view when no archived notes remain
+watch(hasArchivedNotes, (has) => {
+  if (!has) showArchive.value = false
+})
 
 // ── Account dropdown ─────────────────────────────────────
 const accountMenuOpen = ref(false)
@@ -504,6 +534,18 @@ const bulkDelete = () => {
   exitSelectMode()
 }
 
+const bulkArchive = () => {
+  if (selectedIds.value.size === 0) return
+  emit('bulk-archive', [...selectedIds.value])
+  exitSelectMode()
+}
+
+const bulkUnarchive = () => {
+  if (selectedIds.value.size === 0) return
+  emit('bulk-unarchive', [...selectedIds.value])
+  exitSelectMode()
+}
+
 // ── Filtering ────────────────────────────────────────────
 
 const toggleTag = (tag) => {
@@ -514,6 +556,10 @@ const toggleTag = (tag) => {
 
 const filteredNotes = computed(() => {
   let result = props.notes
+
+  // Filter by archive state
+  result = result.filter(n => showArchive.value ? !!n.archived : !n.archived)
+
   const q = searchQuery.value.trim().toLowerCase()
   if (q) {
     result = result.filter(n => {

@@ -249,5 +249,13 @@ export async function migrate() {
     END $do$
   `)
 
+  // Add archived flag to notes
+  await query(`
+    DO $do$ BEGIN
+      ALTER TABLE notes ADD COLUMN IF NOT EXISTS archived BOOLEAN NOT NULL DEFAULT FALSE;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $do$
+  `)
+
   console.log('[migrate] Database tables ready')
 }

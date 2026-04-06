@@ -201,6 +201,7 @@ Discounted: prev - 10%
       tags: [],
       sortOrder: 0,
       content: defaultContent,
+      archived: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
@@ -231,7 +232,8 @@ Discounted: prev - 10%
       }
 
       if (currentNoteId.value === id) {
-        currentNoteId.value = notes.value.length > 0 ? notes.value[0].id : null
+        const next = notes.value.find(n => n.id !== id && !n.archived)
+        currentNoteId.value = next ? next.id : (notes.value.length > 0 ? notes.value[0].id : null)
       }
 
       // Remove from DB
@@ -258,6 +260,52 @@ Discounted: prev - 10%
       note.updatedAt = new Date().toISOString()
       saveNotes()
     }
+  }
+
+  const archiveNote = (id) => {
+    const note = notes.value.find(n => n.id === id)
+    if (note) {
+      note.archived = true
+      note.updatedAt = new Date().toISOString()
+      // If archiving the current note, select the next non-archived note
+      if (currentNoteId.value === id) {
+        const next = notes.value.find(n => n.id !== id && !n.archived)
+        currentNoteId.value = next ? next.id : null
+      }
+      saveNotes()
+    }
+  }
+
+  const unarchiveNote = (id) => {
+    const note = notes.value.find(n => n.id === id)
+    if (note) {
+      note.archived = false
+      note.updatedAt = new Date().toISOString()
+      saveNotes()
+    }
+  }
+
+  const bulkArchive = (ids) => {
+    const now = new Date().toISOString()
+    for (const id of ids) {
+      const note = notes.value.find(n => n.id === id)
+      if (note) { note.archived = true; note.updatedAt = now }
+    }
+    // If current note was archived, select next non-archived
+    if (ids.includes(currentNoteId.value)) {
+      const next = notes.value.find(n => !ids.includes(n.id) && !n.archived)
+      currentNoteId.value = next ? next.id : null
+    }
+    saveNotes()
+  }
+
+  const bulkUnarchive = (ids) => {
+    const now = new Date().toISOString()
+    for (const id of ids) {
+      const note = notes.value.find(n => n.id === id)
+      if (note) { note.archived = false; note.updatedAt = now }
+    }
+    saveNotes()
   }
 
   const reorderNotes = (orderedIds) => {
@@ -292,6 +340,10 @@ Discounted: prev - 10%
     loadNotes,
     saveNotes,
     clearDeletedIds,
-    reorderNotes
+    reorderNotes,
+    archiveNote,
+    unarchiveNote,
+    bulkArchive,
+    bulkUnarchive
   }
 }
