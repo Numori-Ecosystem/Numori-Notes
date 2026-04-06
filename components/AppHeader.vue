@@ -43,7 +43,7 @@
         </div>
 
         <!-- Center: Markdown formatting (desktop only) -->
-        <FormattingToolbar class="hidden lg:flex flex-1"
+        <FormattingToolbar class="hidden lg:flex flex-1 justify-center"
           :can-undo="canUndo"
           :can-redo="canRedo"
           @apply-format="(before, after) => $emit('apply-format', before, after)"
