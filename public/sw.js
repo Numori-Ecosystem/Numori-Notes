@@ -2,7 +2,7 @@
 // Service worker for PWA offline support and update detection.
 // Capacitor native apps skip registration (see plugins/pwa.client.ts).
 
-const CACHE_NAME = 'numori-0.4.1'
+const CACHE_NAME = 'numori-0.5.0'
 
 // App shell resources to pre-cache on install
 const APP_SHELL = [
