@@ -274,16 +274,34 @@
                 </div>
 
                 <!-- Warning about recovery -->
-                <div class="px-3 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                  <div class="flex gap-2">
-                    <Icon name="mdi:alert-outline" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                    <div class="text-xs text-amber-700 dark:text-amber-300 space-y-1">
-                      <p class="font-medium">Security notice</p>
-                      <p>Enabling password recovery allows anyone with access to your email to reset your password. This is a potential attack vector — if your email is compromised, your Numori account could be too.</p>
-                      <p>Additionally, a password reset will <span class="font-medium">permanently delete all your encrypted notes</span> since they cannot be decrypted without the original password.</p>
-                      <p>For maximum security, keep this disabled.</p>
+                <div class="space-y-2">
+                  <!-- Account access risk -->
+                  <div class="px-3 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                    <div class="flex gap-2.5">
+                      <Icon name="mdi:shield-alert-outline" class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div class="text-xs space-y-1.5">
+                        <p class="font-semibold text-amber-800 dark:text-amber-200">Account access risk</p>
+                        <p class="text-amber-700 dark:text-amber-300 leading-relaxed">Anyone with access to your email inbox can trigger a password reset and take over your account. If your email is compromised, your Numori account is too.</p>
+                      </div>
                     </div>
                   </div>
+
+                  <!-- Data destruction warning — more prominent -->
+                  <div class="px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800">
+                    <div class="flex gap-2.5">
+                      <Icon name="mdi:database-remove-outline" class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                      <div class="text-xs space-y-1.5">
+                        <p class="font-semibold text-red-800 dark:text-red-200">All notes destroyed on recovery</p>
+                        <p class="text-red-700 dark:text-red-300 leading-relaxed">Your notes are end-to-end encrypted with your password. A password reset means the encryption key is lost forever — <span class="font-semibold">all notes will be permanently and irreversibly deleted</span>.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Recommendation -->
+                  <p class="text-xs text-gray-500 dark:text-gray-500 px-1 leading-relaxed">
+                    <Icon name="mdi:information-outline" class="w-3 h-3 inline -mt-0.5 mr-0.5" />
+                    For maximum security, keep password recovery disabled and store your password in a password manager.
+                  </p>
                 </div>
               </div>
 

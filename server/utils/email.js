@@ -67,22 +67,59 @@ export function generateOtp() {
 }
 
 /**
+ * Shared email layout wrapper.
+ */
+function emailLayout(content) {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 32px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 420px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <!-- Logo bar -->
+        <tr><td style="background-color: #4f46e5; padding: 20px 24px; text-align: center;">
+          <span style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">Numori</span>
+        </td></tr>
+        <!-- Content -->
+        <tr><td style="padding: 28px 24px 20px;">
+          ${content}
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="padding: 0 24px 24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
+              <p style="margin: 0; font-size: 11px; color: #9ca3af; text-align: center; line-height: 1.5;">
+                This is an automated message from Numori.<br>If you didn't request this, you can safely ignore it.
+              </p>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+/**
  * Send a verification OTP email.
  */
 export async function sendVerificationEmail(to, code) {
   return sendEmail({
     to,
     subject: 'Verify your email — Numori',
-    html: `
-      <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto; padding: 24px;">
-        <h2 style="color: #333; margin-bottom: 8px;">Verify your email</h2>
-        <p style="color: #666; font-size: 14px;">Enter this code in Numori to verify your email address:</p>
-        <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; text-align: center; margin: 16px 0;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #111;">${code}</span>
-        </div>
-        <p style="color: #999; font-size: 12px;">This code expires in 15 minutes. If you didn't request this, ignore this email.</p>
-      </div>
-    `
+    html: emailLayout(`
+      <h1 style="margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #111827;">Verify your email</h1>
+      <p style="margin: 0 0 20px; font-size: 14px; color: #6b7280; line-height: 1.5;">Enter this code in Numori to confirm your email address:</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="background-color: #f3f4f6; border-radius: 10px; padding: 20px; text-align: center;">
+          <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #111827; font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">${code}</span>
+        </td></tr>
+      </table>
+      <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">This code expires in <span style="font-weight: 600; color: #6b7280;">15 minutes</span>.</p>
+    `)
   })
 }
 
@@ -93,16 +130,29 @@ export async function sendPasswordRecoveryEmail(to, code) {
   return sendEmail({
     to,
     subject: 'Password recovery — Numori',
-    html: `
-      <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto; padding: 24px;">
-        <h2 style="color: #333; margin-bottom: 8px;">Password recovery</h2>
-        <p style="color: #666; font-size: 14px;">Enter this code in Numori to reset your password:</p>
-        <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; text-align: center; margin: 16px 0;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #111;">${code}</span>
-        </div>
-        <p style="color: #d97706; font-size: 12px; font-weight: 500;">⚠️ Resetting your password will delete all your encrypted notes since they cannot be decrypted without the original password.</p>
-        <p style="color: #999; font-size: 12px;">This code expires in 15 minutes. If you didn't request this, ignore this email.</p>
-      </div>
-    `
+    html: emailLayout(`
+      <h1 style="margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #111827;">Password recovery</h1>
+      <p style="margin: 0 0 20px; font-size: 14px; color: #6b7280; line-height: 1.5;">Enter this code in Numori to reset your password:</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="background-color: #f3f4f6; border-radius: 10px; padding: 20px; text-align: center;">
+          <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #111827; font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">${code}</span>
+        </td></tr>
+      </table>
+      <!-- Destruction warning -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+        <tr><td style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px 16px;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="vertical-align: top; padding-right: 10px;">
+              <span style="font-size: 18px;">🔴</span>
+            </td>
+            <td>
+              <p style="margin: 0 0 4px; font-size: 13px; font-weight: 700; color: #991b1b;">All your notes will be permanently deleted</p>
+              <p style="margin: 0; font-size: 12px; color: #b91c1c; line-height: 1.5;">Your notes are end-to-end encrypted with your current password. Resetting your password means they can never be decrypted. This action cannot be undone.</p>
+            </td>
+          </tr></table>
+        </td></tr>
+      </table>
+      <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">This code expires in <span style="font-weight: 600; color: #6b7280;">15 minutes</span>.</p>
+    `)
   })
 }

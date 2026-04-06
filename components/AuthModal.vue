@@ -108,6 +108,13 @@
 
             <!-- ═══ Password Recovery: Enter Email ═══ -->
             <template v-else-if="step === 'recovery-email'">
+              <div class="mb-4 px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800">
+                <div class="flex gap-2">
+                  <Icon name="mdi:database-remove-outline" class="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">Password recovery will <span class="font-semibold">permanently delete all your encrypted notes</span>. They cannot be decrypted without the original password.</p>
+                </div>
+              </div>
+
               <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
                 Enter your email address. If password recovery is enabled on your account, you'll receive a code.
               </p>
@@ -166,9 +173,15 @@
 
             <!-- ═══ Password Recovery: Set New Password ═══ -->
             <template v-else-if="step === 'recovery-newpass'">
-              <div class="mb-3 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-xs">
-                <Icon name="mdi:alert-outline" class="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-                Resetting your password will delete all your encrypted notes. They cannot be recovered without the original password.
+              <!-- Prominent destruction warning -->
+              <div class="mb-4 px-3 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800">
+                <div class="flex gap-2.5">
+                  <Icon name="mdi:database-remove-outline" class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <div class="space-y-1.5">
+                    <p class="text-xs font-semibold text-red-800 dark:text-red-200">All your notes will be permanently deleted</p>
+                    <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">Your notes are encrypted with your current password. Resetting it means the encryption key is lost — <span class="font-semibold">every note will be irreversibly destroyed</span>. This cannot be undone.</p>
+                  </div>
+                </div>
               </div>
 
               <div v-if="error" class="mb-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
