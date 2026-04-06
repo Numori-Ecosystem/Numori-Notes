@@ -34,9 +34,15 @@ export const useServiceWorker = () => {
 
   /** Apply the update — reload for web, open store for native */
   const applyUpdate = () => {
-    if (isNative && storeUrl.value) {
-      window.open(storeUrl.value, '_blank')
-      return
+    if (isNative) {
+      const url = storeUrl.value
+        || (platform === 'android' ? 'https://play.google.com/store/apps/details?id=app.numori.app' : '')
+        || (platform === 'ios' ? 'https://apps.apple.com/app/numori/id0000000000' : '')
+      if (url) {
+        // Use location.href — window.open is unreliable in Capacitor WebViews
+        window.location.href = url
+        return
+      }
     }
     if (swRegistration?.waiting) {
       swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
