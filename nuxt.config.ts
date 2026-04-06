@@ -76,9 +76,6 @@ export default defineNuxtConfig({
     prerender: {
       routes: ['/']
     },
-    replace: {
-      __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
-    },
     routeRules: {
       '/.well-known/apple-app-site-association': {
         headers: { 'Content-Type': 'application/json' }
@@ -92,6 +89,7 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    appVersion: process.env.npm_package_version || '0.0.0',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '',
       storeAndroid: process.env.NUXT_PUBLIC_STORE_ANDROID || 'https://play.google.com/store/apps/details?id=app.numori.app',

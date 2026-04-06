@@ -8,7 +8,7 @@
     leave-to-class="opacity-0 -translate-y-4">
     <div v-if="visible"
       class="fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700"
-      :class="isNative ? 'flex flex-col items-center gap-2 px-5 py-4 max-w-[15rem]' : 'flex items-center gap-3 px-4 py-3 max-w-sm'"
+      :class="isNative ? 'flex flex-col items-center gap-2 px-5 py-4 max-w-[15rem]' : 'flex items-center gap-3 pl-4 pr-10 py-3 max-w-sm'"
       :style="{ marginTop: 'env(safe-area-inset-top, 0px)' }"
       role="alert">
 

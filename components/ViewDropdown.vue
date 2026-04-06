@@ -61,7 +61,11 @@
         <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
 
         <DropdownItem icon="mdi:information-outline" label="About" @click="action('about')" />
-        <DropdownItem icon="mdi:update" label="Check for updates" @click="action('check-update')" />
+        <button @click="handleCheckUpdate" :disabled="updateChecking"
+          class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 disabled:opacity-50">
+          <Icon :name="updateChecking ? 'mdi:loading' : updateResultIcon" class="w-4 h-4 block flex-shrink-0" :class="{ 'animate-spin': updateChecking, [updateResultColor]: !updateChecking && updateResult }" />
+          <span>{{ updateLabel }}</span>
+        </button>
       </div>
     </Transition>
   </div>
@@ -82,6 +86,10 @@ const props = defineProps({
     type: Number,
     default: 16,
   },
+  checkForUpdate: {
+    type: Function,
+    default: null,
+  },
 })
 
 const emit = defineEmits([
@@ -92,7 +100,6 @@ const emit = defineEmits([
   'templates',
   'help',
   'about',
-  'check-update',
 ])
 
 const zoomPercent = computed(() =>
@@ -125,4 +132,41 @@ onClickOutside(dropdownRef, () => {
 useEventListener(document, 'keydown', (e) => {
   if (e.key === 'Escape') open.value = false
 })
+
+const updateChecking = ref(false)
+const updateResult = ref('')
+let updateResultTimer = null
+
+const updateLabel = computed(() => {
+  if (updateChecking.value) return 'Checking...'
+  if (updateResult.value === 'available') return 'Update available'
+  if (updateResult.value === 'up-to-date') return 'Up to date'
+  if (updateResult.value === 'error') return 'Check failed'
+  return 'Check for updates'
+})
+
+const updateResultIcon = computed(() => {
+  if (updateResult.value === 'available') return 'mdi:arrow-up-circle-outline'
+  if (updateResult.value === 'up-to-date') return 'mdi:check-circle-outline'
+  if (updateResult.value === 'error') return 'mdi:alert-circle-outline'
+  return 'mdi:update'
+})
+
+const updateResultColor = computed(() => {
+  if (updateResult.value === 'available') return 'text-primary-500'
+  if (updateResult.value === 'up-to-date') return 'text-green-500'
+  if (updateResult.value === 'error') return 'text-red-500'
+  return ''
+})
+
+const handleCheckUpdate = async () => {
+  if (!props.checkForUpdate || updateChecking.value) return
+  updateChecking.value = true
+  updateResult.value = ''
+  clearTimeout(updateResultTimer)
+  const result = await props.checkForUpdate(true)
+  updateChecking.value = false
+  updateResult.value = result
+  updateResultTimer = setTimeout(() => { updateResult.value = '' }, 4000)
+}
 </script>

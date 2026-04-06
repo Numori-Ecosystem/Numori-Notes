@@ -32,14 +32,14 @@
           <ViewDropdown
             :markdown-mode="markdownMode"
             :editor-font-size="editorFontSize"
+            :check-for-update="checkForUpdate"
             @update:markdown-mode="(mode) => $emit('update:markdown-mode', mode)"
             @zoom-in="$emit('zoom-in')"
             @zoom-out="$emit('zoom-out')"
             @zoom-reset="$emit('zoom-reset')"
             @templates="$emit('show-templates')"
             @help="$emit('show-help')"
-            @about="$emit('file-about')"
-            @check-update="$emit('check-update')" />
+            @about="$emit('file-about')" />
         </div>
 
         <!-- Center: Markdown formatting (desktop only) -->
@@ -136,6 +136,10 @@ defineProps({
   editorFontSize: {
     type: Number,
     default: 16
+  },
+  checkForUpdate: {
+    type: Function,
+    default: null
   }
 })
 
@@ -167,6 +171,5 @@ defineEmits([
   'file-copy',
   'file-print',
   'file-about',
-  'check-update',
 ])
 </script>

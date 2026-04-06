@@ -92,25 +92,27 @@ export const useServiceWorker = () => {
    * Respects the dismissed version — won't re-show a dismissed update
    * unless a newer version appears.
    * @param {boolean} manual - If true, ignore dismissed version (user explicitly asked)
+   * @returns {'available'|'up-to-date'|'error'}
    */
   async function checkForUpdate(manual = false) {
     try {
       const data = await fetchLatestVersion()
       if (!data?.version || data.version === buildVersion) {
         if (manual) updateAvailable.value = false
-        return
+        return 'up-to-date'
       }
       latestVersion.value = data.version
       if (!manual) {
         const dismissed = await getDismissedVersion()
-        if (data.version === dismissed) return
+        if (data.version === dismissed) return 'up-to-date'
       }
       updateAvailable.value = true
       if (!isNative && navigator.serviceWorker) {
         const reg = await navigator.serviceWorker.getRegistration()
         reg?.update()
       }
-    } catch { /* offline or server down */ }
+      return 'available'
+    } catch { return 'error' }
   }
 
   /** Restart the poll timer with a new interval (minutes) */

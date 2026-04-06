@@ -13,6 +13,7 @@
       :can-undo="editorRef?.canUndo ?? false"
       :can-redo="editorRef?.canRedo ?? false"
       :editor-font-size="localePrefs.preferences.editorFontSize ?? 16"
+      :check-for-update="sw.checkForUpdate"
       @toggle-sidebar="showSidebar = !showSidebar"
       @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
       @indent="editorRef?.indentLine()" @outdent="editorRef?.outdentLine()"
@@ -36,8 +37,7 @@
       @file-import="handleImport"
       @file-copy="handleCopy"
       @file-print="handlePrint"
-      @file-about="showAbout = true"
-      @check-update="sw.checkForUpdate(true)" />
+      @file-about="showAbout = true" />
     </div>
 
     <!-- Main Content Area -->
@@ -201,7 +201,7 @@
       @open-analytics="handleOpenAnalytics" />
 
     <HelpModal :is-open="showHelp" :mod-label="modLabel" @close="showHelp = false" />
-    <AboutModal :is-open="showAbout" @close="showAbout = false" @check-update="sw.checkForUpdate(true)" />
+    <AboutModal :is-open="showAbout" :check-for-update="sw.checkForUpdate" @close="showAbout = false" />
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
     <SettingsModal :is-open="showLocaleSettings"

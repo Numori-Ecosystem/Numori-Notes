@@ -22,21 +22,25 @@
             <div class="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-5 py-4 space-y-5 text-sm text-gray-700 dark:text-gray-400 break-words">
 
               <!-- App info -->
-              <div class="text-center space-y-1">
+              <div class="text-center space-y-2">
                 <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">Numori</p>
                 <p class="text-xs text-gray-500 dark:text-gray-500">v{{ appVersion }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-500">Made with ❤️ and code from Manchester, England</p>
-                <div class="flex items-center justify-center gap-3">
-                  <a href="https://github.com/Erik-Bjerke/Numori" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline">
-                    <Icon name="mdi:github" class="w-3.5 h-3.5 block" />
-                    GitHub
-                  </a>
-                  <button @click="$emit('check-update')"
-                    class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline">
-                    <Icon name="mdi:update" class="w-3.5 h-3.5 block" />
-                    Check for updates
+                <a href="https://github.com/Erik-Bjerke/Numori" target="_blank" rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline">
+                  <Icon name="mdi:github" class="w-3.5 h-3.5 block" />
+                  GitHub
+                </a>
+                <div class="pt-1">
+                  <button @click="handleCheckUpdate" :disabled="checking"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors"
+                    :class="checking
+                      ? 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-wait'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'">
+                    <Icon :name="checking ? 'mdi:loading' : 'mdi:update'" class="w-3.5 h-3.5 block" :class="{ 'animate-spin': checking }" />
+                    {{ checking ? 'Checking...' : 'Check for updates' }}
                   </button>
+                  <p v-if="checkResult" class="mt-1.5 text-xs" :class="checkResultClass">{{ checkResult }}</p>
                 </div>
               </div>
 
@@ -105,14 +109,35 @@
 </template>
 
 <script setup>
-defineProps({
-  isOpen: {
-    type: Boolean,
-    default: false,
-  },
+const props = defineProps({
+  isOpen: { type: Boolean, default: false },
+  checkForUpdate: { type: Function, default: null },
 })
 
-defineEmits(['close', 'check-update'])
+defineEmits(['close'])
 
 const appVersion = __APP_VERSION__
+const checking = ref(false)
+const checkResult = ref('')
+
+const checkResultClass = computed(() => {
+  if (checkResult.value.startsWith('You')) return 'text-green-600 dark:text-green-400'
+  if (checkResult.value.startsWith('Could')) return 'text-red-500 dark:text-red-400'
+  return 'text-primary-600 dark:text-primary-400'
+})
+
+const handleCheckUpdate = async () => {
+  if (!props.checkForUpdate || checking.value) return
+  checking.value = true
+  checkResult.value = ''
+  const result = await props.checkForUpdate(true)
+  checking.value = false
+  if (result === 'available') checkResult.value = 'A new version is available.'
+  else if (result === 'up-to-date') checkResult.value = 'You\'re up to date.'
+  else checkResult.value = 'Could not check for updates.'
+}
+
+watch(() => props.isOpen, (open) => {
+  if (!open) checkResult.value = ''
+})
 </script>
