@@ -62,8 +62,10 @@ export const useServiceWorker = () => {
         console.warn('[update-check] fetchLatestVersion: no apiBase configured, skipping')
         return null
       }
+      // Native: use /api/version which has CORS headers from the middleware
       url = `${config.public.apiBase}/api/version?_=${Date.now()}`
     } else {
+      // Web: same-origin static file, no CORS needed
       const origin = config.public.apiBase || window.location.origin
       url = `${origin}/version.json?_=${Date.now()}`
     }

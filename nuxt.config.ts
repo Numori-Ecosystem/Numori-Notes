@@ -76,9 +76,18 @@ export default defineNuxtConfig({
     prerender: {
       routes: ['/']
     },
+    replace: {
+      __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
+    },
     routeRules: {
       '/.well-known/apple-app-site-association': {
         headers: { 'Content-Type': 'application/json' }
+      },
+      '/version.json': {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'no-store'
+        }
       }
     }
   },
