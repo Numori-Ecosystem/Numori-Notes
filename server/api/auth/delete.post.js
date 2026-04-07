@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { requireAuth } from '../../utils/auth.js'
 import { query } from '../../utils/db.js'
-import { notifySync } from '../../utils/syncBroadcast.js'
+import { notifyDataWipe } from '../../utils/syncBroadcast.js'
 
 /**
  * POST /api/auth/delete — Delete account data or the entire account.
@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
     const r3 = await query('DELETE FROM shared_notes WHERE user_id = $1', [auth.userId])
     console.log('[delete] deleted shared_notes:', r3.rowCount)
     await query('UPDATE users SET welcome_created = FALSE WHERE id = $1', [auth.userId])
-    notifySync(auth.userId, null)
+    notifyDataWipe(auth.userId, null)
     console.log('[delete] data deletion complete')
     return { deleted: 'data' }
   }

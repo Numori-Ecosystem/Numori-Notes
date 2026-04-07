@@ -14,7 +14,7 @@
 import db from '~/db.js'
 import { encryptNote, decryptNote } from '~/utils/crypto.js'
 
-export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => {
+export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onDataWipe) => {
   const { apiFetch, apiUrl } = useApi()
 
   const syncing = ref(false)
@@ -222,7 +222,9 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds) => 
     eventSource.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data)
-        if (msg.type === 'sync' && !syncing.value && !expectingSelfEcho) {
+        if (msg.type === 'data-wipe') {
+          if (onDataWipe) onDataWipe()
+        } else if (msg.type === 'sync' && !syncing.value && !expectingSelfEcho) {
           sync('sse')
         }
       } catch { /* ignore */ }

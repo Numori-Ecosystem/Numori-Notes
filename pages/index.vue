@@ -325,7 +325,20 @@ const localePrefs = useLocalePreferences()
 const welcomeWizard = useWelcomeWizard()
 const auth = useAuth()
 const { apiFetch } = useApi()
-const { syncing, lastSyncedAt, syncError, pendingNoteIds, isOnline, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds)
+
+let _onDataWipe = null
+const { syncing, lastSyncedAt, syncError, pendingNoteIds, isOnline, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds, () => _onDataWipe?.())
+
+/** Called by other devices via SSE when data was wiped from the profile modal. */
+_onDataWipe = async () => {
+  notes.value = []
+  currentNoteId.value = null
+  deletedIds.value = []
+  await db.notes.clear()
+  await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at', 'welcome_note_created'])
+  lastSyncedAt.value = null
+  await auth.refreshUser()
+}
 const sw = useServiceWorker()
 
 // Sync the update-check poll interval with user preferences

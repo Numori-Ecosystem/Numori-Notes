@@ -33,3 +33,19 @@ export function notifySync(userId, excludeSessionId = null) {
     }
   }
 }
+
+/**
+ * Notify all OTHER connected clients that all data has been wiped.
+ * Receiving clients should clear local notes without syncing back.
+ */
+export function notifyDataWipe(userId, excludeSessionId = null) {
+  const sessions = listeners.get(userId)
+  if (!sessions) return
+
+  const data = `data: ${JSON.stringify({ type: 'data-wipe', timestamp: new Date().toISOString() })}\n\n`
+  for (const [sessionId, stream] of sessions) {
+    if (sessionId !== excludeSessionId) {
+      try { stream.write(data) } catch { /* client disconnected */ }
+    }
+  }
+}
