@@ -1,4 +1,5 @@
 import { query } from './db.js'
+import { enrichSession } from './geo.js'
 
 /**
  * Hash a JWT token to store in the sessions table.
@@ -45,28 +46,28 @@ export function parseDeviceName(ua) {
 
 /**
  * Create a session record for a newly issued token.
+ * Location is resolved asynchronously via IP geolocation.
  */
 export async function createSession(userId, token, event) {
   const tokenHash = await hashToken(token)
   const ua = getHeader(event, 'user-agent') || ''
   const deviceName = parseDeviceName(ua)
 
-  // Get IP from common proxy headers or direct connection
   const ip = getHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim()
     || getHeader(event, 'x-real-ip')
     || event.node?.req?.socket?.remoteAddress
     || null
 
-  // Try to get location from IP geolocation headers (set by reverse proxies / CDNs)
-  const location = getHeader(event, 'x-vercel-ip-city')
-    || getHeader(event, 'cf-ipcity')
-    || null
-
-  await query(
-    `INSERT INTO sessions (user_id, token_hash, device_name, ip_address, location)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [userId, tokenHash, deviceName, ip, location]
+  const result = await query(
+    `INSERT INTO sessions (user_id, token_hash, device_name, ip_address)
+     VALUES ($1, $2, $3, $4) RETURNING id`,
+    [userId, tokenHash, deviceName, ip]
   )
+
+  const sessionId = result.rows[0]?.id
+  if (sessionId) {
+    enrichSession(event, ip, sessionId)
+  }
 }
 
 /**

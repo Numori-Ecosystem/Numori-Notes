@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { query } from '../../utils/db.js'
 import { optionalAuth } from '../../utils/auth.js'
+import { enrichShareView } from '../../utils/geo.js'
 
 // Ensure password_hint column exists (idempotent, safe to call on every request)
 async function ensurePasswordHintColumn() {
@@ -139,26 +140,10 @@ async function recordEvent(event, sharedNoteId, eventType) {
     .then(res => {
       const recordId = res.rows[0]?.id
       const geoIp = recordIp || ipAddress
-      if (recordId && geoIp && !geoIp.startsWith('127.') && geoIp !== '::1') {
-        lookupGeo(geoIp, recordId)
+      if (recordId) {
+        enrichShareView(event, geoIp, recordId)
       }
     })
     .catch(() => {})
 }
 
-/**
- * Look up IP geolocation via ip-api.com (free, no key, 45 req/min).
- * Updates the share_views record asynchronously.
- */
-async function lookupGeo(ip, viewId) {
-  try {
-    const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city`)
-    if (!res.ok) return
-    const data = await res.json()
-    if (data.status !== 'success') return
-    await query(
-      'UPDATE share_views SET country = $1, region = $2, city = $3 WHERE id = $4',
-      [data.country || null, data.regionName || null, data.city || null, viewId]
-    )
-  } catch { /* geo lookup is best-effort */ }
-}

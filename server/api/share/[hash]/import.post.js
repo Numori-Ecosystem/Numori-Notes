@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { query } from '../../../utils/db.js'
 import { optionalAuth } from '../../../utils/auth.js'
+import { enrichShareView } from '../../../utils/geo.js'
 
 /**
  * POST /api/share/:hash/import — Record that someone imported this shared note.
@@ -82,16 +83,8 @@ export default defineEventHandler(async (event) => {
   // Async geo lookup
   const geoIp = recordIp || ipAddress
   const recordId = insertRes.rows[0]?.id
-  if (recordId && geoIp && !geoIp.startsWith('127.') && geoIp !== '::1') {
-    fetch(`http://ip-api.com/json/${geoIp}?fields=status,country,regionName,city`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.status === 'success') {
-          query('UPDATE share_views SET country = $1, region = $2, city = $3 WHERE id = $4',
-            [d.country || null, d.regionName || null, d.city || null, recordId])
-        }
-      })
-      .catch(() => {})
+  if (recordId) {
+    enrichShareView(event, geoIp, recordId)
   }
 
   return { ok: true }
