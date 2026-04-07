@@ -207,11 +207,13 @@ export const useAuth = () => {
     error.value = null
     try {
       const authKeyHex = await deriveAuthKey(password)
+      console.log('[requestDeletion] calling /api/auth/delete with type:', type, 'authKey length:', authKeyHex.length)
       const data = await apiFetch('/api/auth/delete', {
         method: 'POST',
         headers: authHeaders.value,
         body: { type, authKey: authKeyHex }
       })
+      console.log('[requestDeletion] server response:', data)
       if (type === 'account') await logout()
       return data
     } catch (err) {
