@@ -28,54 +28,24 @@ beforeEach(() => {
 })
 
 describe('POST /api/auth/delete', () => {
-  it('rejects missing credential', async () => {
+  it('rejects missing authKey', async () => {
     readBody.mockResolvedValue({ type: 'data' })
     await expect(handler({})).rejects.toThrow('Password is required')
   })
 
-  it('accepts authKey (new E2E flow)', async () => {
-    const authKey = 'derived-auth-key'
-    const hash = await bcrypt.hash(authKey, 4)
-    readBody.mockResolvedValue({ type: 'data', authKey })
-    mockQuery
-      .mockResolvedValueOnce({ rows: [{ password_hash: hash }] })
-      .mockResolvedValueOnce({ rows: [] }) // DELETE notes
-      .mockResolvedValueOnce({ rows: [] }) // DELETE deleted_notes
-      .mockResolvedValueOnce({ rows: [] }) // DELETE shared_notes
-      .mockResolvedValueOnce({ rows: [] }) // UPDATE welcome_created
-
-    const result = await handler({})
-    expect(result).toEqual({ deleted: 'data' })
-  })
-
-  it('accepts password (legacy flow)', async () => {
-    const password = 'legacy-password'
-    const hash = await bcrypt.hash(password, 4)
-    readBody.mockResolvedValue({ type: 'data', password })
-    mockQuery
-      .mockResolvedValueOnce({ rows: [{ password_hash: hash }] })
-      .mockResolvedValueOnce({ rows: [] }) // DELETE notes
-      .mockResolvedValueOnce({ rows: [] }) // DELETE deleted_notes
-      .mockResolvedValueOnce({ rows: [] }) // DELETE shared_notes
-      .mockResolvedValueOnce({ rows: [] }) // UPDATE welcome_created
-
-    const result = await handler({})
-    expect(result).toEqual({ deleted: 'data' })
-  })
-
-  it('rejects wrong credential', async () => {
-    const hash = await bcrypt.hash('correct', 4)
-    readBody.mockResolvedValue({ type: 'data', authKey: 'wrong' })
+  it('rejects wrong authKey', async () => {
+    const hash = await bcrypt.hash('correct-key', 4)
+    readBody.mockResolvedValue({ type: 'data', authKey: 'wrong-key' })
     mockQuery.mockResolvedValueOnce({ rows: [{ password_hash: hash }] })
     await expect(handler({})).rejects.toThrow('Incorrect password')
   })
 
-  it('handles type=data — deletes notes and shared notes', async () => {
+  it('handles type=data — deletes notes, tombstones, shared notes and resets welcome', async () => {
     const authKey = 'key'
     const hash = await bcrypt.hash(authKey, 4)
     readBody.mockResolvedValue({ type: 'data', authKey })
     mockQuery
-      .mockResolvedValueOnce({ rows: [{ password_hash: hash }] })
+      .mockResolvedValueOnce({ rows: [{ password_hash: hash }] }) // SELECT password
       .mockResolvedValueOnce({ rows: [] }) // DELETE notes
       .mockResolvedValueOnce({ rows: [] }) // DELETE deleted_notes
       .mockResolvedValueOnce({ rows: [] }) // DELETE shared_notes
@@ -83,9 +53,7 @@ describe('POST /api/auth/delete', () => {
 
     const result = await handler({})
     expect(result).toEqual({ deleted: 'data' })
-    // 5 queries: SELECT password + DELETE notes + DELETE deleted_notes + DELETE shared_notes + UPDATE welcome_created
     expect(mockQuery).toHaveBeenCalledTimes(5)
-    // Should broadcast to other devices
     expect(mockNotifySync).toHaveBeenCalledWith(1, null)
   })
 
@@ -94,7 +62,7 @@ describe('POST /api/auth/delete', () => {
     const hash = await bcrypt.hash(authKey, 4)
     readBody.mockResolvedValue({ type: 'account', authKey })
     mockQuery
-      .mockResolvedValueOnce({ rows: [{ password_hash: hash }] })
+      .mockResolvedValueOnce({ rows: [{ password_hash: hash }] }) // SELECT password
       .mockResolvedValueOnce({ rows: [] }) // DELETE shared_notes
       .mockResolvedValueOnce({ rows: [] }) // DELETE notes
       .mockResolvedValueOnce({ rows: [] }) // DELETE deleted_notes
