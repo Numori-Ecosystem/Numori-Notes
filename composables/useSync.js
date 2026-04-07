@@ -309,6 +309,8 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
     [() => auth.isLoggedIn.value, () => auth.encKey.value],
     ([loggedIn, key]) => {
       if (loggedIn && key) {
+        // Reset revocation flag — user logged in again with a fresh session
+        sessionRevokedHandled = false
         startAutoSync()
         connectSSE()
         startSessionCheck()
