@@ -318,7 +318,7 @@
 <script setup>
 import db from '~/db.js'
 
-const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes, archiveNote, unarchiveNote, bulkArchive, bulkUnarchive } = useNotes()
+const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes, archiveNote, unarchiveNote, bulkArchive, bulkUnarchive, removeWelcomeNoteIfNeeded } = useNotes()
 const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
 const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()
@@ -328,7 +328,7 @@ const { apiFetch } = useApi()
 
 let _onDataWipe = null
 let _onSessionRevoked = null
-const { syncing, lastSyncedAt, syncError, pendingNoteIds, isOnline, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds, () => _onDataWipe?.(), () => _onSessionRevoked?.())
+const { syncing, lastSyncedAt, syncError, pendingNoteIds, isOnline, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds, () => _onDataWipe?.(), () => _onSessionRevoked?.(), removeWelcomeNoteIfNeeded)
 
 // If restore() found a stale token from a revoked session, clear in-memory notes
 // (IndexedDB was already cleared by restore, but loadNotes ran first)

@@ -14,7 +14,7 @@
 import db from '~/db.js'
 import { encryptNote, decryptNote } from '~/utils/crypto.js'
 
-export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onDataWipe, onSessionRevoked) => {
+export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onDataWipe, onSessionRevoked, removeWelcomeNoteIfNeeded) => {
   const { apiFetch, apiUrl } = useApi()
 
   const syncing = ref(false)
@@ -159,6 +159,10 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
       // Persist welcome flag from server so a new device won't re-create it
       if (data.welcomeCreated) {
         await db.appState.put({ key: 'welcome_note_created', value: '1' })
+        // If we just auto-created a welcome note but the server says the user
+        // already had one (and presumably deleted it), remove the auto-created one.
+        // Only removes notes with exact default content — never user-modified notes.
+        if (removeWelcomeNoteIfNeeded) await removeWelcomeNoteIfNeeded()
       }
 
       if (shouldBroadcast) {

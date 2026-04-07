@@ -116,8 +116,10 @@ export const useNotes = () => {
   })
 
   // ── CRUD ──────────────────────────────────────────────────────────────
-  const createNote = (title = 'Untitled Note', description = '') => {
-    const defaultContent = title === 'Welcome' ? `# Welcome to Numori!
+  // ── Welcome note detection ─────────────────────────────────────────────
+  // Hash of the default welcome note content, used to distinguish the
+  // auto-generated welcome note from user notes with the same title.
+  const WELCOME_CONTENT = `# Welcome to Numori!
 
 Write naturally. Results appear on the right.
 
@@ -192,7 +194,31 @@ Discounted: prev - 10%
 
 // Lines starting with // are comments
 // Lines starting with # are headers
-// Explore Templates for more ideas!` : ''
+// Explore Templates for more ideas!`
+
+  /** Check if a note is the unmodified auto-generated welcome note. */
+  const isWelcomeNote = (note) => {
+    return note.title === 'Welcome'
+      && note.description === 'Notes with calculator features'
+      && note.content === WELCOME_CONTENT
+  }
+
+  /**
+   * Remove the auto-generated welcome note if the server indicates
+   * the user has already seen (and presumably deleted) it before.
+   * Only removes notes whose content exactly matches the default — never
+   * touches user notes that happen to be named "Welcome".
+   */
+  const removeWelcomeNoteIfNeeded = async () => {
+    const welcome = notes.value.find(isWelcomeNote)
+    if (!welcome) return
+    const idx = notes.value.indexOf(welcome)
+    if (idx !== -1) notes.value.splice(idx, 1)
+    await db.notes.delete(welcome.id)
+  }
+
+  const createNote = (title = 'Untitled Note', description = '') => {
+    const defaultContent = title === 'Welcome' ? WELCOME_CONTENT : ''
 
     return {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -344,6 +370,7 @@ Discounted: prev - 10%
     archiveNote,
     unarchiveNote,
     bulkArchive,
-    bulkUnarchive
+    bulkUnarchive,
+    removeWelcomeNoteIfNeeded
   }
 }
