@@ -164,7 +164,7 @@
 
     <!-- Notes List -->
     <div class="flex-1 overflow-y-auto" ref="listRef"
-      @dragover.prevent
+      @dragover.prevent="onDragOverList"
       @drop.prevent="onDrop">
       <div v-if="sidebarItems.length === 0" class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
         {{ showArchive ? 'No archived notes' : 'No notes found' }}
@@ -179,11 +179,10 @@
         <div v-if="item.kind === 'group'"
           :data-item-id="item.id"
           :data-kind="'group'"
-          :draggable="canReorder"
+          :draggable="canReorder && !isTouchDevice"
           @dragstart="onDragStart($event, item.id, 'group')"
-          @dragover.prevent="onDragOverItem($event, item.id, 'group')"
           @dragend="onDragEnd"
-          @touchstart="onTouchStart($event, item.id, 'group')"
+          @touchstart.passive="onTouchStart($event, item.id, 'group')"
           class="relative"
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
           v-show="!isDraggedItem(item.id)">
@@ -201,11 +200,10 @@
           :data-item-id="item.id"
           :data-kind="'note'"
           :data-group="item.parentGroupId"
-          :draggable="canReorder"
+          :draggable="canReorder && !isTouchDevice"
           @dragstart="onDragStart($event, item.id, 'note')"
-          @dragover.prevent="onDragOverItem($event, item.id, 'note')"
           @dragend="onDragEnd"
-          @touchstart="onTouchStart($event, item.id, 'note')"
+          @touchstart.passive="onTouchStart($event, item.id, 'note')"
           class="relative pl-4 border-l-2 border-l-primary-200 dark:border-l-primary-800/50"
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
           v-show="!isDraggedItem(item.id)">
@@ -244,11 +242,10 @@
         <div v-else
           :data-item-id="item.id"
           :data-kind="'note'"
-          :draggable="canReorder"
+          :draggable="canReorder && !isTouchDevice"
           @dragstart="onDragStart($event, item.id, 'note')"
-          @dragover.prevent="onDragOverItem($event, item.id, 'note')"
           @dragend="onDragEnd"
-          @touchstart="onTouchStart($event, item.id, 'note')"
+          @touchstart.passive="onTouchStart($event, item.id, 'note')"
           class="relative"
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
           v-show="!isDraggedItem(item.id)">
@@ -281,10 +278,7 @@
       <!-- ── Bottom gap + drop zone ── -->
       <div class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20 mx-1.5"
         :style="gapStyle(displayItems.length)" />
-      <div v-if="draggingId"
-        class="min-h-[60px]"
-        @dragover.prevent="onDragOverBottom"
-        @drop.prevent="onDrop" />
+      <div v-if="draggingId" class="min-h-[60px]" />
     </div>
 
     <!-- User Account Section -->
@@ -544,8 +538,8 @@ const dropInsertIndex = computed(() => {
 
 const GAP_PX = 52
 
-const isDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && !touchDragActive && hasDragMoved.value
-const isTouchDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && touchDragActive && hasDragMoved.value
+const isDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && !touchDragActive.value && hasDragMoved.value
+const isTouchDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && touchDragActive.value && hasDragMoved.value
 
 /**
  * Returns inline style for the gap indicator's height.
@@ -617,39 +611,10 @@ const onDragStart = (e, id, type) => {
   })
 }
 
-const onDragOverItem = (e, targetId, targetType) => {
-  if (draggingId.value === null || draggingId.value === targetId) {
-    dropTarget.value = null
-    clearHoverExpand()
-    return
-  }
-
+const onDragOverList = (e) => {
+  if (draggingId.value === null) return
   hasDragMoved.value = true
-
-  const rect = e.currentTarget.getBoundingClientRect()
-  const y = e.clientY - rect.top
-  const h = rect.height
-
-  if (draggingType.value === 'note' && targetType === 'group') {
-    if (y < h * GROUP_DROP_THRESHOLD) {
-      dropTarget.value = { id: targetId, type: targetType, position: 'before' }
-      clearHoverExpand()
-    } else if (y > h * (1 - GROUP_DROP_THRESHOLD)) {
-      dropTarget.value = { id: targetId, type: targetType, position: 'after' }
-      clearHoverExpand()
-    } else {
-      dropTarget.value = { id: targetId, type: targetType, position: 'inside' }
-      // Auto-expand collapsed group on hover
-      startHoverExpand(targetId)
-    }
-  } else {
-    dropTarget.value = {
-      id: targetId,
-      type: targetType,
-      position: y < h / 2 ? 'before' : 'after'
-    }
-    clearHoverExpand()
-  }
+  updateDropTarget(e.clientY)
 }
 
 const onDragEnd = () => {
@@ -671,127 +636,155 @@ const onDrop = () => {
   commitReorder()
 }
 
-const onDragOverBottom = (e) => {
-  if (draggingId.value === null) return
-  hasDragMoved.value = true
-  // Special target: after everything, at top level (not inside any group)
-  dropTarget.value = { id: '__bottom__', type: 'bottom', position: 'after' }
-}
+
 
 // -- Touch --
 
-let touchDragActive = false
+const touchDragActive = ref(false)
 let touchHoldTimer = null
 let touchCloneEl = null
-const TOUCH_HOLD_MS = 300
+const TOUCH_HOLD_MS = 400
+const TOUCH_MOVE_THRESHOLD = 8
+
+// Detect touch device — used to disable draggable attr which breaks touch
+const isTouchDevice = ref(false)
+if (typeof window !== 'undefined') {
+  isTouchDevice.value = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+}
 
 const createTouchClone = (el) => {
   const clone = el.cloneNode(true)
   const rect = el.getBoundingClientRect()
-  clone.style.position = 'fixed'
-  clone.style.left = '8px'
-  clone.style.width = (rect.width - 16) + 'px'
-  clone.style.opacity = '0.9'
-  clone.style.borderRadius = '8px'
-  clone.style.boxShadow = '0 12px 32px rgba(0,0,0,0.22)'
-  clone.style.pointerEvents = 'none'
-  clone.style.zIndex = '9999'
-  clone.style.transform = 'scale(1.02)'
-  clone.style.transition = 'top 0.03s linear'
+  clone.style.cssText = `
+    position: fixed; left: 8px; width: ${rect.width - 16}px;
+    opacity: 0.9; border-radius: 8px; pointer-events: none; z-index: 9999;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.22); transform: scale(1.02);
+  `
   document.body.appendChild(clone)
   return clone
+}
+
+const cleanupTouchDrag = () => {
+  clearTimeout(touchHoldTimer)
+  touchHoldTimer = null
+  if (touchCloneEl) { touchCloneEl.remove(); touchCloneEl = null }
+  touchDragActive.value = false
 }
 
 const onTouchStart = (e, id, type) => {
   if (!canReorder.value) return
 
   const el = e.currentTarget
+  const t0 = e.touches[0]
+  const startX = t0.clientX
+  const startY = t0.clientY
+  let phase = 'waiting' // 'waiting' → 'dragging' | 'cancelled'
 
+  // Prevent context menu during long press
+  const onContextMenu = (ev) => ev.preventDefault()
+  el.addEventListener('contextmenu', onContextMenu)
+
+  const cancelHold = () => {
+    if (phase === 'cancelled') return
+    phase = 'cancelled'
+    clearTimeout(touchHoldTimer)
+    cleanup()
+  }
+
+  const cleanup = () => {
+    el.removeEventListener('contextmenu', onContextMenu)
+    document.removeEventListener('touchmove', onWaitingMove)
+    document.removeEventListener('touchend', onWaitingEnd)
+    document.removeEventListener('touchcancel', onWaitingEnd)
+  }
+
+  // Phase 1: waiting for hold timer. If finger moves too much, cancel.
+  const onWaitingMove = (ev) => {
+    const t = ev.touches[0]
+    if (Math.abs(t.clientX - startX) > TOUCH_MOVE_THRESHOLD ||
+        Math.abs(t.clientY - startY) > TOUCH_MOVE_THRESHOLD) {
+      cancelHold()
+    }
+  }
+
+  const onWaitingEnd = () => { cancelHold() }
+
+  document.addEventListener('touchmove', onWaitingMove, { passive: true })
+  document.addEventListener('touchend', onWaitingEnd)
+  document.addEventListener('touchcancel', onWaitingEnd)
+
+  // Phase 2: hold timer fires → enter drag mode
   touchHoldTimer = setTimeout(() => {
-    touchDragActive = true
+    if (phase !== 'waiting') return
+    phase = 'dragging'
+
+    // Remove waiting-phase listeners
+    document.removeEventListener('touchmove', onWaitingMove)
+    document.removeEventListener('touchend', onWaitingEnd)
+    document.removeEventListener('touchcancel', onWaitingEnd)
+
+    // Activate drag state
+    touchDragActive.value = true
     draggingId.value = id
     draggingType.value = type
     dragExpandedGroupIds.value = new Set()
 
+    // Haptic feedback
+    try { window.navigator?.vibrate?.(30) } catch (_) {}
+
     // Create floating clone
     touchCloneEl = createTouchClone(el)
-    const touch = e.touches[0]
-    touchCloneEl.style.top = (touch.clientY - 26) + 'px'
+    touchCloneEl.style.top = (startY - 26) + 'px'
 
-    const onTouchMove = (ev) => {
-      if (!touchDragActive) return
-      ev.preventDefault()
+    // Phase 2 listeners: drag move + end
+    const onDragMove = (ev) => {
+      ev.preventDefault() // prevent scroll while dragging
       const touch = ev.touches[0]
 
-      // Move the floating clone
       if (touchCloneEl) {
         touchCloneEl.style.top = (touch.clientY - 26) + 'px'
       }
 
-      const hit = getItemAtY(touch.clientY)
-      if (hit && hit.id !== draggingId.value) {
-        hasDragMoved.value = true
-        if (draggingType.value === 'note' && hit.type === 'group') {
-          const hy = touch.clientY - hit.rect.top
-          const hh = hit.rect.height
-          if (hy < hh * GROUP_DROP_THRESHOLD) {
-            dropTarget.value = { id: hit.id, type: hit.type, position: 'before' }
-            clearHoverExpand()
-          } else if (hy > hh * (1 - GROUP_DROP_THRESHOLD)) {
-            dropTarget.value = { id: hit.id, type: hit.type, position: 'after' }
-            clearHoverExpand()
-          } else {
-            dropTarget.value = { id: hit.id, type: hit.type, position: 'inside' }
-            startHoverExpand(hit.id)
-          }
-        } else {
-          dropTarget.value = { id: hit.id, type: hit.type, position: hit.position }
-          clearHoverExpand()
+      // Auto-scroll near edges (scrollTop works even with overflow:hidden via JS)
+      if (listRef.value) {
+        const listRect = listRef.value.getBoundingClientRect()
+        const SCROLL_ZONE = 50
+        const SCROLL_SPEED = 6
+        if (touch.clientY < listRect.top + SCROLL_ZONE) {
+          listRef.value.scrollTop = Math.max(0, listRef.value.scrollTop - SCROLL_SPEED)
+        } else if (touch.clientY > listRect.bottom - SCROLL_ZONE) {
+          listRef.value.scrollTop += SCROLL_SPEED
         }
-      } else if (!hit && listRef.value) {
-        hasDragMoved.value = true
-        // Below all items → drop at top level after everything
-        dropTarget.value = { id: '__bottom__', type: 'bottom', position: 'after' }
-        clearHoverExpand()
-      } else {
-        dropTarget.value = null
-        clearHoverExpand()
       }
+
+      hasDragMoved.value = true
+      updateDropTarget(touch.clientY)
     }
 
-    const onTouchEnd = () => {
-      document.removeEventListener('touchmove', onTouchMove)
-      document.removeEventListener('touchend', onTouchEnd)
-      document.removeEventListener('touchcancel', onTouchEnd)
-      touchDragActive = false
+    const onDragEnd = () => {
+      document.removeEventListener('touchmove', onDragMove)
+      document.removeEventListener('touchend', onDragEnd)
+      document.removeEventListener('touchcancel', onDragEnd)
+      el.removeEventListener('contextmenu', onContextMenu)
       clearHoverExpand()
-      if (touchCloneEl) { touchCloneEl.remove(); touchCloneEl = null }
+      cleanupTouchDrag()
       commitReorder()
     }
 
-    document.addEventListener('touchmove', onTouchMove, { passive: false })
-    document.addEventListener('touchend', onTouchEnd)
-    document.addEventListener('touchcancel', onTouchEnd)
+    document.addEventListener('touchmove', onDragMove, { passive: false })
+    document.addEventListener('touchend', onDragEnd)
+    document.addEventListener('touchcancel', onDragEnd)
   }, TOUCH_HOLD_MS)
-
-  const onEarlyMove = () => {
-    clearTimeout(touchHoldTimer)
-    e.target.removeEventListener('touchmove', onEarlyMove)
-  }
-  e.target.addEventListener('touchmove', onEarlyMove, { once: true, passive: true })
-
-  const onEarlyEnd = () => {
-    clearTimeout(touchHoldTimer)
-    e.target.removeEventListener('touchend', onEarlyEnd)
-    e.target.removeEventListener('touchmove', onEarlyMove)
-  }
-  e.target.addEventListener('touchend', onEarlyEnd, { once: true })
 }
 
 const getItemAtY = (y) => {
   if (!listRef.value) return null
   const items = listRef.value.querySelectorAll('[data-item-id]')
+  let closest = null
+  let closestDist = Infinity
   for (const item of items) {
+    // Skip hidden items (the dragged item is v-show=false or opacity-30)
+    if (item.style.display === 'none') continue
     const rect = item.getBoundingClientRect()
     if (y >= rect.top && y <= rect.bottom) {
       const kind = item.dataset.kind
@@ -802,8 +795,63 @@ const getItemAtY = (y) => {
         rect
       }
     }
+    // Track closest item for when cursor is in the gap
+    const distTop = Math.abs(y - rect.top)
+    const distBottom = Math.abs(y - rect.bottom)
+    const dist = Math.min(distTop, distBottom)
+    if (dist < closestDist) {
+      closestDist = dist
+      closest = { item, rect, distTop, distBottom }
+    }
+  }
+  // Cursor is in a gap between items — snap to the nearest edge
+  if (closest && closestDist < 60) {
+    const kind = closest.item.dataset.kind
+    return {
+      id: closest.item.dataset.itemId,
+      type: kind === 'group' ? 'group' : 'note',
+      position: closest.distTop < closest.distBottom ? 'before' : 'after',
+      rect: closest.rect
+    }
   }
   return null
+}
+
+/**
+ * Shared drop-target update used by both mouse drag and touch drag.
+ * Uses coordinate-based hit testing so the animated gap doesn't cause feedback loops.
+ */
+const updateDropTarget = (clientY) => {
+  const hit = getItemAtY(clientY)
+
+  if (hit && hit.id !== draggingId.value) {
+    if (draggingType.value === 'note' && hit.type === 'group') {
+      const hy = clientY - hit.rect.top
+      const hh = hit.rect.height
+      if (hy < hh * GROUP_DROP_THRESHOLD) {
+        dropTarget.value = { id: hit.id, type: hit.type, position: 'before' }
+        clearHoverExpand()
+      } else if (hy > hh * (1 - GROUP_DROP_THRESHOLD)) {
+        dropTarget.value = { id: hit.id, type: hit.type, position: 'after' }
+        clearHoverExpand()
+      } else {
+        dropTarget.value = { id: hit.id, type: hit.type, position: 'inside' }
+        startHoverExpand(hit.id)
+      }
+    } else {
+      dropTarget.value = { id: hit.id, type: hit.type, position: hit.position }
+      clearHoverExpand()
+    }
+  } else if (!hit && listRef.value) {
+    // Below all items → drop at top level after everything
+    dropTarget.value = { id: '__bottom__', type: 'bottom', position: 'after' }
+    clearHoverExpand()
+  } else if (hit && hit.id === draggingId.value) {
+    // Over the dragged item itself — keep current target, don't clear
+  } else {
+    dropTarget.value = null
+    clearHoverExpand()
+  }
 }
 
 // -- Commit --
