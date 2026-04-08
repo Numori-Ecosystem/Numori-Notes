@@ -200,8 +200,7 @@ npm run dev                 # http://localhost:3000
 │   │   ├── apple-app-site-association  # iOS Universal Links verification
 │   │   └── assetlinks.json             # Android App Links verification
 │   ├── favicon.ico
-│   ├── icon-192x192.svg
-│   ├── icon-512x512.svg
+│   ├── favicon.svg
 │   ├── manifest.webmanifest
 │   ├── robots.txt
 │   └── sw.js                      # Service worker for PWA
