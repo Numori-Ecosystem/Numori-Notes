@@ -118,21 +118,28 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
         await db.notes.bulkDelete(data.deletedClientIds)
       }
 
+      // Rule 5: If the server says the welcome note was already seen/deleted,
+      // remove the local auto-generated one BEFORE the merge loop (prevents flash).
+      // Track its ID so we can tell the server to delete it too.
+      let removedWelcomeNoteId = null
+      if (data.welcomeCreated && removeWelcomeNoteIfNeeded) {
+        // Find the unmodified welcome note before removing it
+        const welcomeNote = notes.value.find(n =>
+          n.title === 'Welcome'
+          && n.description === 'Notes with calculator features'
+        )
+        if (welcomeNote) {
+          removedWelcomeNoteId = welcomeNote.id
+        }
+        await removeWelcomeNoteIfNeeded()
+      }
+
       for (const remote of data.pulled) {
         const localId = remote.clientId || remote.id.toString()
         const decrypted = await decryptNote(remote, key)
 
-        // Skip the auto-generated welcome note if the server says it was
-        // already created — prevents it from flashing in the list
-        if (data.welcomeCreated && removeWelcomeNoteIfNeeded) {
-          const isWelcome = decrypted.title === 'Welcome'
-            && decrypted.description === 'Notes with calculator features'
-          if (isWelcome && !notes.value.find(n => n.id === localId)) {
-            // This is a welcome note from the server that doesn't exist locally
-            // — the user already deleted it. Don't re-add it.
-            continue
-          }
-        }
+        // Skip re-adding the welcome note we just removed
+        if (removedWelcomeNoteId && localId === removedWelcomeNoteId) continue
 
         const existing = notes.value.find(n => n.id === localId)
         if (existing) {
@@ -171,6 +178,13 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
       lastSyncedAt.value = data.syncedAt
       await db.appState.put({ key: 'last_synced_at', value: data.syncedAt })
       await saveNotes()
+
+      // If we removed a welcome note, add its ID to deletedIds so the server
+      // cleans it up on the next sync. This runs AFTER clearDeletedIds.
+      if (removedWelcomeNoteId) {
+        deletedIds.value.push(removedWelcomeNoteId)
+        await db.appState.put({ key: 'deleted_note_ids', value: JSON.stringify(deletedIds.value) })
+      }
 
       // Sync groups if available
       if (groups && saveGroups) {

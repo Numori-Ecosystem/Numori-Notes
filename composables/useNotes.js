@@ -68,13 +68,11 @@ export const useNotes = () => {
       try { deletedIds.value = JSON.parse(row.value) } catch { deletedIds.value = [] }
     }
 
-    // Create a default note only if none exist, user has never synced,
-    // AND the welcome note hasn't been created before.
-    const syncRow = await db.appState.get('last_synced_at')
-    const hasSynced = !!syncRow?.value
+    // Rule 1: Create welcome note only on first-ever app open while NOT logged in.
+    // The flag persists across sessions so it's only created once per device.
     const welcomeRow = await db.appState.get('welcome_note_created')
     const welcomeAlreadyCreated = !!welcomeRow?.value
-    if (notes.value.length === 0 && !hasSynced && !welcomeAlreadyCreated) {
+    if (notes.value.length === 0 && !welcomeAlreadyCreated) {
       const defaultNote = createNote('Welcome', 'Notes with calculator features')
       await db.notes.put(defaultNote)
       notes.value = [defaultNote]
@@ -205,16 +203,19 @@ Discounted: prev - 10%
   }
 
   /**
-   * Remove the auto-generated welcome note if the server indicates
-   * the user has already seen (and presumably deleted) it before.
-   * Only removes notes whose content exactly matches the default — never
-   * touches user notes that happen to be named "Welcome".
+   * Remove the auto-generated welcome note if it exists and is unmodified.
+   * Matched by exact content hash (title + description + full content body).
+   * Adds the note to deletedIds so it gets cleaned up from the server on next sync.
    */
   const removeWelcomeNoteIfNeeded = async () => {
     const welcome = notes.value.find(isWelcomeNote)
     if (!welcome) return
     const idx = notes.value.indexOf(welcome)
     if (idx !== -1) notes.value.splice(idx, 1)
+    if (!deletedIds.value.includes(welcome.id)) {
+      deletedIds.value.push(welcome.id)
+      await db.appState.put({ key: 'deleted_note_ids', value: JSON.stringify(deletedIds.value) })
+    }
     await db.notes.delete(welcome.id)
   }
 

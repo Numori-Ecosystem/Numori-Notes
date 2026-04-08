@@ -392,7 +392,7 @@ _onDataWipe = async () => {
   groups.value = []
   await db.notes.clear()
   await db.groups.clear()
-  await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at', 'welcome_note_created'])
+  await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at'])
   lastSyncedAt.value = null
   await auth.refreshUser()
 }
@@ -412,7 +412,7 @@ _onSessionRevoked = async () => {
   // Then clean up IndexedDB (async)
   await db.notes.clear()
   await db.groups.clear()
-  await db.appState.bulkDelete(['auth_token', 'enc_key', 'deleted_note_ids', 'last_synced_at', 'welcome_note_created'])
+  await db.appState.bulkDelete(['auth_token', 'enc_key', 'deleted_note_ids', 'last_synced_at'])
 }
 const sw = useServiceWorker()
 
@@ -631,7 +631,7 @@ watch(() => auth.isLoggedIn.value, async (loggedIn, wasLoggedIn) => {
       groups.value = []
       await db.notes.clear()
       await db.groups.clear()
-      await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at', 'welcome_note_created'])
+      await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at'])
       lastSyncedAt.value = null
     }
   }
@@ -794,7 +794,7 @@ const handleDeleteData = async (password) => {
     await auth.requestDeletion('data', password)
     await db.notes.clear()
     await db.groups.clear()
-    await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at', 'welcome_note_created'])
+    await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at'])
     lastSyncedAt.value = null
     await auth.refreshUser()
   } catch (err) {
