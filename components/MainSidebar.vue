@@ -220,7 +220,9 @@
           @dragstart="onDragStart($event, group.id, 'group')"
           @dragover.prevent="onDragOverItem($event, group.id, 'group')"
           @dragend="onDragEnd"
-          class="relative">
+          @touchstart="onTouchStart($event, group.id, 'group')"
+          class="relative"
+          :class="{ 'opacity-50': draggingId === group.id }">
           <GroupListItem
             :group="group"
             :note-count="getGroupNotes(group.id).length"
@@ -395,7 +397,7 @@ const emit = defineEmits([
   'duplicate-note', 'export-note', 'copy-to-clipboard', 'print-note',
   'archive-note', 'unarchive-note', 'bulk-archive', 'bulk-unarchive',
   'add-to-group', 'toggle-group-collapse', 'edit-group', 'delete-group',
-  'move-note-to-group'
+  'move-note-to-group', 'reorder-groups'
 ])
 
 const searchQuery = ref('')
@@ -614,28 +616,53 @@ const commitReorder = () => {
   if (draggingId.value !== null && dropTarget.value !== null) {
     const dt = dropTarget.value
 
-    // Note dropped inside a group
-    if (draggingType.value === 'note' && dt.type === 'group' && dt.position === 'inside') {
-      emit('move-note-to-group', { noteId: draggingId.value, groupId: dt.id })
+    if (draggingType.value === 'note') {
+      // ── Note dropped inside a group header → move into that group
+      if (dt.type === 'group' && dt.position === 'inside') {
+        emit('move-note-to-group', { noteId: draggingId.value, groupId: dt.id })
+      }
+      // ── Note dropped on a group header (before/after) → remove from group + reorder
+      else if (dt.type === 'group' && (dt.position === 'before' || dt.position === 'after')) {
+        // Dragging a note to the before/after zone of a group header means
+        // the user wants the note ungrouped and placed at that position
+        const draggedNote = filteredNotes.value.find(n => n.id === draggingId.value)
+        if (draggedNote?.groupId) {
+          emit('move-note-to-group', { noteId: draggingId.value, groupId: null })
+        }
+      }
+      // ── Note dropped on another note → reorder + adopt target's group
+      else if (dt.type === 'note') {
+        const ordered = [...filteredNotes.value]
+        const fromIdx = ordered.findIndex(n => n.id === draggingId.value)
+        const toIdx = ordered.findIndex(n => n.id === dt.id)
+        if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+          const [moved] = ordered.splice(fromIdx, 1)
+          let insertAt = ordered.findIndex(n => n.id === dt.id)
+          if (dt.position === 'after') insertAt++
+          ordered.splice(insertAt, 0, moved)
+
+          // Adopt the target note's group (including null = ungrouped)
+          const targetNote = filteredNotes.value.find(n => n.id === dt.id)
+          const targetGroupId = targetNote?.groupId || null
+          if (targetGroupId !== moved.groupId) {
+            emit('move-note-to-group', { noteId: draggingId.value, groupId: targetGroupId })
+          }
+
+          emit('reorder', ordered.map(n => n.id))
+        }
+      }
     }
-    // Note dropped on another note (reorder)
-    else if (draggingType.value === 'note' && dt.type === 'note') {
-      const ordered = [...filteredNotes.value]
-      const fromIdx = ordered.findIndex(n => n.id === draggingId.value)
-      const toIdx = ordered.findIndex(n => n.id === dt.id)
+    // ── Group dropped on another group → reorder groups
+    else if (draggingType.value === 'group' && dt.type === 'group') {
+      const ordered = [...props.groups]
+      const fromIdx = ordered.findIndex(g => g.id === draggingId.value)
+      const toIdx = ordered.findIndex(g => g.id === dt.id)
       if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
         const [moved] = ordered.splice(fromIdx, 1)
-        let insertAt = ordered.findIndex(n => n.id === dt.id)
+        let insertAt = ordered.findIndex(g => g.id === dt.id)
         if (dt.position === 'after') insertAt++
         ordered.splice(insertAt, 0, moved)
-
-        // If the target note is in a group, move the dragged note to that group
-        const targetNote = filteredNotes.value.find(n => n.id === dt.id)
-        if (targetNote?.groupId && targetNote.groupId !== moved.groupId) {
-          emit('move-note-to-group', { noteId: draggingId.value, groupId: targetNote.groupId })
-        }
-
-        emit('reorder', ordered.map(n => n.id))
+        emit('reorder-groups', ordered.map(g => g.id))
       }
     }
   }

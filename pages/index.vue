@@ -82,7 +82,8 @@
             @toggle-group-collapse="handleToggleGroupCollapse"
             @edit-group="handleEditGroup"
             @delete-group="handleDeleteGroup"
-            @move-note-to-group="handleMoveNoteToGroup" />
+            @move-note-to-group="handleMoveNoteToGroup"
+            @reorder-groups="handleReorderGroups" />
         </div>
         </aside>
 
@@ -138,7 +139,8 @@
               @toggle-group-collapse="handleToggleGroupCollapse"
               @edit-group="handleEditGroup"
               @delete-group="handleDeleteGroup"
-              @move-note-to-group="handleMoveNoteToGroup" />
+              @move-note-to-group="handleMoveNoteToGroup"
+              @reorder-groups="handleReorderGroups" />
             </div>
           </aside>
         </Transition>
@@ -354,7 +356,7 @@
 import db from '~/db.js'
 
 const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes, moveNotesToGroup, removeNotesFromGroup, archiveNote, unarchiveNote, bulkArchive, bulkUnarchive, removeWelcomeNoteIfNeeded } = useNotes()
-const { groups, addGroup, updateGroup, deleteGroup: deleteGroupFromDb, toggleGroupCollapsed, saveGroups } = useGroups()
+const { groups, addGroup, updateGroup, deleteGroup: deleteGroupFromDb, toggleGroupCollapsed, reorderGroups, saveGroups } = useGroups()
 const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
 const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()
@@ -1181,6 +1183,11 @@ const handleToggleGroupCollapse = (groupId) => {
 const handleMoveNoteToGroup = ({ noteId, groupId }) => {
   moveNotesToGroup([noteId], groupId)
   syncNow(noteId)
+}
+
+const handleReorderGroups = (orderedIds) => {
+  reorderGroups(orderedIds)
+  syncNow()
 }
 </script>
 
