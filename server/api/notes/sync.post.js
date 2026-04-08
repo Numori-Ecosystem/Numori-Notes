@@ -61,16 +61,15 @@ export default defineEventHandler(async (event) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       ON CONFLICT (user_id, client_id) WHERE client_id IS NOT NULL
       DO UPDATE SET
-        title = EXCLUDED.title,
-        description = EXCLUDED.description,
-        tags = EXCLUDED.tags,
-        content = EXCLUDED.content,
+        title = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.title ELSE notes.title END,
+        description = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.description ELSE notes.description END,
+        tags = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.tags ELSE notes.tags END,
+        content = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.content ELSE notes.content END,
         sort_order = EXCLUDED.sort_order,
-        archived = EXCLUDED.archived,
+        archived = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.archived ELSE notes.archived END,
         internal_name = EXCLUDED.internal_name,
         group_id = EXCLUDED.group_id,
-        updated_at = EXCLUDED.updated_at
-      WHERE EXCLUDED.updated_at >= notes.updated_at
+        updated_at = GREATEST(EXCLUDED.updated_at, notes.updated_at)
       RETURNING id, client_id, title, description, tags, content, sort_order, archived, internal_name, group_id, created_at, updated_at
     `, [
       auth.userId,

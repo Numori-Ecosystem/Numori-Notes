@@ -130,11 +130,13 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
             if (JSON.stringify(existing.tags) !== JSON.stringify(decrypted.tags)) existing.tags = decrypted.tags
             if (existing.content !== decrypted.content) existing.content = decrypted.content
             if (existing.archived !== (decrypted.archived ?? false)) existing.archived = decrypted.archived ?? false
-            if (existing.internalName !== (decrypted.internalName || '')) existing.internalName = decrypted.internalName || ''
-            if (existing.groupId !== (decrypted.groupId || null)) existing.groupId = decrypted.groupId || null
             existing.updatedAt = decrypted.updatedAt
           }
+          // Always sync structural/metadata fields regardless of timestamp
           existing.sortOrder = decrypted.sortOrder ?? existing.sortOrder
+          if (existing.internalName !== (decrypted.internalName || '')) existing.internalName = decrypted.internalName || ''
+          const remoteGroupId = decrypted.groupId || null
+          if (existing.groupId !== remoteGroupId) existing.groupId = remoteGroupId
         } else {
           notes.value.push({
             id: localId,

@@ -17,9 +17,6 @@
         <span class="text-sm font-medium text-gray-800 dark:text-gray-300 truncate block">
           {{ group.name }}
         </span>
-        <span class="text-[10px] text-gray-400 dark:text-gray-500 font-mono truncate block">
-          {{ group.internalName }}
-        </span>
       </div>
       <span class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
         {{ noteCount }}

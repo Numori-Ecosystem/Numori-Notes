@@ -44,9 +44,6 @@
           </h3>
 
         </div>
-        <p v-if="note.internalName" class="text-[10px] text-gray-400 dark:text-gray-500 font-mono truncate">
-          {{ note.internalName }}
-        </p>
         <p v-if="note.description" class="text-sm text-gray-600 dark:text-gray-500 truncate mt-1">
           {{ note.description }}
         </p>
