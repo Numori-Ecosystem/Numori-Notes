@@ -550,9 +550,25 @@ const isTouchDraggedItem = (id) => draggingId.value !== null && draggingId.value
  * Returns inline style for the gap indicator's height.
  * The CSS transition on the indicator handles the animation.
  */
+/**
+ * Whether the current drop gap is inside a group (for indentation).
+ */
+const isGapInsideGroup = computed(() => {
+  const idx = dropInsertIndex.value
+  if (idx === -1) return false
+  // Check the item AT the insert index — if it's a grouped-note, we're inserting before it (inside its group)
+  const itemAt = displayItems.value[idx]
+  if (itemAt?.kind === 'grouped-note') return true
+  // Check the item BEFORE — if it's a grouped-note or group-empty, we're inserting after it (still inside)
+  const itemBefore = idx > 0 ? displayItems.value[idx - 1] : null
+  if (itemBefore?.kind === 'grouped-note' || itemBefore?.kind === 'group-empty') return true
+  return false
+})
+
 const gapStyle = (idx) => {
   if (dropInsertIndex.value === idx) {
-    return 'height: 48px; margin-top: 2px; margin-bottom: 2px; border-width: 2px;'
+    const ml = isGapInsideGroup.value ? 'margin-left: 22px;' : 'margin-left: 6px;'
+    return `height: 48px; margin-top: 2px; margin-bottom: 2px; border-width: 2px; ${ml}`
   }
   return 'height: 0px; margin-top: 0px; margin-bottom: 0px; border-width: 0px;'
 }
@@ -1040,5 +1056,6 @@ const filteredNotes = computed(() => {
 <style scoped>
 .drag-gap-el {
   transition: height 0.15s ease-out, margin 0.15s ease-out, border-width 0.15s ease-out;
+  margin-right: 6px;
 }
 </style>
