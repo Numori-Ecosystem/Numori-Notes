@@ -36,12 +36,11 @@ export default defineEventHandler(async (event) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       ON CONFLICT (user_id, client_id) WHERE client_id IS NOT NULL
       DO UPDATE SET
-        name = EXCLUDED.name,
-        internal_name = EXCLUDED.internal_name,
-        sort_order = EXCLUDED.sort_order,
-        collapsed = EXCLUDED.collapsed,
-        updated_at = EXCLUDED.updated_at
-      WHERE EXCLUDED.updated_at >= groups.updated_at
+        name = CASE WHEN EXCLUDED.updated_at >= groups.updated_at THEN EXCLUDED.name ELSE groups.name END,
+        internal_name = CASE WHEN EXCLUDED.updated_at >= groups.updated_at THEN EXCLUDED.internal_name ELSE groups.internal_name END,
+        sort_order = CASE WHEN EXCLUDED.updated_at >= groups.updated_at THEN EXCLUDED.sort_order ELSE groups.sort_order END,
+        collapsed = CASE WHEN EXCLUDED.updated_at >= groups.updated_at THEN EXCLUDED.collapsed ELSE groups.collapsed END,
+        updated_at = GREATEST(EXCLUDED.updated_at, groups.updated_at)
       RETURNING id, client_id, name, internal_name, sort_order, collapsed, created_at, updated_at
     `, [
       auth.userId,

@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
         description = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.description ELSE notes.description END,
         tags = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.tags ELSE notes.tags END,
         content = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.content ELSE notes.content END,
-        sort_order = EXCLUDED.sort_order,
+        sort_order = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.sort_order ELSE notes.sort_order END,
         archived = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.archived ELSE notes.archived END,
         internal_name = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.internal_name ELSE notes.internal_name END,
         group_id = CASE WHEN EXCLUDED.updated_at >= notes.updated_at THEN EXCLUDED.group_id ELSE notes.group_id END,
