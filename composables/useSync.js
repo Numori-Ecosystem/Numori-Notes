@@ -122,6 +122,18 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
         const localId = remote.clientId || remote.id.toString()
         const decrypted = await decryptNote(remote, key)
 
+        // Skip the auto-generated welcome note if the server says it was
+        // already created — prevents it from flashing in the list
+        if (data.welcomeCreated && removeWelcomeNoteIfNeeded) {
+          const isWelcome = decrypted.title === 'Welcome'
+            && decrypted.description === 'Notes with calculator features'
+          if (isWelcome && !notes.value.find(n => n.id === localId)) {
+            // This is a welcome note from the server that doesn't exist locally
+            // — the user already deleted it. Don't re-add it.
+            continue
+          }
+        }
+
         const existing = notes.value.find(n => n.id === localId)
         if (existing) {
           if (new Date(decrypted.updatedAt) > new Date(existing.updatedAt)) {
@@ -217,10 +229,6 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
       // Persist welcome flag from server so a new device won't re-create it
       if (data.welcomeCreated) {
         await db.appState.put({ key: 'welcome_note_created', value: '1' })
-        // If we just auto-created a welcome note but the server says the user
-        // already had one (and presumably deleted it), remove the auto-created one.
-        // Only removes notes with exact default content — never user-modified notes.
-        if (removeWelcomeNoteIfNeeded) await removeWelcomeNoteIfNeeded()
       }
 
       if (shouldBroadcast) {

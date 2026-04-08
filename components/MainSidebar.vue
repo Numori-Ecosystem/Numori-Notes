@@ -171,9 +171,9 @@
       </div>
 
       <template v-for="(item, idx) in displayItems" :key="item.id">
-        <!-- ── Gap spacer at drop position ── -->
-        <div v-if="dropInsertIndex === idx && dropInsertIndex !== -1"
-          class="drag-gap bg-primary-100/40 dark:bg-primary-800/20 rounded mx-1 border border-dashed border-primary-300 dark:border-primary-700" />
+        <!-- ── Drop gap indicator ── -->
+        <div class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20"
+          :style="gapStyle(idx)" />
 
         <!-- ── Group header ── -->
         <div v-if="item.kind === 'group'"
@@ -185,7 +185,8 @@
           @dragend="onDragEnd"
           @touchstart="onTouchStart($event, item.id, 'group')"
           class="relative"
-          :class="isDraggedItem(item.id) ? 'drag-item-collapsed' : 'drag-item'">
+          :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
+          v-show="!isDraggedItem(item.id)">
           <GroupListItem
             :group="item.data"
             :note-count="getGroupNotes(item.id).length"
@@ -206,7 +207,8 @@
           @dragend="onDragEnd"
           @touchstart="onTouchStart($event, item.id, 'note')"
           class="relative pl-4 border-l-2 border-l-primary-200 dark:border-l-primary-800/50"
-          :class="isDraggedItem(item.id) ? 'drag-item-collapsed' : 'drag-item'">
+          :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
+          v-show="!isDraggedItem(item.id)">
           <NoteListItem
             :note="item.data" :active="item.data.id === currentNoteId"
             :select-mode="selectMode"
@@ -248,7 +250,8 @@
           @dragend="onDragEnd"
           @touchstart="onTouchStart($event, item.id, 'note')"
           class="relative"
-          :class="isDraggedItem(item.id) ? 'drag-item-collapsed' : 'drag-item'">
+          :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
+          v-show="!isDraggedItem(item.id)">
           <NoteListItem
             :note="item.data" :active="item.data.id === currentNoteId"
             :select-mode="selectMode"
@@ -275,9 +278,13 @@
         </div>
       </template>
 
-      <!-- ── Gap spacer at the very end ── -->
-      <div v-if="dropInsertIndex === displayItems.length && dropInsertIndex !== -1"
-        class="drag-gap bg-primary-100/40 dark:bg-primary-800/20 rounded mx-1 border border-dashed border-primary-300 dark:border-primary-700" />
+      <!-- ── Bottom gap + drop zone ── -->
+      <div class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20 mx-1.5"
+        :style="gapStyle(displayItems.length)" />
+      <div v-if="draggingId"
+        class="min-h-[60px]"
+        @dragover.prevent="onDragOverBottom"
+        @drop.prevent="onDrop" />
     </div>
 
     <!-- User Account Section -->
@@ -452,6 +459,7 @@ const clearFilters = () => {
 const draggingId = ref(null)
 const draggingType = ref(null) // 'note' | 'group'
 const dropTarget = ref(null)   // { id, type, position: 'before'|'after'|'inside' }
+const hasDragMoved = ref(false) // true once cursor moves to a different item
 
 const GROUP_DROP_THRESHOLD = 0.3
 
@@ -525,7 +533,7 @@ const displayItems = computed(() => {
 })
 
 const dropInsertIndex = computed(() => {
-  if (!dropTarget.value || !draggingId.value) return -1
+  if (!dropTarget.value || !draggingId.value || !hasDragMoved.value) return -1
   const dt = dropTarget.value
   if (dt.position === 'inside') return -1
   const targetIdx = displayItems.value.findIndex(i => i.id === dt.id)
@@ -535,7 +543,19 @@ const dropInsertIndex = computed(() => {
 
 const GAP_PX = 52
 
-const isDraggedItem = (id) => draggingId.value !== null && draggingId.value === id
+const isDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && !touchDragActive && hasDragMoved.value
+const isTouchDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && touchDragActive && hasDragMoved.value
+
+/**
+ * Returns inline style for the gap indicator's height.
+ * The CSS transition on the indicator handles the animation.
+ */
+const gapStyle = (idx) => {
+  if (dropInsertIndex.value === idx) {
+    return 'height: 48px; margin-top: 2px; margin-bottom: 2px; border-width: 2px;'
+  }
+  return 'height: 0px; margin-top: 0px; margin-bottom: 0px; border-width: 0px;'
+}
 
 // -- Custom drag image --
 
@@ -585,6 +605,8 @@ const onDragOverItem = (e, targetId, targetType) => {
     return
   }
 
+  hasDragMoved.value = true
+
   const rect = e.currentTarget.getBoundingClientRect()
   const y = e.clientY - rect.top
   const h = rect.height
@@ -612,11 +634,8 @@ const onDragOverItem = (e, targetId, targetType) => {
 }
 
 const onDragEnd = () => {
-  // Cleanup only — the actual commit happens in onDrop
-  // onDragEnd fires even if drop was cancelled (e.g. pressing Escape)
   clearHoverExpand()
   if (draggingId.value !== null) {
-    // If we get here without onDrop having fired, it means the drop was cancelled
     for (const gid of dragExpandedGroupIds.value) {
       emit('toggle-group-collapse', gid)
     }
@@ -624,6 +643,7 @@ const onDragEnd = () => {
     draggingType.value = null
     dropTarget.value = null
     dragExpandedGroupIds.value = new Set()
+    hasDragMoved.value = false
   }
 }
 
@@ -632,14 +652,43 @@ const onDrop = () => {
   commitReorder()
 }
 
+const onDragOverBottom = (e) => {
+  if (draggingId.value === null) return
+  // Treat as "after" the last item
+  const last = displayItems.value.filter(i => i.kind !== 'group-empty').at(-1)
+  if (last && last.id !== draggingId.value) {
+    dropTarget.value = { id: last.id, type: last.kind === 'group' ? 'group' : 'note', position: 'after' }
+  }
+}
+
 // -- Touch --
 
 let touchDragActive = false
 let touchHoldTimer = null
+let touchCloneEl = null
 const TOUCH_HOLD_MS = 300
+
+const createTouchClone = (el) => {
+  const clone = el.cloneNode(true)
+  const rect = el.getBoundingClientRect()
+  clone.style.position = 'fixed'
+  clone.style.left = '8px'
+  clone.style.width = (rect.width - 16) + 'px'
+  clone.style.opacity = '0.9'
+  clone.style.borderRadius = '8px'
+  clone.style.boxShadow = '0 12px 32px rgba(0,0,0,0.22)'
+  clone.style.pointerEvents = 'none'
+  clone.style.zIndex = '9999'
+  clone.style.transform = 'scale(1.02)'
+  clone.style.transition = 'top 0.03s linear'
+  document.body.appendChild(clone)
+  return clone
+}
 
 const onTouchStart = (e, id, type) => {
   if (!canReorder.value) return
+
+  const el = e.currentTarget
 
   touchHoldTimer = setTimeout(() => {
     touchDragActive = true
@@ -647,12 +696,24 @@ const onTouchStart = (e, id, type) => {
     draggingType.value = type
     dragExpandedGroupIds.value = new Set()
 
+    // Create floating clone
+    touchCloneEl = createTouchClone(el)
+    const touch = e.touches[0]
+    touchCloneEl.style.top = (touch.clientY - 26) + 'px'
+
     const onTouchMove = (ev) => {
       if (!touchDragActive) return
       ev.preventDefault()
       const touch = ev.touches[0]
+
+      // Move the floating clone
+      if (touchCloneEl) {
+        touchCloneEl.style.top = (touch.clientY - 26) + 'px'
+      }
+
       const hit = getItemAtY(touch.clientY)
       if (hit && hit.id !== draggingId.value) {
+        hasDragMoved.value = true
         if (draggingType.value === 'note' && hit.type === 'group') {
           const hy = touch.clientY - hit.rect.top
           const hh = hit.rect.height
@@ -670,6 +731,14 @@ const onTouchStart = (e, id, type) => {
           dropTarget.value = { id: hit.id, type: hit.type, position: hit.position }
           clearHoverExpand()
         }
+      } else if (!hit && listRef.value) {
+        hasDragMoved.value = true
+        // Below all items → treat as after last
+        const last = displayItems.value.filter(i => i.kind !== 'group-empty').at(-1)
+        if (last && last.id !== draggingId.value) {
+          dropTarget.value = { id: last.id, type: last.kind === 'group' ? 'group' : 'note', position: 'after' }
+        }
+        clearHoverExpand()
       } else {
         dropTarget.value = null
         clearHoverExpand()
@@ -682,6 +751,7 @@ const onTouchStart = (e, id, type) => {
       document.removeEventListener('touchcancel', onTouchEnd)
       touchDragActive = false
       clearHoverExpand()
+      if (touchCloneEl) { touchCloneEl.remove(); touchCloneEl = null }
       commitReorder()
     }
 
@@ -832,10 +902,15 @@ const commitReorder = () => {
     }
   }
 
-  draggingId.value = null
-  draggingType.value = null
-  dropTarget.value = null
-  dragExpandedGroupIds.value = new Set()
+  // Clear drag state after Vue has processed the reorder emits
+  // so the item reappears at its new position, not the old one
+  nextTick(() => {
+    draggingId.value = null
+    draggingType.value = null
+    dropTarget.value = null
+    dragExpandedGroupIds.value = new Set()
+    hasDragMoved.value = false
+  })
 }
 
 const emitUnifiedOrder = (topLevel) => {
@@ -963,32 +1038,7 @@ const filteredNotes = computed(() => {
 </script>
 
 <style scoped>
-/* Dragged item collapses out of flow */
-.drag-item {
-  max-height: 200px;
-  opacity: 1;
-  overflow: hidden;
-  transition: max-height 0.2s ease-out, opacity 0.15s ease-out;
-}
-.drag-item-collapsed {
-  max-height: 0 !important;
-  opacity: 0 !important;
-  overflow: hidden;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  border-width: 0 !important;
-  transition: max-height 0.2s ease-out, opacity 0.15s ease-out, padding 0.2s ease-out, margin 0.2s ease-out;
-}
-
-/* Gap spacer animates open */
-.drag-gap {
-  height: 52px;
-  animation: gap-open 0.2s ease-out;
-}
-@keyframes gap-open {
-  from { height: 0; opacity: 0; }
-  to   { height: 52px; opacity: 1; }
+.drag-gap-el {
+  transition: height 0.15s ease-out, margin 0.15s ease-out, border-width 0.15s ease-out;
 }
 </style>
