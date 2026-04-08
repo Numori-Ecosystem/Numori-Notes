@@ -39,96 +39,130 @@
               </Transition>
 
               <!-- ═══ Main section ═══ -->
-              <div v-if="activeSection === 'main'" class="space-y-4">
+              <div v-if="activeSection === 'main'" class="space-y-5">
 
-                <!-- Avatar + name card -->
-                <div class="flex flex-col items-center text-center py-2">
-                  <button @click="activeSection = 'avatar'" class="relative group mb-2" title="Change avatar">
-                    <div class="w-20 h-20 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700">
-                      <img v-if="user?.avatarUrl" :src="user.avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
-                      <Icon v-else name="mdi:account" class="w-10 h-10 text-primary-600 dark:text-primary-400" />
+                <!-- Profile card -->
+                <div class="relative rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-900/20 dark:to-primary-800/10 border border-primary-100 dark:border-primary-900/30 px-4 py-5">
+                  <div class="flex items-center gap-4">
+                    <button @click="activeSection = 'avatar'" class="relative group flex-shrink-0" title="Change avatar">
+                      <div class="w-16 h-16 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center overflow-hidden ring-2 ring-primary-200 dark:ring-primary-800 shadow-sm">
+                        <img v-if="user?.avatarUrl" :src="user.avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
+                        <Icon v-else name="mdi:account" class="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                      </div>
+                      <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Icon name="mdi:camera" class="w-4 h-4 text-white" />
+                      </div>
+                    </button>
+                    <div class="flex-1 min-w-0">
+                      <button @click="activeSection = 'edit'" class="flex items-center gap-1.5 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30 transition-colors" title="Edit profile">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ user?.name || 'No name set' }}</p>
+                        <Icon name="mdi:pencil-outline" class="w-3 h-3 text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                      </button>
+                      <button @click="activeSection = 'edit'" class="flex items-center gap-1.5 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30 transition-colors mt-0.5" title="Edit profile">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user?.email }}</p>
+                        <Icon name="mdi:pencil-outline" class="w-3 h-3 text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                      </button>
+                      <p class="text-[10px] text-gray-400 dark:text-gray-600 mt-1">
+                        Member since {{ user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—' }}
+                      </p>
                     </div>
-                    <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Icon name="mdi:camera" class="w-5 h-5 text-white" />
-                    </div>
-                  </button>
-                  <button @click="activeSection = 'edit'" class="inline-flex items-center gap-1 group" title="Edit profile">
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ user?.name || 'No name set' }}</p>
-                    <Icon name="mdi:pencil-outline" class="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
-                  <button @click="activeSection = 'edit'" class="inline-flex items-center gap-1 group" title="Edit profile">
-                    <p class="text-xs text-gray-500 dark:text-gray-500">{{ user?.email }}</p>
-                    <Icon name="mdi:pencil-outline" class="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
+                  </div>
                 </div>
 
                 <!-- Quick stats -->
-                <div class="grid grid-cols-3 gap-2 text-center">
-                  <button @click="$emit('show-notes')" class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 hover:ring-1 hover:ring-primary-400 dark:hover:ring-primary-600 transition-all cursor-pointer">
-                    <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ user?.stats?.notesCount ?? '—' }}</p>
+                <div class="grid grid-cols-3 gap-2">
+                  <button @click="$emit('show-notes')" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700 transition-all">
+                    <Icon name="mdi:note-multiple-outline" class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                    <p class="text-lg font-semibold text-gray-900 dark:text-gray-200 leading-none">{{ user?.stats?.notesCount ?? '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Notes</p>
                   </button>
-                  <button @click="openSharedSection" class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 hover:ring-1 hover:ring-primary-400 dark:hover:ring-primary-600 transition-all cursor-pointer">
-                    <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ user?.stats?.sharedCount ?? '—' }}</p>
+                  <button @click="openSharedSection" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700 transition-all">
+                    <Icon name="mdi:share-variant-outline" class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                    <p class="text-lg font-semibold text-gray-900 dark:text-gray-200 leading-none">{{ user?.stats?.sharedCount ?? '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Shared</p>
                   </button>
-                  <button @click="$emit('sync-now')" class="flex flex-col justify-between px-2 py-2 rounded-lg bg-gray-50 dark:bg-gray-900 hover:ring-1 hover:ring-primary-400 dark:hover:ring-primary-600 transition-all cursor-pointer">
+                  <button @click="$emit('sync-now')" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700 transition-all">
+                    <Icon name="mdi:cloud-sync-outline" class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
                     <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 leading-snug break-words capitalize">{{ lastSyncedAt ? formatDate(lastSyncedAt) : '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Synced</p>
                   </button>
                 </div>
 
-                <!-- Menu items -->
-                <nav class="space-y-0.5">
-                  <button @click="activeSection = 'password'"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                    <Icon name="mdi:lock-outline" class="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    <span class="truncate">Change Password</span>
-                  </button>
-                  <button @click="activeSection = 'security'"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                    <Icon name="mdi:shield-lock-outline" class="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    <span class="truncate">Security</span>
-                  </button>
-                  <button @click="openSessionsSection"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                    <Icon name="mdi:devices" class="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    <span class="truncate">Active Sessions</span>
-                  </button>
-                  <button @click="activeSection = 'danger'"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                    <Icon name="mdi:alert-outline" class="w-5 h-5 flex-shrink-0" />
-                    <span class="truncate">Data &amp; Account</span>
-                  </button>
-                </nav>
-
-                <!-- Privacy toggle -->
-                <div class="px-3 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 space-y-1.5">
-                  <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <Icon name="mdi:shield-account-outline" class="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      <span class="text-sm text-gray-700 dark:text-gray-300 truncate">Privacy protection</span>
-                    </div>
-                    <button @click="togglePrivacy" :disabled="savingPrivacy"
-                      class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                      :class="privacyNoTracking ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'"
-                      role="switch" :aria-checked="privacyNoTracking">
-                      <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                        :class="privacyNoTracking ? 'translate-x-4' : 'translate-x-0'" />
+                <!-- Account section -->
+                <div>
+                  <p class="text-[10px] font-medium text-gray-400 dark:text-gray-600 uppercase tracking-wider px-1 mb-1.5">Account</p>
+                  <div class="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden">
+                    <button @click="activeSection = 'edit'"
+                      class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50 transition-colors">
+                      <Icon name="mdi:account-edit-outline" class="w-[18px] h-[18px] text-gray-400 flex-shrink-0" />
+                      <span class="flex-1 text-left truncate">Edit Profile</span>
+                      <Icon name="mdi:chevron-right" class="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                    </button>
+                    <button @click="activeSection = 'password'"
+                      class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50 transition-colors">
+                      <Icon name="mdi:lock-outline" class="w-[18px] h-[18px] text-gray-400 flex-shrink-0" />
+                      <span class="flex-1 text-left truncate">Change Password</span>
+                      <Icon name="mdi:chevron-right" class="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />
                     </button>
                   </div>
-                  <p class="text-xs text-gray-500 dark:text-gray-500">
-                    {{ privacyNoTracking ? 'Your identity is hidden when viewing shared notes' : 'Note sharers can see your name and device info' }}
-                  </p>
                 </div>
 
-                <!-- Logout + member since -->
-                <div class="flex items-center justify-between pt-1">
-                  <p class="text-xs text-gray-400 dark:text-gray-600">
-                    Since {{ user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—' }}
-                  </p>
-                  <button @click="$emit('logout')"
-                    class="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors">
+                <!-- Security & Privacy section -->
+                <div>
+                  <p class="text-[10px] font-medium text-gray-400 dark:text-gray-600 uppercase tracking-wider px-1 mb-1.5">Security & Privacy</p>
+                  <div class="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden">
+                    <button @click="activeSection = 'security'"
+                      class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50 transition-colors">
+                      <Icon name="mdi:shield-lock-outline" class="w-[18px] h-[18px] text-gray-400 flex-shrink-0" />
+                      <span class="flex-1 text-left truncate">Security</span>
+                      <Icon name="mdi:chevron-right" class="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                    </button>
+                    <button @click="openSessionsSection"
+                      class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50 transition-colors">
+                      <Icon name="mdi:devices" class="w-[18px] h-[18px] text-gray-400 flex-shrink-0" />
+                      <span class="flex-1 text-left truncate">Active Sessions</span>
+                      <Icon name="mdi:chevron-right" class="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                    </button>
+                    <!-- Privacy toggle inline -->
+                    <div class="px-3.5 py-2.5">
+                      <div class="flex items-center gap-3">
+                        <Icon name="mdi:shield-account-outline" class="w-[18px] h-[18px] text-gray-400 flex-shrink-0" />
+                        <div class="flex-1 min-w-0">
+                          <span class="text-sm text-gray-700 dark:text-gray-300">Privacy protection</span>
+                          <p class="text-[11px] text-gray-400 dark:text-gray-500 leading-tight mt-0.5">
+                            {{ privacyNoTracking ? 'Identity hidden on shared notes' : 'Sharers can see your name & device' }}
+                          </p>
+                        </div>
+                        <button @click="togglePrivacy" :disabled="savingPrivacy"
+                          class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                          :class="privacyNoTracking ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'"
+                          role="switch" :aria-checked="privacyNoTracking">
+                          <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                            :class="privacyNoTracking ? 'translate-x-4' : 'translate-x-0'" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Danger zone -->
+                <div>
+                  <p class="text-[10px] font-medium text-red-400 dark:text-red-600 uppercase tracking-wider px-1 mb-1.5">Danger Zone</p>
+                  <div class="rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 overflow-hidden">
+                    <button @click="activeSection = 'danger'"
+                      class="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-200/50 dark:hover:bg-red-800/30 transition-colors">
+                      <Icon name="mdi:alert-outline" class="w-[18px] h-[18px] flex-shrink-0" />
+                      <span class="flex-1 text-left truncate">Delete Data or Account</span>
+                      <Icon name="mdi:chevron-right" class="w-4 h-4 text-red-300 dark:text-red-800 flex-shrink-0" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Sign out -->
+                <div class="flex justify-center pt-1 pb-1">
+                  <button @click="$emit('logout'); $emit('close')"
+                    class="flex items-center gap-1.5 px-4 py-2 text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                    <Icon name="mdi:logout-variant" class="w-4 h-4" />
                     Sign out
                   </button>
                 </div>
@@ -291,7 +325,7 @@
                     </div>
                   </div>
 
-                  <!-- Data destruction warning — more prominent -->
+                  <!-- Data destruction warning -->
                   <div class="px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800">
                     <div class="flex gap-2.5">
                       <Icon name="mdi:database-remove-outline" class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
@@ -584,7 +618,7 @@ watch(() => props.isOpen, (open) => {
 })
 
 const sectionTitle = computed(() => {
-  const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Data & Account', shared: 'Shared Notes', avatar: 'Change Avatar', security: 'Security', sessions: 'Active Sessions' }
+  const titles = { edit: 'Edit Profile', password: 'Change Password', danger: 'Delete Data or Account', shared: 'Shared Notes', avatar: 'Change Avatar', security: 'Security', sessions: 'Active Sessions' }
   return titles[activeSection.value] || 'Profile'
 })
 
