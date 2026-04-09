@@ -4,6 +4,7 @@ import { normaliseName, uniqueInternalName } from '~/utils/normaliseName.js'
 
 export const useGroups = () => {
   const groups = ref([])
+  const deletedGroupIds = ref([])
   let subscription = null
 
   const startLiveQuery = () => {
@@ -44,6 +45,10 @@ export const useGroups = () => {
   const loadGroups = async () => {
     if (!import.meta.client) return
     groups.value = await db.groups.orderBy('sortOrder').toArray()
+    const row = await db.appState.get('deleted_group_ids')
+    if (row?.value) {
+      try { deletedGroupIds.value = JSON.parse(row.value) } catch { deletedGroupIds.value = [] }
+    }
     startLiveQuery()
   }
 
@@ -94,7 +99,18 @@ export const useGroups = () => {
     const idx = groups.value.findIndex(g => g.id === id)
     if (idx !== -1) groups.value.splice(idx, 1)
     await db.groups.delete(id)
+    if (!deletedGroupIds.value.includes(id)) {
+      deletedGroupIds.value.push(id)
+      await db.appState.put({ key: 'deleted_group_ids', value: JSON.stringify(deletedGroupIds.value) })
+    }
     saveGroups()
+  }
+
+  const clearDeletedGroupIds = async () => {
+    deletedGroupIds.value = []
+    if (import.meta.client) {
+      await db.appState.delete('deleted_group_ids')
+    }
   }
 
   const toggleGroupCollapsed = (id) => {
@@ -122,6 +138,7 @@ export const useGroups = () => {
 
   return {
     groups,
+    deletedGroupIds,
     addGroup,
     updateGroup,
     deleteGroup,
@@ -129,5 +146,6 @@ export const useGroups = () => {
     reorderGroups,
     loadGroups,
     saveGroups,
+    clearDeletedGroupIds,
   }
 }

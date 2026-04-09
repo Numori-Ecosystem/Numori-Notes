@@ -14,7 +14,7 @@
 import db from '~/db.js'
 import { encryptNote, decryptNote } from '~/utils/crypto.js'
 
-export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onDataWipe, onSessionRevoked, removeWelcomeNoteIfNeeded, groups, saveGroups) => {
+export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onDataWipe, onSessionRevoked, removeWelcomeNoteIfNeeded, groups, saveGroups, deletedGroupIds, clearDeletedGroupIds) => {
   const { apiFetch, apiUrl } = useApi()
 
   const syncing = ref(false)
@@ -199,10 +199,12 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
             updatedAt: g.updatedAt
           }))
 
+          const deletedGroupClientIds = deletedGroupIds ? [...deletedGroupIds.value] : []
+
           const groupData = await apiFetch('/api/groups/sync', {
             method: 'POST',
             headers: auth.authHeaders.value,
-            body: { groups: clientGroups, deletedClientIds: [] }
+            body: { groups: clientGroups, deletedClientIds: deletedGroupClientIds }
           })
 
           // Merge pulled groups
@@ -231,6 +233,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
           }
           groups.value.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
           await saveGroups()
+          if (clearDeletedGroupIds) await clearDeletedGroupIds()
         } catch (err) {
           // Groups sync failure is non-fatal — notes already synced
           console.warn('Groups sync failed:', err.message)

@@ -85,7 +85,7 @@ export const useAuth = () => {
       await db.appState.delete('auth_token')
       // Clear notes so revoked sessions don't leave data behind
       await db.notes.clear()
-      await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at'])
+      await db.appState.bulkDelete(['deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
       wasSessionInvalid.value = true
     }
   }

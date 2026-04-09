@@ -362,7 +362,7 @@
 import db from '~/db.js'
 
 const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes, moveNotesToGroup, removeNotesFromGroup, archiveNote, unarchiveNote, bulkArchive, bulkUnarchive, removeWelcomeNoteIfNeeded } = useNotes()
-const { groups, addGroup, updateGroup, deleteGroup: deleteGroupFromDb, toggleGroupCollapsed, reorderGroups, saveGroups } = useGroups()
+const { groups, deletedGroupIds, addGroup, updateGroup, deleteGroup: deleteGroupFromDb, toggleGroupCollapsed, reorderGroups, saveGroups, clearDeletedGroupIds } = useGroups()
 const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
 const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()
@@ -372,7 +372,7 @@ const { apiFetch } = useApi()
 
 let _onDataWipe = null
 let _onSessionRevoked = null
-const { syncing, lastSyncedAt, syncError, pendingNoteIds, isOnline, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds, () => _onDataWipe?.(), () => _onSessionRevoked?.(), removeWelcomeNoteIfNeeded, groups, saveGroups)
+const { syncing, lastSyncedAt, syncError, pendingNoteIds, isOnline, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds, () => _onDataWipe?.(), () => _onSessionRevoked?.(), removeWelcomeNoteIfNeeded, groups, saveGroups, deletedGroupIds, clearDeletedGroupIds)
 
 // If restore() found a stale token from a revoked session, clear in-memory notes
 // (IndexedDB was already cleared by restore, but loadNotes ran first)
@@ -381,6 +381,7 @@ watch(() => auth.wasSessionInvalid.value, (invalid) => {
     notes.value = []
     currentNoteId.value = null
     deletedIds.value = []
+    deletedGroupIds.value = []
     groups.value = []
     lastSyncedAt.value = null
   }
@@ -391,10 +392,11 @@ _onDataWipe = async () => {
   notes.value = []
   currentNoteId.value = null
   deletedIds.value = []
+  deletedGroupIds.value = []
   groups.value = []
   await db.notes.clear()
   await db.groups.clear()
-  await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at'])
+  await db.appState.bulkDelete(['deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
   lastSyncedAt.value = null
   await auth.refreshUser()
 }
@@ -409,12 +411,13 @@ _onSessionRevoked = async () => {
   notes.value = []
   currentNoteId.value = null
   deletedIds.value = []
+  deletedGroupIds.value = []
   groups.value = []
   lastSyncedAt.value = null
   // Then clean up IndexedDB (async)
   await db.notes.clear()
   await db.groups.clear()
-  await db.appState.bulkDelete(['auth_token', 'enc_key', 'deleted_note_ids', 'last_synced_at'])
+  await db.appState.bulkDelete(['auth_token', 'enc_key', 'deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
 }
 const sw = useServiceWorker()
 
@@ -630,10 +633,11 @@ watch(() => auth.isLoggedIn.value, async (loggedIn, wasLoggedIn) => {
       notes.value = []
       currentNoteId.value = null
       deletedIds.value = []
+      deletedGroupIds.value = []
       groups.value = []
       await db.notes.clear()
       await db.groups.clear()
-      await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at'])
+      await db.appState.bulkDelete(['deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
       lastSyncedAt.value = null
     }
   }
@@ -715,6 +719,7 @@ const handleResetPassword = async ({ recoveryToken, newPassword }) => {
     await db.notes.clear()
     await db.groups.clear()
     await db.appState.delete('deleted_note_ids')
+    await db.appState.delete('deleted_group_ids')
   } catch { /* error shown in modal */ }
 }
 
@@ -744,6 +749,7 @@ const clearLocalData = async () => {
   await db.notes.clear()
   await db.groups.clear()
   await db.appState.delete('deleted_note_ids')
+  await db.appState.delete('deleted_group_ids')
 }
 
 const handleLogout = async () => {
@@ -790,13 +796,14 @@ const handleDeleteData = async (password) => {
   notes.value = []
   currentNoteId.value = null
   deletedIds.value = []
+  deletedGroupIds.value = []
   groups.value = []
 
   try {
     await auth.requestDeletion('data', password)
     await db.notes.clear()
     await db.groups.clear()
-    await db.appState.bulkDelete(['deleted_note_ids', 'last_synced_at'])
+    await db.appState.bulkDelete(['deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
     lastSyncedAt.value = null
     await auth.refreshUser()
   } catch (err) {
