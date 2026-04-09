@@ -8,40 +8,45 @@ import { Capacitor } from '@capacitor/core'
  * On native platforms, injects an X-Device-Info header so the server can
  * identify the device as "Android" / "iOS" + model instead of "Chrome" / "Safari".
  */
+
+// Resolve device info once on the client (platform never changes at runtime).
+let _deviceInfoResolved = false
+let _deviceInfoHeader = null
+
+function resolveDeviceInfo() {
+  if (_deviceInfoResolved) return
+  _deviceInfoResolved = true
+  try {
+    if (!Capacitor.isNativePlatform()) return
+
+    const platform = Capacitor.getPlatform() // 'android' | 'ios'
+    let model = ''
+    const ua = navigator.userAgent || ''
+    if (platform === 'android') {
+      // Match the model token between "Android <ver>; " and " Build/"
+      const m = ua.match(/Android\s[\d.]+;\s*(.+?)\s*(?:Build\/|[;)])/)
+      if (m) model = m[1].trim()
+    } else if (platform === 'ios') {
+      // iOS WebViews always report "iPhone" or "iPad" — grab it
+      const m = ua.match(/(iPhone|iPad)/)
+      if (m) model = m[1]
+    }
+    _deviceInfoHeader = model ? `${platform}; ${model}` : platform
+  } catch { /* not on a native platform */ }
+}
+
 export const useApi = () => {
   const apiBase = useApiBase()
 
-  // Build a static device info string once (platform never changes at runtime).
-  let deviceInfoHeader = null
-  if (import.meta.client && Capacitor.isNativePlatform()) {
-    const platform = Capacitor.getPlatform() // 'android' | 'ios'
-
-    // Try to extract device model from the UA string.
-    // Android UA example: "... Linux; Android 14; Pixel 8 Pro Build/..."
-    // iOS UA example:     "... iPhone OS 17_4 like Mac OS X..."
-    let model = ''
-    try {
-      const ua = navigator.userAgent || ''
-      if (platform === 'android') {
-        // Match the model token between "Android <ver>; " and " Build/"
-        const m = ua.match(/Android\s[\d.]+;\s*(.+?)\s*(?:Build\/|[;)])/)
-        if (m) model = m[1].trim()
-      } else if (platform === 'ios') {
-        // iOS WebViews always report "iPhone" or "iPad" — grab it
-        const m = ua.match(/(iPhone|iPad)/)
-        if (m) model = m[1]
-      }
-    } catch { /* ignore */ }
-
-    deviceInfoHeader = model ? `${platform}; ${model}` : platform
-  }
+  // Resolve once on first client-side call
+  if (import.meta.client) resolveDeviceInfo()
 
   const apiFetch = (path, opts = {}) => {
     // Inject X-Device-Info for native apps
-    if (deviceInfoHeader) {
+    if (_deviceInfoHeader) {
       opts = {
         ...opts,
-        headers: { 'X-Device-Info': deviceInfoHeader, ...opts.headers }
+        headers: { 'X-Device-Info': _deviceInfoHeader, ...opts.headers }
       }
     }
     return $fetch(`${apiBase}${path}`, opts)
