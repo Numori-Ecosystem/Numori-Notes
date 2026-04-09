@@ -55,7 +55,7 @@
           :style="{ left: linkPopup.x + 'px', top: (linkPopup.y + 20) + 'px' }">
           <div v-if="linkPopup.isExternal" class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-amber-600 dark:text-amber-400">
             <Icon name="mdi:alert-outline" class="w-3.5 h-3.5 block flex-shrink-0" />
-            <span>Be careful, this is an external link</span>
+            <span>Be careful, external link</span>
           </div>
           <button @click="openLink"
             class="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
