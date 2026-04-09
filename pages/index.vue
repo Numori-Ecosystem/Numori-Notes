@@ -78,6 +78,7 @@
             @unarchive-note="handleUnarchiveNote"
             @bulk-archive="handleBulkArchive"
             @bulk-unarchive="handleBulkUnarchive"
+            @bulk-group="handleBulkGroup"
             @add-to-group="handleAddToGroup"
             @toggle-group-collapse="handleToggleGroupCollapse"
             @edit-group="handleEditGroup"
@@ -137,6 +138,7 @@
               @unarchive-note="handleUnarchiveNote"
               @bulk-archive="handleBulkArchive"
               @bulk-unarchive="handleBulkUnarchive"
+              @bulk-group="handleBulkGroup"
               @add-to-group="handleAddToGroup"
               @toggle-group-collapse="handleToggleGroupCollapse"
               @edit-group="handleEditGroup"
@@ -336,7 +338,7 @@
     <AddToGroupModal :is-open="showAddToGroupModal"
       :groups="groups"
       :current-group-id="addToGroupNoteId ? (notes.find(n => n.id === addToGroupNoteId)?.groupId || null) : null"
-      @close="showAddToGroupModal = false"
+      @close="showAddToGroupModal = false; bulkGroupNoteIds = null; addToGroupNoteId = null"
       @select="handleAddToGroupSelect"
       @create-new="handleAddToGroupCreateNew" />
 
@@ -1146,6 +1148,7 @@ const pendingDeleteGroupId = ref(null)
 
 const showAddToGroupModal = ref(false)
 const addToGroupNoteId = ref(null)
+const bulkGroupNoteIds = ref(null)
 
 const pendingDeleteGroup = computed(() => {
   return groups.value.find(g => g.id === pendingDeleteGroupId.value) || null
@@ -1165,8 +1168,18 @@ const handleAddToGroup = (noteId) => {
   showAddToGroupModal.value = true
 }
 
+const handleBulkGroup = (noteIds) => {
+  bulkGroupNoteIds.value = noteIds
+  addToGroupNoteId.value = null
+  showAddToGroupModal.value = true
+}
+
 const handleAddToGroupSelect = (groupId) => {
-  if (addToGroupNoteId.value) {
+  if (bulkGroupNoteIds.value) {
+    moveNotesToGroup(bulkGroupNoteIds.value, groupId)
+    bulkGroupNoteIds.value.forEach(id => syncNow(id))
+    bulkGroupNoteIds.value = null
+  } else if (addToGroupNoteId.value) {
     moveNotesToGroup([addToGroupNoteId.value], groupId)
     syncNow(addToGroupNoteId.value)
   }
@@ -1188,8 +1201,12 @@ const handleGroupModalSave = ({ id, name, internalName }) => {
   } else {
     const group = addGroup(name)
     updateGroup(group.id, { internalName })
-    // If we were adding a note to a new group, assign it
-    if (addToGroupNoteId.value) {
+    // If we were adding notes to a new group, assign them
+    if (bulkGroupNoteIds.value) {
+      moveNotesToGroup(bulkGroupNoteIds.value, group.id)
+      bulkGroupNoteIds.value.forEach(nid => syncNow(nid))
+      bulkGroupNoteIds.value = null
+    } else if (addToGroupNoteId.value) {
       moveNotesToGroup([addToGroupNoteId.value], group.id)
       syncNow(addToGroupNoteId.value)
       addToGroupNoteId.value = null

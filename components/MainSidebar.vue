@@ -24,24 +24,29 @@
           </div>
           <div class="flex items-center gap-2">
             <button @click="toggleSelectAll"
-              class="flex-shrink-0 flex items-center justify-center px-3 py-2 rounded-lg transition-colors bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              class="flex-shrink-0 flex items-center justify-center px-2.5 py-1.5 rounded-lg transition-colors bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               :title="allSelected ? 'Deselect All' : 'Select All'">
-              <Icon :name="allSelected ? 'mdi:checkbox-marked-outline' : 'mdi:checkbox-blank-outline'" class="w-5 h-5" />
+              <Icon :name="allSelected ? 'mdi:checkbox-marked-outline' : 'mdi:checkbox-blank-outline'" class="w-4 h-4" />
+            </button>
+            <button @click="bulkGroup" :disabled="selectedIds.size === 0"
+              class="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors bg-primary-600 hover:bg-primary-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
+              <Icon name="mdi:folder-outline" class="w-4 h-4" />
+              Group
             </button>
             <button v-if="showArchive" @click="bulkUnarchive" :disabled="selectedIds.size === 0"
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-primary-600 hover:bg-primary-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
-              <Icon name="mdi:package-up" class="w-5 h-5" />
+              class="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors bg-primary-600 hover:bg-primary-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
+              <Icon name="mdi:package-up" class="w-4 h-4" />
               Unarchive
             </button>
             <button v-else @click="bulkArchive" :disabled="selectedIds.size === 0"
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-gray-600 hover:bg-gray-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
-              <Icon name="mdi:archive-outline" class="w-5 h-5" />
+              class="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-sm font-medium rounded-lg transition-colors bg-gray-600 hover:bg-gray-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
+              <Icon name="mdi:archive-outline" class="w-4 h-4" />
               Archive
             </button>
             <button @click="bulkDelete" :disabled="selectedIds.size === 0"
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
-              <Icon name="mdi:trash-can-outline" class="w-5 h-5" />
-              Delete
+              class="flex-shrink-0 flex items-center justify-center px-2.5 py-1.5 h-[34px] rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Delete">
+              <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -387,7 +392,7 @@ const emit = defineEmits([
   'bulk-delete', 'selection-change', 'reorder',
   'share-note', 'unshare-note', 'show-properties', 'open-analytics',
   'duplicate-note', 'export-note', 'copy-to-clipboard', 'print-note',
-  'archive-note', 'unarchive-note', 'bulk-archive', 'bulk-unarchive',
+  'archive-note', 'unarchive-note', 'bulk-archive', 'bulk-unarchive', 'bulk-group',
   'add-to-group', 'toggle-group-collapse', 'edit-group', 'delete-group',
   'move-note-to-group', 'reorder-groups', 'reorder-all', 'reorder-within-group'
 ])
@@ -1064,6 +1069,12 @@ const bulkArchive = () => {
 const bulkUnarchive = () => {
   if (selectedIds.value.size === 0) return
   emit('bulk-unarchive', [...selectedIds.value])
+  exitSelectMode()
+}
+
+const bulkGroup = () => {
+  if (selectedIds.value.size === 0) return
+  emit('bulk-group', [...selectedIds.value])
   exitSelectMode()
 }
 
