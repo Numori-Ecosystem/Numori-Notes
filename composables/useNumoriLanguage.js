@@ -9,7 +9,7 @@
 //   heading        → # markdown headers
 //   comment        → // line comments
 //   labelName      → "Label:" prefix on a line
-//   keyword        → aggregation: sum, total, average, avg, prev
+//   keyword        → aggregation: sum, sub, total, average, avg, prev
 //   operatorKeyword→ conversion glue: in, to, as, into, of, on, off
 //   typeName       → date/time words: now, today, tomorrow, yesterday, time, next/last week/month/year
 //   name.definition→ functions: sqrt(), round(), sin(), fromunix(), etc.
@@ -69,7 +69,7 @@ export const numoriStreamParser = {
     if (stream.match(/\b(next|last)\s+(week|month|year)\b/)) return 'typeName'
 
     // ── Aggregation keywords ─────────────────────────────────────
-    if (stream.match(/\b(sum|total|average|avg|prev)\b/)) return 'keyword'
+    if (stream.match(/\b(sum|sub|total|average|avg|prev)\b/)) return 'keyword'
 
     // ── Conversion glue words ────────────────────────────────────
     if (stream.match(/\b(in|to|as|into|of|on|off)\b/)) return 'operatorKeyword'
