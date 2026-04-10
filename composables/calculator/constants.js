@@ -1,5 +1,7 @@
 // Constants and data maps for the calculator engine
 // ref is provided globally by Nuxt auto-imports (or mocked in tests)
+import timezoneData from './data/timezones.json'
+import currencyMapData from './data/currencies.json'
 
 // Mathematical constants
 export const constants = {
@@ -15,46 +17,8 @@ export const variables = ref({})
 export const previousResult = ref(null)
 export const previousResultCurrency = ref(null)
 
-// Currency symbols and codes mapping
-export const currencyMap = {
-  // Symbols
-  '$': 'USD', '€': 'EUR', '£': 'GBP', '¥': 'JPY', '₹': 'INR', '₽': 'RUB',
-  '₩': 'KRW', '₺': 'TRY', '₴': 'UAH', '₿': 'BTC', '₫': 'VND',
-  '₱': 'PHP', '₸': 'KZT', '₮': 'MNT', '฿': 'THB', '₦': 'NGN',
-  'R$': 'BRL', 'C$': 'CAD', 'A$': 'AUD', 'NZ$': 'NZD', 'HK$': 'HKD',
-  'S$': 'SGD', 'NT$': 'TWD', 'kr': 'SEK', 'zł': 'PLN', 'Kč': 'CZK',
-  'RM': 'MYR', 'Rp': 'IDR',
-  // ISO codes (lowercase)
-  'usd': 'USD', 'eur': 'EUR', 'euro': 'EUR', 'euros': 'EUR',
-  'gbp': 'GBP', 'pound': 'GBP', 'pounds': 'GBP',
-  'jpy': 'JPY', 'yen': 'JPY',
-  'krw': 'KRW', 'won': 'KRW',
-  'inr': 'INR', 'rupee': 'INR', 'rupees': 'INR',
-  'rub': 'RUB', 'rouble': 'RUB', 'roubles': 'RUB', 'ruble': 'RUB', 'rubles': 'RUB',
-  'cad': 'CAD', 'aud': 'AUD', 'chf': 'CHF', 'franc': 'CHF', 'francs': 'CHF',
-  'cny': 'CNY', 'yuan': 'CNY', 'rmb': 'CNY',
-  'brl': 'BRL', 'real': 'BRL', 'reais': 'BRL',
-  'mxn': 'MXN', 'peso': 'MXN', 'pesos': 'MXN',
-  'sek': 'SEK', 'nok': 'NOK', 'dkk': 'DKK', 'krone': 'NOK', 'krona': 'SEK',
-  'pln': 'PLN', 'zloty': 'PLN',
-  'czk': 'CZK', 'koruna': 'CZK',
-  'huf': 'HUF', 'forint': 'HUF',
-  'try': 'TRY', 'lira': 'TRY',
-  'zar': 'ZAR', 'rand': 'ZAR',
-  'thb': 'THB', 'baht': 'THB',
-  'sgd': 'SGD', 'hkd': 'HKD', 'twd': 'TWD',
-  'nzd': 'NZD', 'php': 'PHP',
-  'idr': 'IDR', 'rupiah': 'IDR',
-  'myr': 'MYR', 'ringgit': 'MYR',
-  'vnd': 'VND', 'dong': 'VND',
-  'sar': 'SAR', 'riyal': 'SAR',
-  'aed': 'AED', 'dirham': 'AED', 'dirhams': 'AED',
-  'ils': 'ILS', 'shekel': 'ILS', 'shekels': 'ILS',
-  'egp': 'EGP', 'clp': 'CLP', 'cop': 'COP', 'ars': 'ARS',
-  'pen': 'PEN', 'uah': 'UAH', 'ngn': 'NGN', 'kzt': 'KZT',
-  'qar': 'QAR', 'kwd': 'KWD', 'bhd': 'BHD', 'omr': 'OMR',
-  'btc': 'BTC', 'bitcoin': 'BTC', 'eth': 'ETH', 'ethereum': 'ETH',
-}
+// Currency symbols and codes mapping (loaded from data/currencies.json)
+export const currencyMap = currencyMapData
 
 // Exchange rates (base: USD) — fallback values, updated live from API
 export const exchangeRates = ref({
@@ -193,38 +157,11 @@ export const scales = {
   'trillion': 1e12, 'trillions': 1e12,
 }
 
-// Timezone offsets (UTC offset in hours)
-export const timezoneOffsets = {
-  'PST': -8, 'PDT': -7, 'MST': -7, 'MDT': -6, 'CST': -6, 'CDT': -5,
-  'EST': -5, 'EDT': -4, 'GMT': 0, 'UTC': 0, 'CET': 1, 'CEST': 2,
-  'EET': 2, 'EEST': 3, 'IST': 5.5, 'JST': 9, 'KST': 9, 'CST_CN': 8,
-  'HKT': 8, 'SGT': 8, 'AEST': 10, 'AEDT': 11, 'NZST': 12, 'NZDT': 13,
-}
+// Timezone offsets (UTC offset in hours) — loaded from data/timezones.json
+export const timezoneOffsets = timezoneData.timezoneOffsets
 
-// City to timezone mapping
-export const cityTimezones = {
-  'new york': 'America/New_York', 'los angeles': 'America/Los_Angeles',
-  'chicago': 'America/Chicago', 'london': 'Europe/London',
-  'paris': 'Europe/Paris', 'berlin': 'Europe/Berlin',
-  'madrid': 'Europe/Madrid', 'tokyo': 'Asia/Tokyo',
-  'beijing': 'Asia/Shanghai', 'shanghai': 'Asia/Shanghai',
-  'hong kong': 'Asia/Hong_Kong', 'singapore': 'Asia/Singapore',
-  'sydney': 'Australia/Sydney', 'moscow': 'Europe/Moscow',
-  'dubai': 'Asia/Dubai', 'mumbai': 'Asia/Kolkata',
-  'delhi': 'Asia/Kolkata', 'seoul': 'Asia/Seoul',
-  'toronto': 'America/Toronto', 'vancouver': 'America/Vancouver',
-}
+// City to timezone mapping — loaded from data/timezones.json
+export const cityTimezones = timezoneData.cityTimezones
 
-// Timezone abbreviation to IANA mapping
-export const tzAbbrToIANA = {
-  'PST': 'America/Los_Angeles', 'PDT': 'America/Los_Angeles',
-  'MST': 'America/Denver', 'MDT': 'America/Denver',
-  'CST': 'America/Chicago', 'CDT': 'America/Chicago',
-  'EST': 'America/New_York', 'EDT': 'America/New_York',
-  'GMT': 'Europe/London', 'UTC': 'UTC',
-  'CET': 'Europe/Paris', 'CEST': 'Europe/Paris',
-  'EET': 'Europe/Athens', 'EEST': 'Europe/Athens',
-  'IST': 'Asia/Kolkata', 'JST': 'Asia/Tokyo', 'KST': 'Asia/Seoul',
-  'HKT': 'Asia/Hong_Kong', 'SGT': 'Asia/Singapore',
-  'AEST': 'Australia/Sydney', 'AEDT': 'Australia/Sydney',
-}
+// Timezone abbreviation to IANA mapping — loaded from data/timezones.json
+export const tzAbbrToIANA = timezoneData.tzAbbrToIANA
