@@ -75,7 +75,7 @@ export const numoriStreamParser = {
     if (stream.match(/\b(checked|unchecked)\b/)) return 'keyword'
 
     // ── Conversion glue words ────────────────────────────────────
-    if (stream.match(/\b(in|to|as|into|of|on|off)\b/)) return 'operatorKeyword'
+    if (stream.match(/\b(in|to|as|into|of|on|off|what|is)\b/)) return 'operatorKeyword'
 
     // ── Word operators (must come before variable catch-all) ─────
     if (stream.match(/\b(multiplied\s+by|divide\s+by)\b/)) return 'operator'
