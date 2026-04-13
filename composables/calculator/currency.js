@@ -3,8 +3,8 @@ import { currencyMap, exchangeRates, ratesFetched, variables, previousResult, pr
 import { SCALE_SUFFIX, SCALED_NUM_RE, applyScale } from './scales'
 import { evaluateMath } from './math'
 
-// Regex for matching code-based currency amounts like "56 EUR", "2k usd", "1.5M gbp"
-const CODE_CURRENCY_RE = /(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s+([a-zA-Z]+)/g
+// Regex for matching code-based currency amounts like "56 EUR", "2k usd", "1.5M gbp", "56EUR"
+const CODE_CURRENCY_RE = /(\d+(?:\.\d+)?)\s*([kK]|M|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\s*([a-zA-Z]+)/g
 
 // Replace code-based currency amounts (e.g. "56 EUR") with their USD value in an expression
 const replaceCodeCurrencies = (expr, targetCurrency) => {
@@ -104,8 +104,8 @@ export const parseCurrency = (input) => {
     return { value, currency, rest }
   }
 
-  // "100 USD", "50 EUR", "2k EUR", "1.5M usd", "3 million eur"
-  const codeScaleRe = new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*(${SCALE_SUFFIX})?\\s+([a-zA-Z]+)(.*)$`)
+  // "100 USD", "50 EUR", "2k EUR", "1.5M usd", "3 million eur", "100EUR"
+  const codeScaleRe = new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*(${SCALE_SUFFIX})?\\s*([a-zA-Z]+)(.*)$`)
   const codeMatch = input.match(codeScaleRe)
   if (codeMatch) {
     const value = applyScale(codeMatch[1], codeMatch[2])
@@ -343,7 +343,7 @@ export const handleCurrencyExpression = (input) => {
       primaryCurrency = currencyVarsInExpr[0].currency
     } else {
       const firstSymbolIdx = symbolMatches.length > 0 ? input.indexOf(symbolMatches[0].symbol) : Infinity
-      const firstCodeIdx = codeCurrencyMatches.length > 0 ? input.search(new RegExp(`\\d[\\d.]*\\s*(?:[kKM]|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\\s+${codeCurrencyMatches[0].currency}`, 'i')) : Infinity
+      const firstCodeIdx = codeCurrencyMatches.length > 0 ? input.search(new RegExp(`\\d[\\d.]*\\s*(?:[kKM]|thousand|thousands|million|millions|billion|billions|trillion|trillions)?\\s*${codeCurrencyMatches[0].currency}`, 'i')) : Infinity
       primaryCurrency = firstSymbolIdx <= firstCodeIdx
         ? symbolMatches[0].currency
         : codeCurrencyMatches[0].currency
