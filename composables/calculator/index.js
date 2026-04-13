@@ -116,7 +116,8 @@ export const useCalculator = () => {
       try {
         const result = evaluateExpression(labelMatch[2].trim(), index, allResults)
         line.result = result.display
-        if (result.hideResult) line.hideResult = true
+        // For labeled lines, only hide plain numbers/variables — always show unit values
+        if (result.hideResult && !result.unit) line.hideResult = true
         if (result.liveTime) { line.liveTime = true; line.iana = result.iana || null }
         previousResult.value = result.value
         previousResultCurrency.value = result.currency || null

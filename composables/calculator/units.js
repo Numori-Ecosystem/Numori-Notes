@@ -83,9 +83,12 @@ export const normalizeUnitSpacing = (input) => {
     return match
   })
 
-  // Restore protected patterns
+  // Restore protected patterns, inserting a space if a digit precedes the pattern
   for (let i = 0; i < protectedPatterns.length; i++) {
-    protected_ = protected_.replace(`__PROTECTED_${i}__`, protectedPatterns[i])
+    protected_ = protected_.replace(
+      new RegExp(`(\\d)__PROTECTED_${i}__|__PROTECTED_${i}__`),
+      (match, digit) => digit ? digit + ' ' + protectedPatterns[i] : protectedPatterns[i]
+    )
   }
 
   return protected_
