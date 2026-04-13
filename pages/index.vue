@@ -348,6 +348,8 @@
       @apply="sw.applyUpdate"
       @dismiss="sw.dismissUpdate" />
 
+    <ToastNotification :toasts="toast.toasts.value" />
+
     <!-- Focus mode exit button -->
     <button v-if="focusMode" @click="focusMode = false"
       class="fixed z-50 pl-2.5 pb-2.5 rounded-bl-xl text-gray-400 dark:text-gray-500 hover:bg-black/15 dark:hover:bg-white/15 hover:text-gray-700 dark:hover:text-gray-200 transition-colors focus-exit-enter"
@@ -369,6 +371,7 @@ const localePrefs = useLocalePreferences()
 const welcomeWizard = useWelcomeWizard()
 const auth = useAuth()
 const { apiFetch } = useApi()
+const toast = useToast()
 
 let _onDataWipe = null
 let _onSessionRevoked = null
@@ -1141,21 +1144,25 @@ const handlePrintById = (id) => {
 const handleArchiveNote = (id) => {
   archiveNote(id)
   syncNow(id)
+  toast.show('Note archived', { type: 'success', icon: 'mdi:archive-outline' })
 }
 
 const handleUnarchiveNote = (id) => {
   unarchiveNote(id)
   syncNow(id)
+  toast.show('Note unarchived', { type: 'success', icon: 'mdi:package-up' })
 }
 
 const handleBulkArchive = (ids) => {
   bulkArchive(ids)
   syncNow()
+  toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} archived`, { type: 'success', icon: 'mdi:archive-outline' })
 }
 
 const handleBulkUnarchive = (ids) => {
   bulkUnarchive(ids)
   syncNow()
+  toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} unarchived`, { type: 'success', icon: 'mdi:package-up' })
 }
 
 // ── Group management ─────────────────────────────────────
