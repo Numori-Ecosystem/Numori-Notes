@@ -7,7 +7,7 @@
     :class="[
       sizeClasses.track,
       disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-      modelValue ? activeColor : inactiveColor
+      modelValue ? activeColor : inactiveColor,
     ]"
     role="switch"
     :aria-checked="modelValue"
@@ -15,10 +15,7 @@
   >
     <span
       class="inline-block transform rounded-full bg-white transition-transform"
-      :class="[
-        sizeClasses.dot,
-        modelValue ? sizeClasses.translateOn : sizeClasses.translateOff
-      ]"
+      :class="[sizeClasses.dot, modelValue ? sizeClasses.translateOn : sizeClasses.translateOff]"
     />
   </button>
 </template>
@@ -104,9 +101,19 @@ const inactiveColor = computed(() => {
 
 const sizeClasses = computed(() => {
   if (props.size === 'sm') {
-    return { track: 'h-5 w-9 border-2 border-transparent', dot: 'h-4 w-4 shadow', translateOn: 'translate-x-4', translateOff: 'translate-x-0' }
+    return {
+      track: 'h-5 w-9 border-2 border-transparent',
+      dot: 'h-4 w-4 shadow',
+      translateOn: 'translate-x-4',
+      translateOff: 'translate-x-0',
+    }
   }
-  return { track: 'h-6 w-11', dot: 'h-4 w-4', translateOn: 'translate-x-6', translateOff: 'translate-x-1' }
+  return {
+    track: 'h-6 w-11',
+    dot: 'h-4 w-4',
+    translateOn: 'translate-x-6',
+    translateOff: 'translate-x-1',
+  }
 })
 
 const toggle = () => {

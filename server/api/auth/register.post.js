@@ -28,14 +28,17 @@ export default defineEventHandler(async (event) => {
 
   const existing = await query('SELECT id FROM users WHERE email = $1', [emailNorm])
   if (existing.rows.length > 0) {
-    throw createError({ statusCode: 409, statusMessage: 'An account with this email already exists' })
+    throw createError({
+      statusCode: 409,
+      statusMessage: 'An account with this email already exists',
+    })
   }
 
   const passwordHash = await bcrypt.hash(authKey, 12)
 
   const result = await query(
     'INSERT INTO users (email, name, password_hash) VALUES ($1, $2, $3) RETURNING id, email, name, created_at',
-    [emailNorm, (name || '').trim(), passwordHash]
+    [emailNorm, (name || '').trim(), passwordHash],
   )
 
   const user = result.rows[0]
@@ -51,7 +54,7 @@ export default defineEventHandler(async (event) => {
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
     await query(
       'UPDATE users SET otp_code = $1, otp_expires_at = $2, otp_purpose = $3 WHERE id = $4',
-      [code, expiresAt.toISOString(), 'email_verification', user.id]
+      [code, expiresAt.toISOString(), 'email_verification', user.id],
     )
     await sendVerificationEmail(emailNorm, code)
   } catch (err) {
@@ -59,7 +62,13 @@ export default defineEventHandler(async (event) => {
   }
 
   return {
-    user: { id: user.id, email: user.email, name: user.name, createdAt: user.created_at, emailVerified: false },
-    token
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.created_at,
+      emailVerified: false,
+    },
+    token,
   }
 })

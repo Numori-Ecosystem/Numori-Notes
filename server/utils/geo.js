@@ -31,7 +31,7 @@ export async function lookupIp(ip) {
     const result = {
       country: data.country || null,
       region: data.regionName || null,
-      city: data.city || null
+      city: data.city || null,
     }
 
     // Evict oldest entries if cache is full
@@ -104,10 +104,14 @@ export function enrichShareView(event, ip, viewId) {
   if (!viewId || !ip || ip.startsWith('127.') || ip === '::1') return
 
   resolveGeo(event, ip)
-    .then(geo => {
+    .then((geo) => {
       if (geo && (geo.country || geo.city)) {
-        query('UPDATE share_views SET country = $1, region = $2, city = $3 WHERE id = $4',
-          [geo.country, geo.region, geo.city, viewId])
+        query('UPDATE share_views SET country = $1, region = $2, city = $3 WHERE id = $4', [
+          geo.country,
+          geo.region,
+          geo.city,
+          viewId,
+        ])
       }
     })
     .catch(() => {})
@@ -121,7 +125,7 @@ export function enrichSession(event, ip, sessionId) {
   if (!sessionId || !ip || ip.startsWith('127.') || ip === '::1') return
 
   resolveGeo(event, ip)
-    .then(geo => {
+    .then((geo) => {
       const location = formatLocation(geo)
       if (location) {
         query('UPDATE sessions SET location = $1 WHERE id = $2', [location, sessionId])

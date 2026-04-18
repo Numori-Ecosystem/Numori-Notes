@@ -2,7 +2,12 @@
   <div :class="[containerClasses, bordered ? borderClass : '']" role="alert">
     <div v-if="icon || $slots.icon" :class="hasBody ? 'flex gap-2' : 'flex items-center gap-2'">
       <slot name="icon">
-        <Icon v-if="icon" :name="icon" :class="[iconClasses, hasBody ? 'mt-0.5' : '']" class="flex-shrink-0" />
+        <Icon
+          v-if="icon"
+          :name="icon"
+          :class="[iconClasses, hasBody ? 'mt-0.5' : '']"
+          class="flex-shrink-0"
+        />
       </slot>
       <div class="flex-1 min-w-0">
         <slot />

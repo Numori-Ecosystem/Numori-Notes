@@ -5,7 +5,8 @@
       <UiButtonsGroup
         :model-value="renderMarkdown"
         size="sm"
-        icon-class="w-4.5 h-4.5" :options="[
+        icon-class="w-4.5 h-4.5"
+        :options="[
           { value: true, icon: 'mdi:language-markdown', title: 'Render Markdown' },
           { value: false, icon: 'mdi:format-text', title: 'Raw text' },
         ]"
@@ -15,7 +16,8 @@
       <UiButtonsGroup
         :model-value="resultsPosition"
         size="sm"
-        icon-class="w-4.5 h-4.5" :options="[
+        icon-class="w-4.5 h-4.5"
+        :options="[
           { value: 'left', icon: 'mdi:dock-left', title: 'Results on left' },
           { value: 'off', icon: 'mdi:eye-off-outline', title: 'Results off' },
           { value: 'right', icon: 'mdi:dock-right', title: 'Results on right' },
@@ -25,14 +27,22 @@
     </div>
 
     <!-- Spacer / line break on mobile -->
-    <div class="flex-1 basis-full sm:basis-0"/>
+    <div class="flex-1 basis-full sm:basis-0" />
 
     <!-- Actions: Copy · Export · Print · Import -->
     <div class="flex items-center justify-between sm:justify-end gap-0.5 w-full sm:w-auto">
       <UiButton
-variant="ghost" color="gray" size="sm" :title="copied ? 'Copied!' : 'Copy to clipboard'"
-        @click="handleCopy">
-        <Icon :name="copied ? 'mdi:check' : 'mdi:content-copy'" class="w-3.5 h-3.5 sm:w-4 sm:h-4 block" :class="copied ? 'text-green-500' : ''" />
+        variant="ghost"
+        color="gray"
+        size="sm"
+        :title="copied ? 'Copied!' : 'Copy to clipboard'"
+        @click="handleCopy"
+      >
+        <Icon
+          :name="copied ? 'mdi:check' : 'mdi:content-copy'"
+          class="w-3.5 h-3.5 sm:w-4 sm:h-4 block"
+          :class="copied ? 'text-green-500' : ''"
+        />
         <span>{{ copied ? 'Copied' : 'Copy' }}</span>
       </UiButton>
 
@@ -43,7 +53,11 @@ variant="ghost" color="gray" size="sm" :title="copied ? 'Copied!' : 'Copy to cli
           <UiButton variant="ghost" color="gray" size="sm" title="Export note" @click="toggle">
             <Icon name="mdi:export" class="w-3.5 h-3.5 sm:w-4 sm:h-4 block" />
             <span>Export</span>
-            <Icon name="mdi:chevron-down" class="w-3 h-3 block transition-transform" :class="{ 'rotate-180': exportDropdownRef?.isOpen }" />
+            <Icon
+              name="mdi:chevron-down"
+              class="w-3 h-3 block transition-transform"
+              :class="{ 'rotate-180': exportDropdownRef?.isOpen }"
+            />
           </UiButton>
         </template>
 
@@ -66,9 +80,7 @@ variant="ghost" color="gray" size="sm" :title="copied ? 'Copied!' : 'Copy to cli
         </UiButton>
       </UiDropdown>
 
-      <UiButton
-variant="ghost" color="gray" size="sm" title="Print"
-        @click="$emit('print')">
+      <UiButton variant="ghost" color="gray" size="sm" title="Print" @click="$emit('print')">
         <Icon name="mdi:printer" class="w-3.5 h-3.5 sm:w-4 sm:h-4 block" />
         <span>Print</span>
       </UiButton>
@@ -76,8 +88,12 @@ variant="ghost" color="gray" size="sm" title="Print"
       <UiDivider direction="vertical" class="h-4 mx-0" />
 
       <UiButton
-variant="ghost" color="primary" size="sm" title="Import to my notes"
-        @click="$emit('import')">
+        variant="ghost"
+        color="primary"
+        size="sm"
+        title="Import to my notes"
+        @click="$emit('import')"
+      >
         <Icon name="mdi:note-plus-outline" class="w-3.5 h-3.5 sm:w-4 sm:h-4 block" />
         <span>Import</span>
       </UiButton>

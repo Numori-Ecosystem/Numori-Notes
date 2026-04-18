@@ -1,15 +1,20 @@
 <template>
   <div class="space-y-1">
     <!-- Optional label and value display row -->
-    <div v-if="label || showValue" class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
+    <div
+      v-if="label || showValue"
+      class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500"
+    >
       <span v-if="label">{{ label }}</span>
       <span v-if="showValue">{{ current }} / {{ total }}</span>
     </div>
     <!-- Track background with animated fill bar -->
     <div class="w-full rounded-full overflow-hidden" :class="[trackClass, heightClass]">
       <div
-class="h-full rounded-full transition-all duration-200" :class="barClass"
-        :style="{ width: percentage + '%' }" />
+        class="h-full rounded-full transition-all duration-200"
+        :class="barClass"
+        :style="{ width: percentage + '%' }"
+      />
     </div>
   </div>
 </template>
@@ -79,7 +84,7 @@ const props = defineProps({
 
 // Calculate fill percentage, clamped to 0–100, safe against zero total
 const percentage = computed(() =>
-  props.total > 0 ? Math.min(100, Math.round((props.current / props.total) * 100)) : 0
+  props.total > 0 ? Math.min(100, Math.round((props.current / props.total) * 100)) : 0,
 )
 
 const heightClass = computed(() => {

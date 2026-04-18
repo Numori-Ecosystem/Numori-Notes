@@ -10,7 +10,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { title, description, tags, content } = body || {}
 
-  const result = await query(`
+  const result = await query(
+    `
     UPDATE notes
     SET title = COALESCE($1, title),
         description = COALESCE($2, description),
@@ -19,14 +20,16 @@ export default defineEventHandler(async (event) => {
         updated_at = NOW()
     WHERE id = $5 AND user_id = $6
     RETURNING id, client_id, title, description, tags, content, created_at, updated_at
-  `, [
-    title ?? null,
-    description ?? null,
-    tags ? JSON.stringify(tags) : null,
-    content ?? null,
-    id,
-    auth.userId
-  ])
+  `,
+    [
+      title ?? null,
+      description ?? null,
+      tags ? JSON.stringify(tags) : null,
+      content ?? null,
+      id,
+      auth.userId,
+    ],
+  )
 
   if (result.rows.length === 0) {
     throw createError({ statusCode: 404, statusMessage: 'Note not found' })
@@ -41,6 +44,6 @@ export default defineEventHandler(async (event) => {
     tags: row.tags,
     content: row.content,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
   }
 })

@@ -5,22 +5,30 @@
       type="button"
       :disabled="disabled || loading"
       :aria-label="ariaLabel"
-      :class="[triggerClasses, (disabled || loading) ? 'opacity-50 cursor-not-allowed' : '']"
+      :class="[triggerClasses, disabled || loading ? 'opacity-50 cursor-not-allowed' : '']"
       @click="toggleOpen"
     >
-      <span v-if="loading" class="flex items-center gap-2 truncate text-gray-400 dark:text-gray-500">
+      <span
+        v-if="loading"
+        class="flex items-center gap-2 truncate text-gray-400 dark:text-gray-500"
+      >
         <Icon :name="spinner" class="w-4 h-4 animate-spin flex-shrink-0" />
         <span>{{ loadingText }}</span>
       </span>
       <template v-else>
-        <span class="flex items-center gap-2 truncate" :class="selectedLabel ? '' : 'text-gray-400 dark:text-gray-500'">
+        <span
+          class="flex items-center gap-2 truncate"
+          :class="selectedLabel ? '' : 'text-gray-400 dark:text-gray-500'"
+        >
           <Icon v-if="selectedIcon" :name="selectedIcon" class="w-4 h-4 flex-shrink-0" />
           {{ selectedLabel || placeholder || 'Select...' }}
         </span>
       </template>
       <Icon
-name="mdi:chevron-down" class="w-4 h-4 flex-shrink-0 text-gray-400 transition-transform"
-        :class="{ 'rotate-180': isOpen }" />
+        name="mdi:chevron-down"
+        class="w-4 h-4 flex-shrink-0 text-gray-400 transition-transform"
+        :class="{ 'rotate-180': isOpen }"
+      />
     </button>
 
     <!-- Dropdown panel: animated scale transition -->
@@ -33,9 +41,10 @@ name="mdi:chevron-down" class="w-4 h-4 flex-shrink-0 text-gray-400 transition-tr
       leave-to-class="opacity-0 scale-95"
     >
       <div
-v-show="isOpen"
+        v-show="isOpen"
         class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden"
-        :class="dropUp ? 'bottom-full mb-1 mt-0' : ''">
+        :class="dropUp ? 'bottom-full mb-1 mt-0' : ''"
+      >
         <!-- Search input for filtering options -->
         <div v-if="searchable" class="p-1.5">
           <input
@@ -51,8 +60,9 @@ v-show="isOpen"
         <!-- Options list: ungrouped flat list or grouped sections -->
         <ul class="max-h-48 overflow-y-auto py-1">
           <li
-v-if="filteredOptions.length === 0 && filteredGroups.length === 0"
-            class="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">
+            v-if="filteredOptions.length === 0 && filteredGroups.length === 0"
+            class="px-3 py-2 text-sm text-gray-400 dark:text-gray-500"
+          >
             No results
           </li>
 
@@ -73,7 +83,9 @@ v-if="filteredOptions.length === 0 && filteredGroups.length === 0"
           <!-- Grouped options -->
           <template v-else>
             <template v-for="group in filteredGroups" :key="group.label">
-              <li class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 select-none">
+              <li
+                class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 select-none"
+              >
                 {{ group.label }}
               </li>
               <li
@@ -214,11 +226,16 @@ const dropUp = ref(false)
 // ── Normalize options ────────────────────────────────────
 // Convert primitive options (string/number) into { value, label, icon, group } objects
 const normalizedOptions = computed(() =>
-  props.options.map(opt =>
+  props.options.map((opt) =>
     typeof opt === 'object' && opt !== null
-      ? { value: opt.value, label: opt.label ?? String(opt.value), icon: opt.icon || '', group: opt.group || '' }
-      : { value: opt, label: String(opt), icon: '', group: '' }
-  )
+      ? {
+          value: opt.value,
+          label: opt.label ?? String(opt.value),
+          icon: opt.icon || '',
+          group: opt.group || '',
+        }
+      : { value: opt, label: String(opt), icon: '', group: '' },
+  ),
 )
 
 // ── Filtering ────────────────────────────────────────────
@@ -226,12 +243,12 @@ const normalizedOptions = computed(() =>
 const filteredNormalized = computed(() => {
   if (!searchQuery.value) return normalizedOptions.value
   const q = searchQuery.value.toLowerCase()
-  return normalizedOptions.value.filter(opt => opt.label.toLowerCase().includes(q))
+  return normalizedOptions.value.filter((opt) => opt.label.toLowerCase().includes(q))
 })
 
 // ── Grouping ─────────────────────────────────────────────
 // Detect if any option has a group key to enable grouped rendering
-const hasGroups = computed(() => normalizedOptions.value.some(o => o.group))
+const hasGroups = computed(() => normalizedOptions.value.some((o) => o.group))
 
 // Build grouped structure: Map<groupLabel, { label, options[] }>
 const filteredGroups = computed(() => {
@@ -242,7 +259,7 @@ const filteredGroups = computed(() => {
     if (!map.has(key)) map.set(key, { label: key, options: [] })
     map.get(key).options.push(opt)
   }
-  return [...map.values()].filter(g => g.options.length > 0)
+  return [...map.values()].filter((g) => g.options.length > 0)
 })
 
 const filteredOptions = computed(() => {
@@ -251,13 +268,16 @@ const filteredOptions = computed(() => {
 })
 
 // ── Selected display ─────────────────────────────────────
-const selectedOpt = computed(() => normalizedOptions.value.find(o => o.value === props.modelValue))
+const selectedOpt = computed(() =>
+  normalizedOptions.value.find((o) => o.value === props.modelValue),
+)
 const selectedLabel = computed(() => selectedOpt.value?.label || '')
 const selectedIcon = computed(() => selectedOpt.value?.icon || '')
 
 // ── Styling ──────────────────────────────────────────────
 const triggerClasses = computed(() => {
-  const base = 'flex items-center justify-between gap-2 text-left border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 outline-none transition-colors focus:ring-2 focus:ring-primary-500 focus:border-primary-500'
+  const base =
+    'flex items-center justify-between gap-2 text-left border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 outline-none transition-colors focus:ring-2 focus:ring-primary-500 focus:border-primary-500'
   const width = props.block ? 'w-full' : ''
   const sizeMap = {
     xs: 'px-2.5 py-1.5 text-xs rounded-md border-gray-200 dark:border-gray-700',
@@ -296,7 +316,7 @@ const select = (value) => {
 
 const selectFirst = () => {
   const pool = hasGroups.value
-    ? filteredGroups.value.flatMap(g => g.options)
+    ? filteredGroups.value.flatMap((g) => g.options)
     : filteredOptions.value
   if (pool.length) select(pool[0].value)
 }

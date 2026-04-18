@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
 
   const result = await query(
     'SELECT id, email, name, password_hash, avatar_url, created_at, email_verified, session_duration FROM users WHERE email = $1',
-    [emailNorm]
+    [emailNorm],
   )
 
   if (result.rows.length === 0) {
@@ -44,7 +44,14 @@ export default defineEventHandler(async (event) => {
   await createSession(user.id, token, event, sessionDuration)
 
   return {
-    user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatar_url, createdAt: user.created_at, emailVerified: user.email_verified },
-    token
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatarUrl: user.avatar_url,
+      createdAt: user.created_at,
+      emailVerified: user.email_verified,
+    },
+    token,
   }
 })

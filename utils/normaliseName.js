@@ -26,7 +26,13 @@ export const normaliseName = (name) => {
  * @param {Array} [items]     - Full items array with { id, internalName } for selfId filtering
  * @returns {string}
  */
-export const uniqueInternalName = (base, existing, fallback = 'untitled', selfId = null, items = []) => {
+export const uniqueInternalName = (
+  base,
+  existing,
+  fallback = 'untitled',
+  selfId = null,
+  items = [],
+) => {
   let name = normaliseName(base)
   if (!name) name = fallback
 

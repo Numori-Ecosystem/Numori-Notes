@@ -9,7 +9,10 @@ export default defineEventHandler(async (event) => {
   const { type, authKey } = body || {}
 
   if (!authKey) {
-    throw createError({ statusCode: 400, statusMessage: 'Password is required to confirm this action' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Password is required to confirm this action',
+    })
   }
 
   const userResult = await query('SELECT password_hash FROM users WHERE id = $1', [auth.userId])

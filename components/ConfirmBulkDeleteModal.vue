@@ -11,13 +11,12 @@
       </div>
 
       <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Are you sure you want to delete {{ count }} {{ count === 1 ? 'note' : 'notes' }}? This cannot be undone.
+        Are you sure you want to delete {{ count }} {{ count === 1 ? 'note' : 'notes' }}? This
+        cannot be undone.
       </p>
 
       <div class="flex justify-end gap-2">
-        <UiButton variant="ghost" color="gray" @click="$emit('close')">
-          Cancel
-        </UiButton>
+        <UiButton variant="ghost" color="gray" @click="$emit('close')"> Cancel </UiButton>
         <UiButton color="red" @click="$emit('confirm')">
           Delete {{ count }} {{ count === 1 ? 'Note' : 'Notes' }}
         </UiButton>
@@ -29,7 +28,7 @@
 <script setup>
 defineProps({
   isOpen: { type: Boolean, default: false },
-  count: { type: Number, default: 0 }
+  count: { type: Number, default: 0 },
 })
 
 defineEmits(['close', 'confirm'])

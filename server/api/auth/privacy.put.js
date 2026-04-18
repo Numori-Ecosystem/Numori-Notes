@@ -14,10 +14,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'noTracking must be a boolean' })
   }
 
-  await query(
-    'UPDATE users SET privacy_no_tracking = $1, updated_at = NOW() WHERE id = $2',
-    [noTracking, auth.userId]
-  )
+  await query('UPDATE users SET privacy_no_tracking = $1, updated_at = NOW() WHERE id = $2', [
+    noTracking,
+    auth.userId,
+  ])
 
   return { privacyNoTracking: noTracking }
 })

@@ -15,12 +15,8 @@
       </p>
 
       <div class="flex justify-end gap-2">
-        <UiButton variant="ghost" color="gray" @click="$emit('close')">
-          Cancel
-        </UiButton>
-        <UiButton color="red" @click="$emit('confirm')">
-          Delete
-        </UiButton>
+        <UiButton variant="ghost" color="gray" @click="$emit('close')"> Cancel </UiButton>
+        <UiButton color="red" @click="$emit('confirm')"> Delete </UiButton>
       </div>
     </div>
   </UiModal>

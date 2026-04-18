@@ -21,7 +21,7 @@ async function getKey(secret) {
     enc.encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
-    ['sign', 'verify']
+    ['sign', 'verify'],
   )
 }
 
@@ -47,12 +47,7 @@ export async function verifyJwt(token, secret) {
   const data = `${headerB64}.${payloadB64}`
   const signature = Buffer.from(signatureB64, 'base64url')
 
-  const valid = await crypto.subtle.verify(
-    'HMAC',
-    key,
-    signature,
-    new TextEncoder().encode(data)
-  )
+  const valid = await crypto.subtle.verify('HMAC', key, signature, new TextEncoder().encode(data))
   if (!valid) throw new Error('Invalid signature')
 
   const payload = base64UrlDecode(payloadB64)

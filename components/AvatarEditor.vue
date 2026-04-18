@@ -2,19 +2,24 @@
   <div class="space-y-3">
     <!-- Canvas area -->
     <div
-class="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden mx-auto"
-      :style="{ width: canvasSize + 'px', height: canvasSize + 'px' }">
+      class="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden mx-auto"
+      :style="{ width: canvasSize + 'px', height: canvasSize + 'px' }"
+    >
       <canvas
-ref="canvasRef" :width="canvasSize" :height="canvasSize"
+        ref="canvasRef"
+        :width="canvasSize"
+        :height="canvasSize"
         class="cursor-grab active:cursor-grabbing touch-none"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
-        @wheel.prevent="onWheel" />
+        @wheel.prevent="onWheel"
+      />
       <!-- Circular overlay mask -->
       <div
-class="absolute inset-0 pointer-events-none"
-        :style="{ boxShadow: 'inset 0 0 0 9999px rgba(0,0,0,0.45)', borderRadius: '50%' }" />
+        class="absolute inset-0 pointer-events-none"
+        :style="{ boxShadow: 'inset 0 0 0 9999px rgba(0,0,0,0.45)', borderRadius: '50%' }"
+      />
     </div>
 
     <!-- Controls -->
@@ -23,39 +28,50 @@ class="absolute inset-0 pointer-events-none"
       <div class="flex items-center gap-2">
         <Icon name="mdi:magnify-minus-outline" class="w-4 h-4 text-gray-400 flex-shrink-0" />
         <UiSlider
-v-model="scale" :min="minScale" :max="maxScale" :step="0.01"
-          width="flex" @input="draw" />
+          v-model="scale"
+          :min="minScale"
+          :max="maxScale"
+          :step="0.01"
+          width="flex"
+          @input="draw"
+        />
         <Icon name="mdi:magnify-plus-outline" class="w-4 h-4 text-gray-400 flex-shrink-0" />
         <UiInput
-type="number" :model-value="scaleDisplay" :min="Math.round(minScale * 100)" :max="Math.round(maxScale * 100)" :step="1"
-          stepper-layout="stacked-right" :validate="false" class="!w-16 flex-shrink-0 text-center"
-          @update:model-value="onScaleInput" />
+          type="number"
+          :model-value="scaleDisplay"
+          :min="Math.round(minScale * 100)"
+          :max="Math.round(maxScale * 100)"
+          :step="1"
+          stepper-layout="stacked-right"
+          :validate="false"
+          class="!w-16 flex-shrink-0 text-center"
+          @update:model-value="onScaleInput"
+        />
       </div>
 
       <!-- Rotate -->
       <div class="flex items-center gap-2">
         <Icon name="mdi:rotate-left" class="w-4 h-4 text-gray-400 flex-shrink-0" />
-        <UiSlider
-v-model="rotation" :min="-180" :max="180" :step="1"
-          width="flex" @input="draw" />
+        <UiSlider v-model="rotation" :min="-180" :max="180" :step="1" width="flex" @input="draw" />
         <Icon name="mdi:rotate-right" class="w-4 h-4 text-gray-400 flex-shrink-0" />
         <UiInput
-type="number" :model-value="rotation" :min="-180" :max="180" :step="1"
-          stepper-layout="stacked-right" :validate="false" class="!w-16 flex-shrink-0 text-center"
-          @update:model-value="onRotationInput" />
+          type="number"
+          :model-value="rotation"
+          :min="-180"
+          :max="180"
+          :step="1"
+          stepper-layout="stacked-right"
+          :validate="false"
+          class="!w-16 flex-shrink-0 text-center"
+          @update:model-value="onRotationInput"
+        />
       </div>
 
       <!-- Quick rotate & reset buttons -->
       <div class="flex items-center justify-center gap-2">
-        <UiButton variant="solid" color="gray" size="xs" @click="rotateBy(-90)">
-          -90°
-        </UiButton>
-        <UiButton variant="solid" color="gray" size="xs" @click="resetAll">
-          Reset
-        </UiButton>
-        <UiButton variant="solid" color="gray" size="xs" @click="rotateBy(90)">
-          +90°
-        </UiButton>
+        <UiButton variant="solid" color="gray" size="xs" @click="rotateBy(-90)"> -90° </UiButton>
+        <UiButton variant="solid" color="gray" size="xs" @click="resetAll"> Reset </UiButton>
+        <UiButton variant="solid" color="gray" size="xs" @click="rotateBy(90)"> +90° </UiButton>
       </div>
     </div>
   </div>
@@ -65,7 +81,7 @@ type="number" :model-value="rotation" :min="-180" :max="180" :step="1"
 const props = defineProps({
   imageSource: { type: String, required: true },
   outputSize: { type: Number, default: 256 },
-  canvasSize: { type: Number, default: 220 }
+  canvasSize: { type: Number, default: 220 },
 })
 
 const emit = defineEmits(['update'])
@@ -110,24 +126,28 @@ const resetAll = () => {
 }
 
 // Load image
-watch(() => props.imageSource, (src) => {
-  if (!src) return
-  const image = new Image()
-  image.onload = () => {
-    img.value = image
-    // Fit image to canvas
-    const fitScale = props.canvasSize / Math.min(image.width, image.height)
-    scale.value = fitScale
-    initialScale.value = fitScale
-    minScale.value = fitScale * 0.5
-    maxScale.value = fitScale * 3
-    panX.value = 0
-    panY.value = 0
-    rotation.value = 0
-    draw()
-  }
-  image.src = src
-}, { immediate: true })
+watch(
+  () => props.imageSource,
+  (src) => {
+    if (!src) return
+    const image = new Image()
+    image.onload = () => {
+      img.value = image
+      // Fit image to canvas
+      const fitScale = props.canvasSize / Math.min(image.width, image.height)
+      scale.value = fitScale
+      initialScale.value = fitScale
+      minScale.value = fitScale * 0.5
+      maxScale.value = fitScale * 3
+      panX.value = 0
+      panY.value = 0
+      rotation.value = 0
+      draw()
+    }
+    image.src = src
+  },
+  { immediate: true },
+)
 
 const draw = () => {
   const canvas = canvasRef.value

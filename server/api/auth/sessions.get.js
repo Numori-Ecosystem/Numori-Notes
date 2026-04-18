@@ -12,10 +12,10 @@ export default defineEventHandler(async (event) => {
   const result = await query(
     `SELECT id, device_name, ip_address, location, created_at, last_used_at, expires_at, token_hash
      FROM sessions WHERE user_id = $1 ORDER BY last_used_at DESC`,
-    [auth.userId]
+    [auth.userId],
   )
 
-  return result.rows.map(s => ({
+  return result.rows.map((s) => ({
     id: s.id,
     deviceName: s.device_name,
     ipAddress: s.ip_address,
@@ -23,6 +23,6 @@ export default defineEventHandler(async (event) => {
     createdAt: s.created_at,
     lastUsedAt: s.last_used_at,
     expiresAt: s.expires_at,
-    isCurrent: s.token_hash === auth.tokenHash
+    isCurrent: s.token_hash === auth.tokenHash,
   }))
 })

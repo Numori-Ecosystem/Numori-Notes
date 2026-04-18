@@ -15,10 +15,11 @@ export default defineEventHandler(async (event) => {
 
   const result = await query(
     'SELECT otp_code, otp_expires_at, otp_purpose, email_verified FROM users WHERE id = $1',
-    [auth.userId]
+    [auth.userId],
   )
 
-  if (result.rows.length === 0) throw createError({ statusCode: 404, statusMessage: 'User not found' })
+  if (result.rows.length === 0)
+    throw createError({ statusCode: 404, statusMessage: 'User not found' })
 
   const user = result.rows[0]
 
@@ -27,7 +28,10 @@ export default defineEventHandler(async (event) => {
   }
 
   if (user.otp_purpose !== 'email_verification') {
-    throw createError({ statusCode: 400, statusMessage: 'No pending verification. Request a new code.' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'No pending verification. Request a new code.',
+    })
   }
 
   if (!user.otp_code || new Date(user.otp_expires_at) < new Date()) {
@@ -40,7 +44,7 @@ export default defineEventHandler(async (event) => {
 
   await query(
     'UPDATE users SET email_verified = TRUE, otp_code = NULL, otp_expires_at = NULL, otp_purpose = NULL, updated_at = NOW() WHERE id = $1',
-    [auth.userId]
+    [auth.userId],
   )
 
   return { verified: true }

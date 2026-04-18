@@ -18,9 +18,7 @@
         <UiButton variant="ghost" color="gray" @click="$emit('confirm', false)">
           Without Results
         </UiButton>
-        <UiButton @click="$emit('confirm', true)">
-          With Results
-        </UiButton>
+        <UiButton @click="$emit('confirm', true)"> With Results </UiButton>
       </div>
     </div>
   </UiModal>

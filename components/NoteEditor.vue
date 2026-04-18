@@ -1,30 +1,69 @@
 <template>
   <div class="h-full flex">
     <div
-:class="[
-      'flex-1 overflow-hidden transition-all duration-200 ease-in-out relative',
-      bordered ? 'border border-gray-200 dark:border-gray-700 rounded-lg' : ''
-    ]">
+      :class="[
+        'flex-1 overflow-hidden transition-all duration-200 ease-in-out relative',
+        bordered ? 'border border-gray-200 dark:border-gray-700 rounded-lg' : '',
+      ]"
+    >
       <Transition
         enter-active-class="transition-opacity duration-150"
         enter-from-class="opacity-0"
         leave-active-class="transition-opacity duration-300"
         leave-from-class="opacity-100"
-        leave-to-class="opacity-0">
-        <div v-if="!editorReady" class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white dark:bg-gray-925 text-gray-400 dark:text-gray-500">
-          <svg class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="!editorReady"
+          class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white dark:bg-gray-925 text-gray-400 dark:text-gray-500"
+        >
+          <svg
+            class="animate-spin h-6 w-6"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
           </svg>
           <span class="text-sm">Loading editor…</span>
         </div>
       </Transition>
       <ClientOnly>
         <template #fallback>
-          <div class="h-full flex flex-col items-center justify-center gap-3 text-gray-400 dark:text-gray-500">
-            <svg class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          <div
+            class="h-full flex flex-col items-center justify-center gap-3 text-gray-400 dark:text-gray-500"
+          >
+            <svg
+              class="animate-spin h-6 w-6"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
             <span class="text-sm">Loading editor…</span>
           </div>
@@ -45,9 +84,16 @@
 
       <!-- Link action popup -->
       <UiPopup
-:show="linkPopup.show" :x="linkPopup.x" :y="linkPopup.y" :offset-y="20"
-        @close="closeLinkPopup">
-        <div v-if="linkPopup.isExternal" class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-amber-600 dark:text-amber-400">
+        :show="linkPopup.show"
+        :x="linkPopup.x"
+        :y="linkPopup.y"
+        :offset-y="20"
+        @close="closeLinkPopup"
+      >
+        <div
+          v-if="linkPopup.isExternal"
+          class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-amber-600 dark:text-amber-400"
+        >
           <Icon name="mdi:alert-outline" class="w-3.5 h-3.5 block flex-shrink-0" />
           <span>Be careful, external link</span>
         </div>
@@ -63,7 +109,9 @@
           <Icon name="mdi:format-text" class="w-4 h-4 block flex-shrink-0" />
           <span>Copy Link Name</span>
         </UiButton>
-        <div class="px-3 py-1 text-xs text-gray-400 dark:text-gray-500 truncate border-t border-gray-100 dark:border-gray-700 mt-1 pt-1">
+        <div
+          class="px-3 py-1 text-xs text-gray-400 dark:text-gray-500 truncate border-t border-gray-100 dark:border-gray-700 mt-1 pt-1"
+        >
           {{ linkPopup.url }}
         </div>
       </UiPopup>
@@ -72,7 +120,16 @@
 </template>
 
 <script setup>
-import { EditorView, Decoration, WidgetType, keymap as cmKeymap, scrollPastEnd, lineNumbers as cmLineNumbers, highlightActiveLine as cmHighlightActiveLine, highlightActiveLineGutter as cmHighlightActiveLineGutter } from '@codemirror/view'
+import {
+  EditorView,
+  Decoration,
+  WidgetType,
+  keymap as cmKeymap,
+  scrollPastEnd,
+  lineNumbers as cmLineNumbers,
+  highlightActiveLine as cmHighlightActiveLine,
+  highlightActiveLineGutter as cmHighlightActiveLineGutter,
+} from '@codemirror/view'
 import { StateField, StateEffect, Compartment, EditorSelection } from '@codemirror/state'
 import { foldGutter as cmFoldGutter, indentUnit } from '@codemirror/language'
 import { closeBrackets as cmCloseBrackets } from '@codemirror/autocomplete'
@@ -91,7 +148,7 @@ const props = defineProps({
   localePreferences: { type: Object, default: null },
   markdownMode: { type: String, default: 'full' },
   shortcutHandlers: { type: Object, default: null },
-  editable: { type: Boolean, default: true }
+  editable: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['update:content'])
@@ -109,7 +166,11 @@ const canUndo = ref(false)
 const canRedo = ref(false)
 
 const updateUndoRedoState = () => {
-  if (!editorView) { canUndo.value = false; canRedo.value = false; return }
+  if (!editorView) {
+    canUndo.value = false
+    canRedo.value = false
+    return
+  }
   canUndo.value = undoDepth(editorView.state) > 0
   canRedo.value = redoDepth(editorView.state) > 0
 }
@@ -131,16 +192,22 @@ const wordWrapCompartment = new Compartment()
 
 // --- Font family map ---
 const FONT_FAMILY_MAP = {
-  'system': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+  system: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
   'fira-code': "'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-  'jetbrains-mono': "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-  'source-code-pro': "'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-  'cascadia-code': "'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-  'ibm-plex-mono': "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  'jetbrains-mono':
+    "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  'source-code-pro':
+    "'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  'cascadia-code':
+    "'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  'ibm-plex-mono':
+    "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
 }
 
 const editorFontSize = computed(() => props.localePreferences?.editorFontSize ?? 16)
-const editorFontFamily = computed(() => FONT_FAMILY_MAP[props.localePreferences?.editorFontFamily] ?? FONT_FAMILY_MAP.system)
+const editorFontFamily = computed(
+  () => FONT_FAMILY_MAP[props.localePreferences?.editorFontFamily] ?? FONT_FAMILY_MAP.system,
+)
 const editorLineNumbers = computed(() => {
   const val = props.localePreferences?.editorLineNumbers
   return ['on', 'off', 'relative', 'interval'].includes(val) ? val : 'on'
@@ -203,9 +270,15 @@ class InlineResultWidget extends WidgetType {
     return wrapper
   }
   eq(other) {
-    return this.text === other.text && this.className === other.className && this.padText === other.padText
+    return (
+      this.text === other.text &&
+      this.className === other.className &&
+      this.padText === other.padText
+    )
   }
-  ignoreEvent() { return false }
+  ignoreEvent() {
+    return false
+  }
 }
 
 // --- Markdown preview widget (prefix replacement) ---
@@ -225,8 +298,16 @@ class MdPrefixWidget extends WidgetType {
     }
     return span
   }
-  eq(other) { return this.content === other.content && this.className === other.className && this.lineNumber === other.lineNumber }
-  ignoreEvent() { return false }
+  eq(other) {
+    return (
+      this.content === other.content &&
+      this.className === other.className &&
+      this.lineNumber === other.lineNumber
+    )
+  }
+  ignoreEvent() {
+    return false
+  }
 }
 
 // --- StateEffect for updating inline results ---
@@ -235,26 +316,30 @@ const setMdDecorations = StateEffect.define()
 
 // StateField for inline result decorations
 const inlineResultField = StateField.define({
-  create() { return Decoration.none },
+  create() {
+    return Decoration.none
+  },
   update(decos, tr) {
     for (const e of tr.effects) {
       if (e.is(setInlineResults)) return e.value
     }
     return decos.map(tr.changes)
   },
-  provide: f => EditorView.decorations.from(f),
+  provide: (f) => EditorView.decorations.from(f),
 })
 
 // StateField for markdown preview decorations
 const mdPreviewField = StateField.define({
-  create() { return Decoration.none },
+  create() {
+    return Decoration.none
+  },
   update(decos, tr) {
     for (const e of tr.effects) {
       if (e.is(setMdDecorations)) return e.value
     }
     return decos.map(tr.changes)
   },
-  provide: f => EditorView.decorations.from(f),
+  provide: (f) => EditorView.decorations.from(f),
 })
 
 // --- Build inline result decorations ---
@@ -266,7 +351,8 @@ const buildInlineDecorations = (view) => {
   const doc = view.state.doc
   const docLines = doc.lines
   const maxLine = Math.min(lines.length, docLines)
-  const alignRight = (props.inlineAlign ?? props.localePreferences?.inlineResultAlign ?? 'left') === 'right'
+  const alignRight =
+    (props.inlineAlign ?? props.localePreferences?.inlineResultAlign ?? 'left') === 'right'
 
   // For right-alignment, estimate available columns using the scroller (viewport) width
   let targetCol = 0
@@ -329,26 +415,45 @@ const applyInlineMarkdown = (text, lineFrom, widgets) => {
   // Strikethrough: ~~...~~
   const strikeRe = /~~(.+?)~~/g
   while ((m = strikeRe.exec(text)) !== null) {
-    spans.push({ from: m.index, to: m.index + m[0].length, type: 'strike', openLen: 2, closeLen: 2 })
+    spans.push({
+      from: m.index,
+      to: m.index + m[0].length,
+      type: 'strike',
+      openLen: 2,
+      closeLen: 2,
+    })
   }
 
   // Italic: *...* (but not **)
   const italicRe = /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g
   while ((m = italicRe.exec(text)) !== null) {
-    spans.push({ from: m.index, to: m.index + m[0].length, type: 'italic', openLen: 1, closeLen: 1 })
+    spans.push({
+      from: m.index,
+      to: m.index + m[0].length,
+      type: 'italic',
+      openLen: 1,
+      closeLen: 1,
+    })
   }
 
   // Links: [text](url)
   const linkRe = /\[([^\]]+)\]\(([^)]+)\)/g
   while ((m = linkRe.exec(text)) !== null) {
-    spans.push({ from: m.index, to: m.index + m[0].length, type: 'link', linkText: m[1], linkUrl: m[2], openLen: 1 })
+    spans.push({
+      from: m.index,
+      to: m.index + m[0].length,
+      type: 'link',
+      linkText: m[1],
+      linkUrl: m[2],
+      openLen: 1,
+    })
   }
 
   // Sort by position, remove overlapping spans (first match wins)
   spans.sort((a, b) => a.from - b.from)
   const used = []
   for (const s of spans) {
-    if (used.some(u => s.from < u.to && s.to > u.from)) continue
+    if (used.some((u) => s.from < u.to && s.to > u.from)) continue
     used.push(s)
   }
 
@@ -362,20 +467,50 @@ const applyInlineMarkdown = (text, lineFrom, widgets) => {
   for (const s of used) {
     if (s.type === 'link') {
       // Hide [
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(lineFrom + s.from, lineFrom + s.from + 1))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          lineFrom + s.from,
+          lineFrom + s.from + 1,
+        ),
+      )
       // Style link text
       const textEnd = s.from + 1 + s.linkText.length
-      widgets.push(Decoration.mark({ class: 'numori-md-link', attributes: { title: s.linkUrl, 'data-href': s.linkUrl } }).range(lineFrom + s.from + 1, lineFrom + textEnd))
+      widgets.push(
+        Decoration.mark({
+          class: 'numori-md-link',
+          attributes: { title: s.linkUrl, 'data-href': s.linkUrl },
+        }).range(lineFrom + s.from + 1, lineFrom + textEnd),
+      )
       // Hide ](url)
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(lineFrom + textEnd, lineFrom + s.to))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          lineFrom + textEnd,
+          lineFrom + s.to,
+        ),
+      )
     } else {
       const cls = classMap[s.type]
       // Hide opening syntax
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(lineFrom + s.from, lineFrom + s.from + s.openLen))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          lineFrom + s.from,
+          lineFrom + s.from + s.openLen,
+        ),
+      )
       // Style content
-      widgets.push(Decoration.mark({ class: cls }).range(lineFrom + s.from + s.openLen, lineFrom + s.to - s.closeLen))
+      widgets.push(
+        Decoration.mark({ class: cls }).range(
+          lineFrom + s.from + s.openLen,
+          lineFrom + s.to - s.closeLen,
+        ),
+      )
       // Hide closing syntax
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(lineFrom + s.to - s.closeLen, lineFrom + s.to))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          lineFrom + s.to - s.closeLen,
+          lineFrom + s.to,
+        ),
+      )
     }
   }
 }
@@ -392,8 +527,12 @@ class MdCodeBlockFenceWidget extends WidgetType {
     span.textContent = this.lang || ''
     return span
   }
-  eq(other) { return this.lang === other.lang }
-  ignoreEvent() { return false }
+  eq(other) {
+    return this.lang === other.lang
+  }
+  ignoreEvent() {
+    return false
+  }
 }
 
 // --- Copy button widget for code blocks ---
@@ -421,8 +560,12 @@ class MdCodeBlockCopyWidget extends WidgetType {
     })
     return btn
   }
-  eq(other) { return this.code === other.code }
-  ignoreEvent() { return false }
+  eq(other) {
+    return this.code === other.code
+  }
+  ignoreEvent() {
+    return false
+  }
 }
 
 // --- Build markdown preview decorations ---
@@ -430,7 +573,8 @@ const buildMdDecorations = (view) => {
   if (props.markdownMode === 'off') return Decoration.none
 
   const doc = view.state.doc
-  const cursorLine = props.markdownMode === 'edit' ? doc.lineAt(view.state.selection.main.head).number : -1
+  const cursorLine =
+    props.markdownMode === 'edit' ? doc.lineAt(view.state.selection.main.head).number : -1
   const widgets = []
 
   // First pass: identify fenced code block ranges
@@ -460,7 +604,7 @@ const buildMdDecorations = (view) => {
   }
 
   // Helper to check if a line is inside a code block
-  const getCodeBlock = (ln) => codeBlockRanges.find(r => ln >= r.startLn && ln <= r.endLn)
+  const getCodeBlock = (ln) => codeBlockRanges.find((r) => ln >= r.startLn && ln <= r.endLn)
 
   // Pre-highlight code blocks
   const codeBlockHighlights = new Map()
@@ -502,39 +646,68 @@ const buildMdDecorations = (view) => {
     const codeBlock = getCodeBlock(ln)
     if (codeBlock) {
       // In edit mode, if cursor is on any line of this block, show raw
-      if (props.markdownMode === 'edit' && cursorLine >= codeBlock.startLn && cursorLine <= codeBlock.endLn) continue
+      if (
+        props.markdownMode === 'edit' &&
+        cursorLine >= codeBlock.startLn &&
+        cursorLine <= codeBlock.endLn
+      )
+        continue
 
       if (ln === codeBlock.startLn) {
         // Opening fence: hide the ``` and show language label + copy button
-        widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.to))
+        widgets.push(
+          Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.to),
+        )
         if (codeBlock.lang) {
-          widgets.push(Decoration.widget({
-            widget: new MdCodeBlockFenceWidget(codeBlock.lang),
-            side: 1,
-          }).range(docLine.from))
+          widgets.push(
+            Decoration.widget({
+              widget: new MdCodeBlockFenceWidget(codeBlock.lang),
+              side: 1,
+            }).range(docLine.from),
+          )
         }
         // Collect code block content for copy button
         const contentStartLn = codeBlock.startLn + 1
-        const contentEndLn = codeBlock.endLn - (doc.line(codeBlock.endLn).text.trim() === '```' ? 1 : 0)
+        const contentEndLn =
+          codeBlock.endLn - (doc.line(codeBlock.endLn).text.trim() === '```' ? 1 : 0)
         const codeLines = []
         for (let cl = contentStartLn; cl <= contentEndLn; cl++) {
           codeLines.push(doc.line(cl).text)
         }
-        widgets.push(Decoration.widget({
-          widget: new MdCodeBlockCopyWidget(codeLines.join('\n')),
-          side: 1,
-        }).range(docLine.from))
+        widgets.push(
+          Decoration.widget({
+            widget: new MdCodeBlockCopyWidget(codeLines.join('\n')),
+            side: 1,
+          }).range(docLine.from),
+        )
         const blockW = (codeBlockMaxLen.get(codeBlock) || 0) + 8
-        widgets.push(Decoration.line({ class: 'numori-md-code-block-line numori-md-code-block-first', attributes: { style: `width: ${blockW}ch` } }).range(docLine.from))
+        widgets.push(
+          Decoration.line({
+            class: 'numori-md-code-block-line numori-md-code-block-first',
+            attributes: { style: `width: ${blockW}ch` },
+          }).range(docLine.from),
+        )
       } else if (ln === codeBlock.endLn && trimmed === '```') {
         // Closing fence: hide it, add bottom border styling
-        widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.to))
+        widgets.push(
+          Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.to),
+        )
         const blockW = (codeBlockMaxLen.get(codeBlock) || 0) + 8
-        widgets.push(Decoration.line({ class: 'numori-md-code-block-line numori-md-code-block-last', attributes: { style: `width: ${blockW}ch` } }).range(docLine.from))
+        widgets.push(
+          Decoration.line({
+            class: 'numori-md-code-block-line numori-md-code-block-last',
+            attributes: { style: `width: ${blockW}ch` },
+          }).range(docLine.from),
+        )
       } else {
         // Content line inside code block — apply syntax highlighting
         const blockW = (codeBlockMaxLen.get(codeBlock) || 0) + 8
-        widgets.push(Decoration.line({ class: 'numori-md-code-block-line', attributes: { style: `width: ${blockW}ch` } }).range(docLine.from))
+        widgets.push(
+          Decoration.line({
+            class: 'numori-md-code-block-line',
+            attributes: { style: `width: ${blockW}ch` },
+          }).range(docLine.from),
+        )
 
         const spans = codeBlockHighlights.get(codeBlock)
         if (spans) {
@@ -554,9 +727,11 @@ const buildMdDecorations = (view) => {
             const from = Math.max(0, span.offset - charOffset)
             const to = Math.min(lineLen, spanEnd - charOffset)
             if (from >= to) continue
-            widgets.push(Decoration.mark({
-              class: 'numori-hl ' + span.className
-            }).range(docLine.from + from, docLine.from + to))
+            widgets.push(
+              Decoration.mark({
+                class: 'numori-hl ' + span.className,
+              }).range(docLine.from + from, docLine.from + to),
+            )
           }
         }
       }
@@ -570,8 +745,18 @@ const buildMdDecorations = (view) => {
     if (headerMatch) {
       const hashes = headerMatch[1]
       const prefixLen = text.indexOf(hashes) + hashes.length + 1
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixLen))
-      widgets.push(Decoration.mark({ class: `numori-md-h${hashes.length}` }).range(docLine.from + prefixLen, docLine.to))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          docLine.from,
+          docLine.from + prefixLen,
+        ),
+      )
+      widgets.push(
+        Decoration.mark({ class: `numori-md-h${hashes.length}` }).range(
+          docLine.from + prefixLen,
+          docLine.to,
+        ),
+      )
       applyInlineMarkdown(text.substring(prefixLen), docLine.from + prefixLen, widgets)
       continue
     }
@@ -582,8 +767,15 @@ const buildMdDecorations = (view) => {
       const afterSlash = text.substring(slashIdx + 2)
       const spaceAfter = afterSlash.startsWith(' ') ? 1 : 0
       const prefixEnd = slashIdx + 2 + spaceAfter
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
-      widgets.push(Decoration.mark({ class: 'numori-md-comment' }).range(docLine.from + prefixEnd, docLine.to))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          docLine.from,
+          docLine.from + prefixEnd,
+        ),
+      )
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-comment' }).range(docLine.from + prefixEnd, docLine.to),
+      )
       continue
     }
 
@@ -593,7 +785,12 @@ const buildMdDecorations = (view) => {
       const indent = checkMatch[1].length
       const checked = checkMatch[2] === 'x'
       const prefixEnd = indent + (checked ? 6 : 6) // "- [x] " or "- [ ] " = 6 chars
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          docLine.from,
+          docLine.from + prefixEnd,
+        ),
+      )
       const nestLevel = Math.floor(indent / 2)
       const padStr = '\u2003'.repeat(nestLevel) // em-space per nesting level
       // Top-level: square checkboxes, nested: circle checkboxes
@@ -604,13 +801,17 @@ const buildMdDecorations = (view) => {
         icon = checked ? '\u25C9\u2009' : '\u25CB\u2009' // ◉ / ○
       }
       const iconClass = nestLevel === 0 ? 'numori-md-check-icon' : 'numori-md-check-icon-nested'
-      widgets.push(Decoration.widget({
-        widget: new MdPrefixWidget(padStr + icon, iconClass, ln),
-        side: -1,
-      }).range(docLine.from + prefixEnd))
-      widgets.push(Decoration.mark({
-        class: checked ? 'numori-md-checked' : 'numori-md-unchecked'
-      }).range(docLine.from + prefixEnd, docLine.to))
+      widgets.push(
+        Decoration.widget({
+          widget: new MdPrefixWidget(padStr + icon, iconClass, ln),
+          side: -1,
+        }).range(docLine.from + prefixEnd),
+      )
+      widgets.push(
+        Decoration.mark({
+          class: checked ? 'numori-md-checked' : 'numori-md-unchecked',
+        }).range(docLine.from + prefixEnd, docLine.to),
+      )
       applyInlineMarkdown(text.substring(prefixEnd), docLine.from + prefixEnd, widgets)
       continue
     }
@@ -620,16 +821,28 @@ const buildMdDecorations = (view) => {
     if (listMatch) {
       const indent = listMatch[1].length
       const prefixEnd = indent + 2 // "- " = 2 chars
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          docLine.from,
+          docLine.from + prefixEnd,
+        ),
+      )
       const nestLevel = Math.floor(indent / 2)
       const bullets = ['\u2022', '\u25E6', '\u25AA', '\u25AB'] // ●, ◦, ▪, ▫
       const bullet = bullets[Math.min(nestLevel, bullets.length - 1)]
       const padStr = '\u2003'.repeat(nestLevel) // em-space per nesting level
-      widgets.push(Decoration.widget({
-        widget: new MdPrefixWidget(padStr + bullet + '\u2009', 'numori-md-bullet'),
-        side: -1,
-      }).range(docLine.from + prefixEnd))
-      widgets.push(Decoration.mark({ class: 'numori-md-list-item' }).range(docLine.from + prefixEnd, docLine.to))
+      widgets.push(
+        Decoration.widget({
+          widget: new MdPrefixWidget(padStr + bullet + '\u2009', 'numori-md-bullet'),
+          side: -1,
+        }).range(docLine.from + prefixEnd),
+      )
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-list-item' }).range(
+          docLine.from + prefixEnd,
+          docLine.to,
+        ),
+      )
       applyInlineMarkdown(text.substring(prefixEnd), docLine.from + prefixEnd, widgets)
       continue
     }
@@ -641,12 +854,21 @@ const buildMdDecorations = (view) => {
       const afterGt = text.substring(gtIdx + 1)
       const spaceAfterGt = afterGt.startsWith(' ') ? 1 : 0
       const prefixEnd = gtIdx + 1 + spaceAfterGt
-      widgets.push(Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(docLine.from, docLine.from + prefixEnd))
-      widgets.push(Decoration.widget({
-        widget: new MdPrefixWidget('\u2503\u2009', 'numori-md-quote-bar'),
-        side: -1,
-      }).range(docLine.from + prefixEnd))
-      widgets.push(Decoration.mark({ class: 'numori-md-quote' }).range(docLine.from + prefixEnd, docLine.to))
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-hidden-syntax' }).range(
+          docLine.from,
+          docLine.from + prefixEnd,
+        ),
+      )
+      widgets.push(
+        Decoration.widget({
+          widget: new MdPrefixWidget('\u2503\u2009', 'numori-md-quote-bar'),
+          side: -1,
+        }).range(docLine.from + prefixEnd),
+      )
+      widgets.push(
+        Decoration.mark({ class: 'numori-md-quote' }).range(docLine.from + prefixEnd, docLine.to),
+      )
       continue
     }
 
@@ -697,7 +919,14 @@ const buildKeymap = () => {
   ]
   for (const [key, handler] of map) {
     if (handler) {
-      bindings.push({ key, run: () => { handler(); return true }, preventDefault: true })
+      bindings.push({
+        key,
+        run: () => {
+          handler()
+          return true
+        },
+        preventDefault: true,
+      })
     }
   }
   return cmKeymap.of(bindings)
@@ -745,12 +974,12 @@ const buildLineNumbers = () => {
         const cursorLine = state.doc.lineAt(state.selection.main.head).number
         const diff = Math.abs(lineNo - cursorLine)
         return diff === 0 ? String(lineNo) : String(diff)
-      }
+      },
     })
   }
   if (mode === 'interval') {
     return cmLineNumbers({
-      formatNumber: (lineNo) => lineNo % 10 === 0 ? String(lineNo) : ''
+      formatNumber: (lineNo) => (lineNo % 10 === 0 ? String(lineNo) : ''),
     })
   }
   return cmLineNumbers()
@@ -770,13 +999,13 @@ const buildActiveLineGutter = () => {
 }
 
 const buildCloseBrackets = () =>
-  (props.localePreferences?.editorAutoClosingBrackets ?? 'always') !== 'never' ? cmCloseBrackets() : []
+  (props.localePreferences?.editorAutoClosingBrackets ?? 'always') !== 'never'
+    ? cmCloseBrackets()
+    : []
 
-const buildTabSize = () =>
-  indentUnit.of(' '.repeat(props.localePreferences?.editorTabSize ?? 2))
+const buildTabSize = () => indentUnit.of(' '.repeat(props.localePreferences?.editorTabSize ?? 2))
 
-const buildWordWrap = () =>
-  props.localePreferences?.editorWordWrap ? EditorView.lineWrapping : []
+const buildWordWrap = () => (props.localePreferences?.editorWordWrap ? EditorView.lineWrapping : [])
 
 const buildScrollPastEnd = () =>
   props.editable && props.localePreferences?.editorScrollPastEnd !== false ? scrollPastEnd() : []
@@ -805,11 +1034,14 @@ const cmExtensions = computed(() => [
       // Relative line numbers need a gutter refresh on every cursor move
       if (editorLineNumbers.value === 'relative') {
         update.view.dispatch({
-          effects: lineNumbersCompartment.reconfigure(buildLineNumbers())
+          effects: lineNumbersCompartment.reconfigure(buildLineNumbers()),
         })
       }
     }
-    if (update.docChanged || update.transactions.some(t => t.isUserEvent('undo') || t.isUserEvent('redo'))) {
+    if (
+      update.docChanged ||
+      update.transactions.some((t) => t.isUserEvent('undo') || t.isUserEvent('redo'))
+    ) {
       updateUndoRedoState()
     }
   }),
@@ -916,13 +1148,17 @@ const handleResultTouch = (event, view) => {
 // --- Link popup state ---
 const linkPopup = reactive({ show: false, url: '', text: '', x: 0, y: 0, isExternal: false })
 
-const closeLinkPopup = () => { linkPopup.show = false }
+const closeLinkPopup = () => {
+  linkPopup.show = false
+}
 
 const isExternalUrl = (url) => {
   try {
     const u = new URL(url, window.location.origin)
     return u.origin !== window.location.origin
-  } catch { return true }
+  } catch {
+    return true
+  }
 }
 
 const showLinkPopup = (url, text, x, y) => {
@@ -941,20 +1177,30 @@ const openLink = () => {
 
 const copyLinkUrl = async () => {
   closeLinkPopup()
-  try { await navigator.clipboard.writeText(linkPopup.url) } catch { /* ignore */ }
+  try {
+    await navigator.clipboard.writeText(linkPopup.url)
+  } catch {
+    /* ignore */
+  }
 }
 
 const copyLinkName = async () => {
   closeLinkPopup()
-  try { await navigator.clipboard.writeText(linkPopup.text) } catch { /* ignore */ }
+  try {
+    await navigator.clipboard.writeText(linkPopup.text)
+  } catch {
+    /* ignore */
+  }
 }
 
 // --- Markdown click handler (links + checkboxes) ---
-const _isMac = import.meta.client && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)
+const _isMac =
+  import.meta.client && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)
 let longPressTimer = null
 let longPressTriggered = false
 
-const findLinkEl = (el) => el?.closest?.('.numori-md-link') || (el?.classList?.contains('numori-md-link') ? el : null)
+const findLinkEl = (el) =>
+  el?.closest?.('.numori-md-link') || (el?.classList?.contains('numori-md-link') ? el : null)
 
 // Find a markdown link from raw text at a given cursor position within the line
 const findRawLinkAt = (lineText, charOffset) => {
@@ -1026,7 +1272,9 @@ const handleMdClick = (event, view) => {
   const el = event.target
 
   // Checkbox click (icon, or anywhere on the checkbox line in view-only mode)
-  const isCheckIcon = el?.classList?.contains('numori-md-check-icon') || el?.classList?.contains('numori-md-check-icon-nested')
+  const isCheckIcon =
+    el?.classList?.contains('numori-md-check-icon') ||
+    el?.classList?.contains('numori-md-check-icon-nested')
   const isViewOnly = !props.editable
   if (isCheckIcon || isViewOnly) {
     const lineNum = isCheckIcon
@@ -1113,7 +1361,10 @@ const handleMdTouchEnd = (event, view) => {
   const el = document.elementFromPoint(touch.clientX, touch.clientY)
 
   // Checkbox touch
-  if (el?.classList?.contains('numori-md-check-icon') || el?.classList?.contains('numori-md-check-icon-nested')) {
+  if (
+    el?.classList?.contains('numori-md-check-icon') ||
+    el?.classList?.contains('numori-md-check-icon-nested')
+  ) {
     if (!props.editable) return false
     const lineNum = parseInt(el.dataset?.line, 10)
     if (!lineNum || lineNum < 1) return false
@@ -1158,7 +1409,10 @@ const onEditorCreate = (payload) => {
 // We use a short poll as a safety net since the child mounts inside <ClientOnly>.
 let initPollTimer = null
 const pollForView = () => {
-  if (editorReady.value) { clearInterval(initPollTimer); return }
+  if (editorReady.value) {
+    clearInterval(initPollTimer)
+    return
+  }
   const view = editorRef.value?.view
   if (view && typeof view.dispatch === 'function') {
     clearInterval(initPollTimer)
@@ -1184,46 +1438,56 @@ onMounted(() => {
 // --- Watchers ---
 
 // Re-format display when locale preferences change
-watch(() => props.localePreferences, () => {
-  reformatDisplay()
-  if (editorView) {
-    editorView.dispatch({
-      effects: [
-        fontThemeCompartment.reconfigure(buildFontTheme()),
-        lineNumbersCompartment.reconfigure(buildLineNumbers()),
-        foldGutterCompartment.reconfigure(buildFoldGutter()),
-        activeLineCompartment.reconfigure(buildActiveLine()),
-        activeLineGutterCompartment.reconfigure(buildActiveLineGutter()),
-        closeBracketsCompartment.reconfigure(buildCloseBrackets()),
-        tabSizeCompartment.reconfigure(buildTabSize()),
-        wordWrapCompartment.reconfigure(buildWordWrap()),
-        scrollPastEndCompartment.reconfigure(buildScrollPastEnd()),
-      ]
-    })
-  }
-}, { deep: true })
+watch(
+  () => props.localePreferences,
+  () => {
+    reformatDisplay()
+    if (editorView) {
+      editorView.dispatch({
+        effects: [
+          fontThemeCompartment.reconfigure(buildFontTheme()),
+          lineNumbersCompartment.reconfigure(buildLineNumbers()),
+          foldGutterCompartment.reconfigure(buildFoldGutter()),
+          activeLineCompartment.reconfigure(buildActiveLine()),
+          activeLineGutterCompartment.reconfigure(buildActiveLineGutter()),
+          closeBracketsCompartment.reconfigure(buildCloseBrackets()),
+          tabSizeCompartment.reconfigure(buildTabSize()),
+          wordWrapCompartment.reconfigure(buildWordWrap()),
+          scrollPastEndCompartment.reconfigure(buildScrollPastEnd()),
+        ],
+      })
+    }
+  },
+  { deep: true },
+)
 
 // Re-evaluate when code block result visibility changes
-watch(() => props.localePreferences?.showResultsInCodeBlocks, () => {
-  updateLines(localContent.value)
-  updateInlineDecorations()
-})
+watch(
+  () => props.localePreferences?.showResultsInCodeBlocks,
+  () => {
+    updateLines(localContent.value)
+    updateInlineDecorations()
+  },
+)
 
 // Theme changes
-watch(() => colorMode.value, () => {
-  if (!editorView) return
-  editorView.dispatch({
-    effects: themeCompartment.reconfigure(
-      colorMode.value === 'dark' ? numoriDarkTheme : numoriLightTheme
-    )
-  })
-})
+watch(
+  () => colorMode.value,
+  () => {
+    if (!editorView) return
+    editorView.dispatch({
+      effects: themeCompartment.reconfigure(
+        colorMode.value === 'dark' ? numoriDarkTheme : numoriLightTheme,
+      ),
+    })
+  },
+)
 
 // Live clock
 const tickLiveTime = () => {
   const raw = rawLines.value
   if (!raw.length) return
-  const hasLive = raw.some(l => l.liveTime)
+  const hasLive = raw.some((l) => l.liveTime)
   if (!hasLive) return
   for (const line of raw) {
     if (!line.liveTime) continue
@@ -1247,12 +1511,24 @@ watch(displayLines, () => {
   })
 })
 
-watch(() => props.showInline, () => updateInlineDecorations())
-watch(() => props.inlineAlign, () => updateInlineDecorations())
-watch(() => props.localePreferences?.inlineResultAlign, () => updateInlineDecorations())
+watch(
+  () => props.showInline,
+  () => updateInlineDecorations(),
+)
+watch(
+  () => props.inlineAlign,
+  () => updateInlineDecorations(),
+)
+watch(
+  () => props.localePreferences?.inlineResultAlign,
+  () => updateInlineDecorations(),
+)
 
 // Markdown mode change
-watch(() => props.markdownMode, () => nextTick(() => updateMarkdownPreview()))
+watch(
+  () => props.markdownMode,
+  () => nextTick(() => updateMarkdownPreview()),
+)
 
 // Cursor line change → re-render markdown (reveal raw on cursor line in edit mode)
 watch(currentLine, () => {
@@ -1270,54 +1546,62 @@ watch(currentLine, () => {
 // watchEffect sees value === doc and doesn't fire a redundant full replacement.
 let suppressEmit = false
 
-watch(() => props.content, (newContent) => {
-  if (localContent.value === newContent) return
+watch(
+  () => props.content,
+  (newContent) => {
+    if (localContent.value === newContent) return
 
-  if (editorView) {
-    const currentDoc = editorView.state.doc.toString()
-    if (currentDoc === newContent) {
-      // CM doc already matches — just align the ref silently
+    if (editorView) {
+      const currentDoc = editorView.state.doc.toString()
+      if (currentDoc === newContent) {
+        // CM doc already matches — just align the ref silently
+        suppressEmit = true
+        localContent.value = newContent
+        nextTick(() => {
+          suppressEmit = false
+        })
+        return
+      }
+
+      // Compute minimal diff: find common prefix and suffix
+      const oldStr = currentDoc
+      const newStr = newContent
+      let prefixLen = 0
+      const minLen = Math.min(oldStr.length, newStr.length)
+      while (prefixLen < minLen && oldStr[prefixLen] === newStr[prefixLen]) prefixLen++
+
+      let suffixLen = 0
+      const maxSuffix = minLen - prefixLen
+      while (
+        suffixLen < maxSuffix &&
+        oldStr[oldStr.length - 1 - suffixLen] === newStr[newStr.length - 1 - suffixLen]
+      )
+        suffixLen++
+
+      const from = prefixLen
+      const to = oldStr.length - suffixLen
+      const insert = newStr.slice(prefixLen, newStr.length - suffixLen)
+
+      // Sync the ref first so NuxtCodeMirror's watchEffect sees no diff
       suppressEmit = true
       localContent.value = newContent
-      nextTick(() => { suppressEmit = false })
-      return
+
+      // Dispatch the minimal change — CM maps cursor/selection through it
+      editorView.dispatch({
+        changes: { from, to, insert },
+      })
+
+      nextTick(() => {
+        suppressEmit = false
+      })
+      updateLines(newContent)
+    } else {
+      // Editor not ready yet (initial load / note switch) — direct assign is fine
+      localContent.value = newContent
+      updateLines(newContent)
     }
-
-    // Compute minimal diff: find common prefix and suffix
-    const oldStr = currentDoc
-    const newStr = newContent
-    let prefixLen = 0
-    const minLen = Math.min(oldStr.length, newStr.length)
-    while (prefixLen < minLen && oldStr[prefixLen] === newStr[prefixLen]) prefixLen++
-
-    let suffixLen = 0
-    const maxSuffix = minLen - prefixLen
-    while (
-      suffixLen < maxSuffix &&
-      oldStr[oldStr.length - 1 - suffixLen] === newStr[newStr.length - 1 - suffixLen]
-    ) suffixLen++
-
-    const from = prefixLen
-    const to = oldStr.length - suffixLen
-    const insert = newStr.slice(prefixLen, newStr.length - suffixLen)
-
-    // Sync the ref first so NuxtCodeMirror's watchEffect sees no diff
-    suppressEmit = true
-    localContent.value = newContent
-
-    // Dispatch the minimal change — CM maps cursor/selection through it
-    editorView.dispatch({
-      changes: { from, to, insert },
-    })
-
-    nextTick(() => { suppressEmit = false })
-    updateLines(newContent)
-  } else {
-    // Editor not ready yet (initial load / note switch) — direct assign is fine
-    localContent.value = newContent
-    updateLines(newContent)
-  }
-})
+  },
+)
 
 const debouncedUpdateLines = useDebounceFn((text) => updateLines(text), 80)
 
@@ -1348,7 +1632,7 @@ const reformatDisplay = () => {
     displayLines.value = rawLines.value
     return
   }
-  displayLines.value = rawLines.value.map(line => {
+  displayLines.value = rawLines.value.map((line) => {
     if (!line.result) return line
     return { ...line, result: formatDisplay(line.result, null, prefs) }
   })
@@ -1600,9 +1884,7 @@ const showCopiedToast = (view, posx, posy, lineIndex) => {
   toast.textContent = 'Copied'
   const rect = editorDom.getBoundingClientRect()
   toast.style.left = `${posx - rect.left}px`
-  toast.style.top = lineIndex <= 1
-    ? `${posy - rect.top + 8}px`
-    : `${posy - rect.top - 24}px`
+  toast.style.top = lineIndex <= 1 ? `${posy - rect.top + 8}px` : `${posy - rect.top - 24}px`
   editorDom.style.position = 'relative'
   editorDom.appendChild(toast)
   setTimeout(() => toast.remove(), 850)
@@ -1658,7 +1940,10 @@ const wrapSelection = (before, after = before) => {
     const wrapped = before + selectedText + after
     editorView.dispatch({
       changes: { from, to, insert: wrapped },
-      selection: EditorSelection.range(from + before.length, from + before.length + selectedText.length),
+      selection: EditorSelection.range(
+        from + before.length,
+        from + before.length + selectedText.length,
+      ),
     })
   } else {
     editorView.dispatch({
@@ -1686,12 +1971,16 @@ const outdentLine = () => {
   if (text.startsWith('  ')) {
     editorView.dispatch({
       changes: { from: line.from, to: line.from + 2, insert: '' },
-      selection: EditorSelection.cursor(Math.max(line.from, editorView.state.selection.main.head - 2)),
+      selection: EditorSelection.cursor(
+        Math.max(line.from, editorView.state.selection.main.head - 2),
+      ),
     })
   } else if (text.startsWith('\t')) {
     editorView.dispatch({
       changes: { from: line.from, to: line.from + 1, insert: '' },
-      selection: EditorSelection.cursor(Math.max(line.from, editorView.state.selection.main.head - 1)),
+      selection: EditorSelection.cursor(
+        Math.max(line.from, editorView.state.selection.main.head - 1),
+      ),
     })
   }
   editorView.focus()
@@ -1709,8 +1998,24 @@ defineExpose({
   openLink,
   copyLinkUrl,
   copyLinkName,
-  undo: () => { if (editorView) { cmUndo(editorView); updateUndoRedoState(); editorView.focus() } },
-  redo: () => { if (editorView) { cmRedo(editorView); updateUndoRedoState(); editorView.focus() } },
-  blur: () => { if (editorView) { editorView.contentDOM.blur() } },
+  undo: () => {
+    if (editorView) {
+      cmUndo(editorView)
+      updateUndoRedoState()
+      editorView.focus()
+    }
+  },
+  redo: () => {
+    if (editorView) {
+      cmRedo(editorView)
+      updateUndoRedoState()
+      editorView.focus()
+    }
+  },
+  blur: () => {
+    if (editorView) {
+      editorView.contentDOM.blur()
+    }
+  },
 })
 </script>

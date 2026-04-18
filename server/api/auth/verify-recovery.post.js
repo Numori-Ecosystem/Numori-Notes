@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
   const result = await query(
     'SELECT id, otp_code, otp_expires_at, otp_purpose, password_recovery_enabled FROM users WHERE email = $1',
-    [emailNorm]
+    [emailNorm],
   )
 
   if (result.rows.length === 0) {
@@ -27,11 +27,17 @@ export default defineEventHandler(async (event) => {
   const user = result.rows[0]
 
   if (!user.password_recovery_enabled) {
-    throw createError({ statusCode: 400, statusMessage: 'Password recovery is not enabled for this account' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Password recovery is not enabled for this account',
+    })
   }
 
   if (user.otp_purpose !== 'password_recovery') {
-    throw createError({ statusCode: 400, statusMessage: 'No pending recovery. Request a new code.' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'No pending recovery. Request a new code.',
+    })
   }
 
   if (!user.otp_code || new Date(user.otp_expires_at) < new Date()) {
@@ -48,13 +54,13 @@ export default defineEventHandler(async (event) => {
   const recoveryToken = await signJwt(
     { userId: user.id, email: emailNorm, purpose: 'password_recovery' },
     secret,
-    15 * 60 // 15 minutes
+    15 * 60, // 15 minutes
   )
 
   // Clear OTP so it can't be reused
   await query(
     'UPDATE users SET otp_code = NULL, otp_expires_at = NULL, otp_purpose = NULL, updated_at = NOW() WHERE id = $1',
-    [user.id]
+    [user.id],
   )
 
   return { recoveryToken }

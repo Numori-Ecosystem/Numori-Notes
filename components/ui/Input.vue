@@ -1,31 +1,41 @@
 <template>
   <div class="w-full">
     <div class="relative flex">
-
       <!-- Number stepper: minus button on left (both-sides layout) -->
       <button
-v-if="isNumber && stepperLayout === 'both-sides'" type="button" tabindex="-1"
+        v-if="isNumber && stepperLayout === 'both-sides'"
+        type="button"
+        tabindex="-1"
         class="flex items-center justify-center w-9 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none"
         :class="{ 'opacity-50 pointer-events-none': disabled }"
-        aria-label="Decrease value" @click="stepDown">
+        aria-label="Decrease value"
+        @click="stepDown"
+      >
         <Icon name="mdi:minus" class="w-4 h-4" />
       </button>
 
       <!-- Number stepper: stacked up/down buttons on left -->
       <div
-v-if="isNumber && stepperLayout === 'stacked-left'"
+        v-if="isNumber && stepperLayout === 'stacked-left'"
         class="flex flex-col w-6 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-lg overflow-hidden"
-        :class="{ 'opacity-50 pointer-events-none': disabled }">
+        :class="{ 'opacity-50 pointer-events-none': disabled }"
+      >
         <button
-type="button" tabindex="-1"
+          type="button"
+          tabindex="-1"
           class="grid place-items-center w-4 flex-1 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none border-b border-gray-300 dark:border-gray-600"
-          aria-label="Increase value" @click="stepUp">
+          aria-label="Increase value"
+          @click="stepUp"
+        >
           <Icon name="mdi:chevron-up" class="block w-3 h-3" />
         </button>
         <button
-type="button" tabindex="-1"
+          type="button"
+          tabindex="-1"
           class="grid place-items-center w-4 flex-1 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none"
-          aria-label="Decrease value" @click="stepDown">
+          aria-label="Decrease value"
+          @click="stepDown"
+        >
           <Icon name="mdi:chevron-down" class="block w-3 h-3" />
         </button>
       </div>
@@ -75,38 +85,52 @@ type="button" tabindex="-1"
 
       <!-- Password visibility toggle button -->
       <button
-v-if="isPassword && showToggle" type="button" tabindex="-1"
+        v-if="isPassword && showToggle"
+        type="button"
+        tabindex="-1"
         class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         :aria-label="passwordVisible ? 'Hide password' : 'Show password'"
-        @click="passwordVisible = !passwordVisible">
+        @click="passwordVisible = !passwordVisible"
+      >
         <Icon :name="passwordVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
       </button>
 
       <!-- Number stepper: stacked up/down buttons on right -->
       <div
-v-if="isNumber && stepperLayout === 'stacked-right'"
+        v-if="isNumber && stepperLayout === 'stacked-right'"
         class="flex flex-col w-6 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-lg overflow-hidden"
-        :class="{ 'opacity-50 pointer-events-none': disabled }">
+        :class="{ 'opacity-50 pointer-events-none': disabled }"
+      >
         <button
-type="button" tabindex="-1"
+          type="button"
+          tabindex="-1"
           class="grid place-items-center w-4 flex-1 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none border-b border-gray-300 dark:border-gray-600"
-          aria-label="Increase value" @click="stepUp">
+          aria-label="Increase value"
+          @click="stepUp"
+        >
           <Icon name="mdi:chevron-up" class="block w-3 h-3" />
         </button>
         <button
-type="button" tabindex="-1"
+          type="button"
+          tabindex="-1"
           class="grid place-items-center w-4 flex-1 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none"
-          aria-label="Decrease value" @click="stepDown">
+          aria-label="Decrease value"
+          @click="stepDown"
+        >
           <Icon name="mdi:chevron-down" class="block w-3 h-3" />
         </button>
       </div>
 
       <!-- Number stepper: plus button on right (both-sides layout) -->
       <button
-v-if="isNumber && stepperLayout === 'both-sides'" type="button" tabindex="-1"
+        v-if="isNumber && stepperLayout === 'both-sides'"
+        type="button"
+        tabindex="-1"
         class="flex items-center justify-center w-9 rounded-r-lg border border-l-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none"
         :class="{ 'opacity-50 pointer-events-none': disabled }"
-        aria-label="Increase value" @click="stepUp">
+        aria-label="Increase value"
+        @click="stepUp"
+      >
         <Icon name="mdi:plus" class="w-4 h-4" />
       </button>
     </div>
@@ -461,7 +485,10 @@ function onInput(e) {
     }
   }
 
-  emit('update:modelValue', isNumber.value && val !== '' && val !== '-' && val !== '.' && val !== '-.' ? Number(val) : val)
+  emit(
+    'update:modelValue',
+    isNumber.value && val !== '' && val !== '-' && val !== '.' && val !== '-.' ? Number(val) : val,
+  )
 }
 
 function onBlur() {
@@ -472,10 +499,21 @@ function onKeydown(e) {
   if (!isNumber.value) return
 
   // Allow: backspace, delete, tab, escape, enter, arrows, home, end, decimal point, minus
-  const allowed = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End']
+  const allowed = [
+    'Backspace',
+    'Delete',
+    'Tab',
+    'Escape',
+    'Enter',
+    'ArrowLeft',
+    'ArrowRight',
+    'Home',
+    'End',
+  ]
   if (allowed.includes(e.key)) return
   if (e.key === '.' && !String(props.modelValue).includes('.')) return
-  if (e.key === '-' && e.target.selectionStart === 0 && !String(props.modelValue).includes('-')) return
+  if (e.key === '-' && e.target.selectionStart === 0 && !String(props.modelValue).includes('-'))
+    return
   if (e.ctrlKey || e.metaKey) return // allow copy/paste/select-all
 
   // Block non-digit keys
@@ -504,5 +542,3 @@ defineExpose({
   el: inputRef,
 })
 </script>
-
-

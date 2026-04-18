@@ -14,10 +14,9 @@ export default defineEventHandler(async (event) => {
 
   const emailNorm = email.toLowerCase().trim()
 
-  const result = await query(
-    'SELECT id, password_recovery_enabled FROM users WHERE email = $1',
-    [emailNorm]
-  )
+  const result = await query('SELECT id, password_recovery_enabled FROM users WHERE email = $1', [
+    emailNorm,
+  ])
 
   // Always return success to avoid email enumeration
   if (result.rows.length === 0) return { sent: true }
@@ -34,13 +33,16 @@ export default defineEventHandler(async (event) => {
 
   await query(
     'UPDATE users SET otp_code = $1, otp_expires_at = $2, otp_purpose = $3, updated_at = NOW() WHERE id = $4',
-    [code, expiresAt.toISOString(), 'password_recovery', user.id]
+    [code, expiresAt.toISOString(), 'password_recovery', user.id],
   )
 
   const emailResult = await sendPasswordRecoveryEmail(emailNorm, code)
 
   if (emailResult.error) {
-    throw createError({ statusCode: 502, statusMessage: 'Failed to send recovery email. Please try again later.' })
+    throw createError({
+      statusCode: 502,
+      statusMessage: 'Failed to send recovery email. Please try again later.',
+    })
   }
 
   return { sent: true }

@@ -102,18 +102,16 @@ defineEmits(['update:modelValue'])
 const isBlock = computed(() => props.block ?? props.variant === 'tabs')
 
 const wrapperClass = computed(() =>
-  isBlock.value ? 'flex items-center rounded-lg' : 'inline-flex items-center rounded-lg'
+  isBlock.value ? 'flex items-center rounded-lg' : 'inline-flex items-center rounded-lg',
 )
 
 const containerClass = computed(() =>
   props.variant === 'tabs'
     ? 'bg-gray-100 dark:bg-gray-800 p-0.5'
-    : 'bg-gray-200/50 dark:bg-gray-800'
+    : 'bg-gray-200/50 dark:bg-gray-800',
 )
 
-const buttonSize = computed(() =>
-  props.variant === 'tabs' ? 'xs' : props.size
-)
+const buttonSize = computed(() => (props.variant === 'tabs' ? 'xs' : props.size))
 
 // Apply rounding only to first/last buttons; middle buttons get rounded-none
 const roundingClass = (idx) => {
@@ -128,12 +126,12 @@ const roundingClass = (idx) => {
 const activeClass = computed(() =>
   props.variant === 'tabs'
     ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm hover:bg-white dark:hover:bg-gray-700'
-    : 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm hover:bg-white dark:hover:bg-gray-700'
+    : 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm hover:bg-white dark:hover:bg-gray-700',
 )
 
 const inactiveClass = computed(() =>
   props.variant === 'tabs'
     ? 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
-    : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-300/40 dark:hover:bg-gray-700/50'
+    : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-300/40 dark:hover:bg-gray-700/50',
 )
 </script>

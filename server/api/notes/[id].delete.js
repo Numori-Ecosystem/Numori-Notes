@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   const result = await query(
     'DELETE FROM notes WHERE id = $1 AND user_id = $2 RETURNING client_id',
-    [id, auth.userId]
+    [id, auth.userId],
   )
 
   if (result.rows.length === 0) {
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   if (clientId) {
     await query(
       'INSERT INTO deleted_notes (user_id, client_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-      [auth.userId, clientId]
+      [auth.userId, clientId],
     )
   }
 

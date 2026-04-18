@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   setResponseHeaders(event, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    Connection: 'keep-alive',
   })
 
   const stream = event.node.res
@@ -31,7 +31,11 @@ export default defineEventHandler(async (event) => {
   stream.write(`data: ${JSON.stringify({ type: 'connected' })}\n\n`)
 
   const keepAlive = setInterval(() => {
-    try { stream.write(': ping\n\n') } catch { clearInterval(keepAlive) }
+    try {
+      stream.write(': ping\n\n')
+    } catch {
+      clearInterval(keepAlive)
+    }
   }, 30000)
 
   event.node.req.on('close', () => {

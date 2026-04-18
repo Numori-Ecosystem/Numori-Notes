@@ -15,10 +15,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid value' })
   }
 
-  await query(
-    'UPDATE users SET password_recovery_enabled = $1, updated_at = NOW() WHERE id = $2',
-    [passwordRecoveryEnabled, auth.userId]
-  )
+  await query('UPDATE users SET password_recovery_enabled = $1, updated_at = NOW() WHERE id = $2', [
+    passwordRecoveryEnabled,
+    auth.userId,
+  ])
 
   return { passwordRecoveryEnabled }
 })

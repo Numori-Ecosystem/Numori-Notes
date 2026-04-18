@@ -1,7 +1,9 @@
 <template>
   <div class="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
     <!-- Selection Toolbar / Header — crossfade in a fixed container -->
-    <div class="relative border-b border-gray-200 dark:border-gray-800 flex-shrink-0 overflow-hidden">
+    <div
+      class="relative border-b border-gray-200 dark:border-gray-800 flex-shrink-0 overflow-hidden"
+    >
       <!-- Select toolbar -->
       <Transition
         enter-active-class="transition-opacity duration-200 ease-out"
@@ -9,49 +11,87 @@
         enter-to-class="opacity-100"
         leave-active-class="transition-opacity duration-150 ease-in"
         leave-from-class="opacity-100"
-        leave-to-class="opacity-0">
+        leave-to-class="opacity-0"
+      >
         <div
-v-if="selectMode"
-          class="absolute inset-0 z-10 p-4 bg-primary-50 dark:bg-primary-900/20 flex flex-col justify-center space-y-3">
+          v-if="selectMode"
+          class="absolute inset-0 z-10 p-4 bg-primary-50 dark:bg-primary-900/20 flex flex-col justify-center space-y-3"
+        >
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium text-primary-700 dark:text-primary-300">
               {{ selectedIds.size }} selected
             </span>
             <UiButton
-variant="ghost" color="gray" icon-only size="sm" title="Cancel selection"
-              @click="exitSelectMode">
+              variant="ghost"
+              color="gray"
+              icon-only
+              size="sm"
+              title="Cancel selection"
+              @click="exitSelectMode"
+            >
               <Icon name="mdi:close" class="w-5 h-5" />
             </UiButton>
           </div>
           <div class="flex items-center gap-2">
             <UiButton
-variant="outline" color="gray" size="sm" icon-only class="flex-shrink-0"
+              variant="outline"
+              color="gray"
+              size="sm"
+              icon-only
+              class="flex-shrink-0"
               :title="allSelected ? 'Deselect All' : 'Select All'"
-              @click="toggleSelectAll">
-              <Icon :name="allSelected ? 'mdi:checkbox-marked-outline' : 'mdi:checkbox-blank-outline'" class="w-4 h-4" />
+              @click="toggleSelectAll"
+            >
+              <Icon
+                :name="allSelected ? 'mdi:checkbox-marked-outline' : 'mdi:checkbox-blank-outline'"
+                class="w-4 h-4"
+              />
             </UiButton>
             <UiButton
-variant="solid" color="primary" size="sm" :disabled="selectedIds.size === 0" class="flex-1"
-              @click="bulkGroup">
+              variant="solid"
+              color="primary"
+              size="sm"
+              :disabled="selectedIds.size === 0"
+              class="flex-1"
+              @click="bulkGroup"
+            >
               <Icon name="mdi:folder-outline" class="w-4 h-4" />
               Group
             </UiButton>
             <UiButton
-v-if="showArchive" variant="solid" color="primary" size="sm" :disabled="selectedIds.size === 0" class="flex-1"
-              @click="bulkUnarchive">
+              v-if="showArchive"
+              variant="solid"
+              color="primary"
+              size="sm"
+              :disabled="selectedIds.size === 0"
+              class="flex-1"
+              @click="bulkUnarchive"
+            >
               <Icon name="mdi:package-up" class="w-4 h-4" />
               Unarchive
             </UiButton>
             <UiButton
-v-else variant="solid" color="gray" size="sm" :disabled="selectedIds.size === 0" class="flex-1"
-              @click="bulkArchive">
+              v-else
+              variant="solid"
+              color="gray"
+              size="sm"
+              :disabled="selectedIds.size === 0"
+              class="flex-1"
+              @click="bulkArchive"
+            >
               <Icon name="mdi:archive-outline" class="w-4 h-4" />
               Archive
             </UiButton>
             <UiButton
-variant="solid" color="red" size="sm" icon-only :disabled="selectedIds.size === 0" class="flex-shrink-0"
+              variant="solid"
+              color="red"
+              size="sm"
+              icon-only
+              :disabled="selectedIds.size === 0"
+              class="flex-shrink-0"
               title="Delete"
-              @click="bulkDelete">
+              @click="bulkDelete"
+            >
               <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
             </UiButton>
           </div>
@@ -59,144 +99,221 @@ variant="solid" color="red" size="sm" icon-only :disabled="selectedIds.size === 
       </Transition>
 
       <!-- Normal header (always in flow to maintain height) -->
-      <div class="p-4 space-y-3" :class="{ 'invisible': selectMode }">
-      <UiButton variant="solid" color="primary" block @click="$emit('new-note')">
-        <Icon name="mdi:plus" class="w-5 h-5" />
-        <span>New Note</span>
-      </UiButton>
-
-      <!-- Search + select toggle + filters -->
-      <div class="flex items-center gap-2">
-        <UiButton
-variant="ghost" icon-only size="sm" class="flex-shrink-0"
-          :class="selectMode
-            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
-            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
-          title="Select notes"
-          @click="toggleSelectMode">
-          <Icon name="mdi:checkbox-multiple-marked-outline" class="w-4 h-4 block" />
+      <div class="p-4 space-y-3" :class="{ invisible: selectMode }">
+        <UiButton variant="solid" color="primary" block @click="$emit('new-note')">
+          <Icon name="mdi:plus" class="w-5 h-5" />
+          <span>New Note</span>
         </UiButton>
-        <div class="relative flex-1">
-          <Icon name="mdi:magnify" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <UiInput v-model="searchQuery" type="text" placeholder="Search notes..." :validate="false" />
-        </div>
-        <UiButton
-variant="ghost" icon-only size="sm" class="flex-shrink-0"
-          :class="showFilters || hasActiveFilters
-            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
-            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
-          title="Filters"
-          @click="showFilters = !showFilters">
-          <Icon
-:name="showFilters ? 'mdi:filter-variant-remove' : 'mdi:filter-variant'"
-            class="w-4 h-4 block transition-transform duration-200"
-            :class="{ 'rotate-180': showFilters }" />
-        </UiButton>
-        <UiButton
-v-if="hasArchivedNotes" variant="ghost" icon-only size="sm" class="flex-shrink-0"
-          :class="showArchive
-            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
-            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
-          title="Archive"
-          @click="showArchive = !showArchive">
-          <Icon
-:name="showArchive ? 'mdi:archive' : 'mdi:archive-outline'"
-            class="w-4 h-4 block" />
-        </UiButton>
-      </div>
 
-      <!-- Advanced filters panel -->
-      <Transition
-        enter-active-class="transition-all duration-200 ease-out"
-        enter-from-class="opacity-0 -translate-y-1 max-h-0"
-        enter-to-class="opacity-100 translate-y-0 max-h-40"
-        leave-active-class="transition-all duration-150 ease-in"
-        leave-from-class="opacity-100 translate-y-0 max-h-40"
-        leave-to-class="opacity-0 -translate-y-1 max-h-0">
-        <div v-if="showFilters" class="overflow-hidden rounded-lg bg-white dark:bg-gray-800 p-2.5 space-y-2 shadow-sm">
-          <!-- Date range -->
-          <UiSelect
-v-model="filters.dateRange" size="xs"
-            :options="[
-              { value: '', label: 'Modified: Any time' },
-              { value: 'today', label: 'Modified: Today' },
-              { value: 'week', label: 'Modified: Past 7 days' },
-              { value: 'month', label: 'Modified: Past 30 days' },
-              { value: 'older', label: 'Modified: Older than 30 days' },
-            ]" />
-
-          <!-- Toggle chips -->
-          <div class="flex flex-wrap gap-1.5">
-            <UiButton
-variant="ghost" shape="pill" size="xs" :class="filters.searchContent
-                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
-              @click="filters.searchContent = !filters.searchContent">
-              Content
-            </UiButton>
-            <UiButton
-variant="ghost" shape="pill" size="xs" :class="filters.hasDescription
-                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
-              @click="filters.hasDescription = !filters.hasDescription">
-              Has desc
-            </UiButton>
-            <UiButton
-variant="ghost" shape="pill" size="xs" :class="filters.hasTags
-                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
-              @click="filters.hasTags = !filters.hasTags">
-              Has tags
-            </UiButton>
-            <UiButton
-variant="ghost" shape="pill" size="xs" :class="filters.emptyOnly
-                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
-              @click="filters.emptyOnly = !filters.emptyOnly">
-              Empty
-            </UiButton>
-            <UiButton
-v-if="hasActiveFilters" variant="ghost" color="red" shape="pill" size="xs" class="ml-auto"
-              @click="clearFilters">
-              Clear
-            </UiButton>
+        <!-- Search + select toggle + filters -->
+        <div class="flex items-center gap-2">
+          <UiButton
+            variant="ghost"
+            icon-only
+            size="sm"
+            class="flex-shrink-0"
+            :class="
+              selectMode
+                ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+            "
+            title="Select notes"
+            @click="toggleSelectMode"
+          >
+            <Icon name="mdi:checkbox-multiple-marked-outline" class="w-4 h-4 block" />
+          </UiButton>
+          <div class="relative flex-1">
+            <Icon
+              name="mdi:magnify"
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+            />
+            <UiInput
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search notes..."
+              :validate="false"
+            />
           </div>
+          <UiButton
+            variant="ghost"
+            icon-only
+            size="sm"
+            class="flex-shrink-0"
+            :class="
+              showFilters || hasActiveFilters
+                ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+            "
+            title="Filters"
+            @click="showFilters = !showFilters"
+          >
+            <Icon
+              :name="showFilters ? 'mdi:filter-variant-remove' : 'mdi:filter-variant'"
+              class="w-4 h-4 block transition-transform duration-200"
+              :class="{ 'rotate-180': showFilters }"
+            />
+          </UiButton>
+          <UiButton
+            v-if="hasArchivedNotes"
+            variant="ghost"
+            icon-only
+            size="sm"
+            class="flex-shrink-0"
+            :class="
+              showArchive
+                ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+            "
+            title="Archive"
+            @click="showArchive = !showArchive"
+          >
+            <Icon
+              :name="showArchive ? 'mdi:archive' : 'mdi:archive-outline'"
+              class="w-4 h-4 block"
+            />
+          </UiButton>
         </div>
-      </Transition>
 
-      <!-- Tag filter -->
-      <div v-if="allTags.length" class="flex flex-wrap gap-1.5">
-        <UiButton
-v-for="tag in allTags" :key="tag"
-          variant="ghost" shape="pill" size="xs"
-          :class="selectedTags.includes(tag)
-            ? 'bg-primary-600 text-white'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
-          @click="toggleTag(tag)">
-          {{ tag }}
-        </UiButton>
-      </div>
+        <!-- Advanced filters panel -->
+        <Transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="opacity-0 -translate-y-1 max-h-0"
+          enter-to-class="opacity-100 translate-y-0 max-h-40"
+          leave-active-class="transition-all duration-150 ease-in"
+          leave-from-class="opacity-100 translate-y-0 max-h-40"
+          leave-to-class="opacity-0 -translate-y-1 max-h-0"
+        >
+          <div
+            v-if="showFilters"
+            class="overflow-hidden rounded-lg bg-white dark:bg-gray-800 p-2.5 space-y-2 shadow-sm"
+          >
+            <!-- Date range -->
+            <UiSelect
+              v-model="filters.dateRange"
+              size="xs"
+              :options="[
+                { value: '', label: 'Modified: Any time' },
+                { value: 'today', label: 'Modified: Today' },
+                { value: 'week', label: 'Modified: Past 7 days' },
+                { value: 'month', label: 'Modified: Past 30 days' },
+                { value: 'older', label: 'Modified: Older than 30 days' },
+              ]"
+            />
+
+            <!-- Toggle chips -->
+            <div class="flex flex-wrap gap-1.5">
+              <UiButton
+                variant="ghost"
+                shape="pill"
+                size="xs"
+                :class="
+                  filters.searchContent
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                "
+                @click="filters.searchContent = !filters.searchContent"
+              >
+                Content
+              </UiButton>
+              <UiButton
+                variant="ghost"
+                shape="pill"
+                size="xs"
+                :class="
+                  filters.hasDescription
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                "
+                @click="filters.hasDescription = !filters.hasDescription"
+              >
+                Has desc
+              </UiButton>
+              <UiButton
+                variant="ghost"
+                shape="pill"
+                size="xs"
+                :class="
+                  filters.hasTags
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                "
+                @click="filters.hasTags = !filters.hasTags"
+              >
+                Has tags
+              </UiButton>
+              <UiButton
+                variant="ghost"
+                shape="pill"
+                size="xs"
+                :class="
+                  filters.emptyOnly
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                "
+                @click="filters.emptyOnly = !filters.emptyOnly"
+              >
+                Empty
+              </UiButton>
+              <UiButton
+                v-if="hasActiveFilters"
+                variant="ghost"
+                color="red"
+                shape="pill"
+                size="xs"
+                class="ml-auto"
+                @click="clearFilters"
+              >
+                Clear
+              </UiButton>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Tag filter -->
+        <div v-if="allTags.length" class="flex flex-wrap gap-1.5">
+          <UiButton
+            v-for="tag in allTags"
+            :key="tag"
+            variant="ghost"
+            shape="pill"
+            size="xs"
+            :class="
+              selectedTags.includes(tag)
+                ? 'bg-primary-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            "
+            @click="toggleTag(tag)"
+          >
+            {{ tag }}
+          </UiButton>
+        </div>
       </div>
     </div>
 
     <!-- Notes List -->
     <div
-ref="listRef" class="flex-1 overflow-y-auto"
+      ref="listRef"
+      class="flex-1 overflow-y-auto"
       @dragover.prevent="onDragOverList"
-      @drop.prevent="onDrop">
-      <div v-if="sidebarItems.length === 0" class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+      @drop.prevent="onDrop"
+    >
+      <div
+        v-if="sidebarItems.length === 0"
+        class="p-4 text-center text-sm text-gray-500 dark:text-gray-400"
+      >
         {{ showArchive ? 'No archived notes' : 'No notes found' }}
       </div>
 
       <template v-for="(item, idx) in displayItems" :key="item.id">
         <!-- ── Drop gap indicator ── -->
         <div
-class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20"
-          :style="gapStyle(idx)" />
+          class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20"
+          :style="gapStyle(idx)"
+        />
 
         <!-- ── Group header ── -->
         <div
-v-if="item.kind === 'group'"
+          v-if="item.kind === 'group'"
           v-show="!isDraggedItem(item.id)"
           :data-item-id="item.id"
           :data-kind="'group'"
@@ -205,19 +322,21 @@ v-if="item.kind === 'group'"
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
           @dragstart="onDragStart($event, item.id, 'group')"
           @dragend="onDragEnd"
-          @touchstart.passive="onTouchStart($event, item.id, 'group')">
+          @touchstart.passive="onTouchStart($event, item.id, 'group')"
+        >
           <GroupListItem
             :group="item.data"
             :note-count="getGroupNotes(item.id).length"
             :drop-indicator="dropTarget?.id === item.id ? dropTarget?.position : null"
-            @toggle-collapse="id => $emit('toggle-group-collapse', id)"
-            @edit="id => $emit('edit-group', id)"
-            @delete="id => $emit('delete-group', id)" />
+            @toggle-collapse="(id) => $emit('toggle-group-collapse', id)"
+            @edit="(id) => $emit('edit-group', id)"
+            @delete="(id) => $emit('delete-group', id)"
+          />
         </div>
 
         <!-- ── Grouped note (child of a group) ── -->
         <div
-v-else-if="item.kind === 'grouped-note'"
+          v-else-if="item.kind === 'grouped-note'"
           v-show="!isDraggedItem(item.id)"
           :data-item-id="item.id"
           :data-kind="'note'"
@@ -227,9 +346,11 @@ v-else-if="item.kind === 'grouped-note'"
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
           @dragstart="onDragStart($event, item.id, 'note')"
           @dragend="onDragEnd"
-          @touchstart.passive="onTouchStart($event, item.id, 'note')">
+          @touchstart.passive="onTouchStart($event, item.id, 'note')"
+        >
           <NoteListItem
-            :note="item.data" :active="item.data.id === currentNoteId"
+            :note="item.data"
+            :active="item.data.id === currentNoteId"
             :select-mode="selectMode"
             :selected="selectedIds.has(item.data.id)"
             :shared="sharedNoteIds.includes(item.data.id)"
@@ -237,32 +358,34 @@ v-else-if="item.kind === 'grouped-note'"
             :analytics-hash="analyticsNotesMap.get(item.data.id) || null"
             :pending="pendingNoteIds.has(item.data.id)"
             :is-logged-in="isLoggedIn"
-            @select="id => $emit('select-note', id)"
-            @delete="id => $emit('delete-note', id)"
-            @share="id => $emit('share-note', id)"
-            @unshare="id => $emit('unshare-note', id)"
-            @properties="id => $emit('show-properties', id)"
-            @open-analytics="hash => $emit('open-analytics', hash)"
-            @duplicate="id => $emit('duplicate-note', id)"
-            @export="id => $emit('export-note', id)"
-            @copy-to-clipboard="id => $emit('copy-to-clipboard', id)"
-            @print="id => $emit('print-note', id)"
-            @archive="id => $emit('archive-note', id)"
-            @unarchive="id => $emit('unarchive-note', id)"
+            @select="(id) => $emit('select-note', id)"
+            @delete="(id) => $emit('delete-note', id)"
+            @share="(id) => $emit('share-note', id)"
+            @unshare="(id) => $emit('unshare-note', id)"
+            @properties="(id) => $emit('show-properties', id)"
+            @open-analytics="(hash) => $emit('open-analytics', hash)"
+            @duplicate="(id) => $emit('duplicate-note', id)"
+            @export="(id) => $emit('export-note', id)"
+            @copy-to-clipboard="(id) => $emit('copy-to-clipboard', id)"
+            @print="(id) => $emit('print-note', id)"
+            @archive="(id) => $emit('archive-note', id)"
+            @unarchive="(id) => $emit('unarchive-note', id)"
             @toggle-select="toggleNoteSelection"
-            @add-to-group="id => $emit('add-to-group', id)" />
+            @add-to-group="(id) => $emit('add-to-group', id)"
+          />
         </div>
 
         <!-- ── Empty group placeholder ── -->
         <div
-v-else-if="item.kind === 'group-empty'"
-          class="pl-4 border-l-2 border-l-primary-200 dark:border-l-primary-800/50 px-4 py-3 text-xs text-gray-400 dark:text-gray-500 italic">
+          v-else-if="item.kind === 'group-empty'"
+          class="pl-4 border-l-2 border-l-primary-200 dark:border-l-primary-800/50 px-4 py-3 text-xs text-gray-400 dark:text-gray-500 italic"
+        >
           No notes in this group
         </div>
 
         <!-- ── Ungrouped note ── -->
         <div
-v-else
+          v-else
           v-show="!isDraggedItem(item.id)"
           :data-item-id="item.id"
           :data-kind="'note'"
@@ -271,9 +394,11 @@ v-else
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
           @dragstart="onDragStart($event, item.id, 'note')"
           @dragend="onDragEnd"
-          @touchstart.passive="onTouchStart($event, item.id, 'note')">
+          @touchstart.passive="onTouchStart($event, item.id, 'note')"
+        >
           <NoteListItem
-            :note="item.data" :active="item.data.id === currentNoteId"
+            :note="item.data"
+            :active="item.data.id === currentNoteId"
             :select-mode="selectMode"
             :selected="selectedIds.has(item.data.id)"
             :shared="sharedNoteIds.includes(item.data.id)"
@@ -281,47 +406,56 @@ v-else
             :analytics-hash="analyticsNotesMap.get(item.data.id) || null"
             :pending="pendingNoteIds.has(item.data.id)"
             :is-logged-in="isLoggedIn"
-            @select="id => $emit('select-note', id)"
-            @delete="id => $emit('delete-note', id)"
-            @share="id => $emit('share-note', id)"
-            @unshare="id => $emit('unshare-note', id)"
-            @properties="id => $emit('show-properties', id)"
-            @open-analytics="hash => $emit('open-analytics', hash)"
-            @duplicate="id => $emit('duplicate-note', id)"
-            @export="id => $emit('export-note', id)"
-            @copy-to-clipboard="id => $emit('copy-to-clipboard', id)"
-            @print="id => $emit('print-note', id)"
-            @archive="id => $emit('archive-note', id)"
-            @unarchive="id => $emit('unarchive-note', id)"
+            @select="(id) => $emit('select-note', id)"
+            @delete="(id) => $emit('delete-note', id)"
+            @share="(id) => $emit('share-note', id)"
+            @unshare="(id) => $emit('unshare-note', id)"
+            @properties="(id) => $emit('show-properties', id)"
+            @open-analytics="(hash) => $emit('open-analytics', hash)"
+            @duplicate="(id) => $emit('duplicate-note', id)"
+            @export="(id) => $emit('export-note', id)"
+            @copy-to-clipboard="(id) => $emit('copy-to-clipboard', id)"
+            @print="(id) => $emit('print-note', id)"
+            @archive="(id) => $emit('archive-note', id)"
+            @unarchive="(id) => $emit('unarchive-note', id)"
             @toggle-select="toggleNoteSelection"
-            @add-to-group="id => $emit('add-to-group', id)" />
+            @add-to-group="(id) => $emit('add-to-group', id)"
+          />
         </div>
       </template>
 
       <!-- ── Bottom gap + drop zone ── -->
       <div
-class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20 mx-1.5"
-        :style="gapStyle(displayItems.length)" />
+        class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20 mx-1.5"
+        :style="gapStyle(displayItems.length)"
+      />
       <div v-if="draggingId" class="min-h-[60px]" />
     </div>
 
     <!-- User Account Section -->
-    <div class="flex-shrink-0 bg-gray-100/80 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-700">
+    <div
+      class="flex-shrink-0 bg-gray-100/80 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-700"
+    >
       <UiDropdown
-ref="accountDropdownRef" drop="up"
-        panel-class="absolute bottom-full left-0 right-0 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50">
+        ref="accountDropdownRef"
+        drop="up"
+        panel-class="absolute bottom-full left-0 right-0 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50"
+      >
         <template #trigger="{ toggle }">
           <!-- Logged-in state -->
           <UiButton v-if="isLoggedIn" variant="list-item" class="text-left" @click="toggle">
             <UiAvatar :src="user?.avatarUrl" />
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{{ user?.name || 'No name' }}</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">
+                {{ user?.name || 'No name' }}
+              </p>
               <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user?.email }}</p>
             </div>
             <Icon
-name="mdi:chevron-down"
+              name="mdi:chevron-down"
               class="w-5 h-5 flex-shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200"
-              :class="{ 'rotate-180': accountDropdownRef?.isOpen }" />
+              :class="{ 'rotate-180': accountDropdownRef?.isOpen }"
+            />
           </UiButton>
 
           <!-- Logged-out state -->
@@ -332,9 +466,10 @@ name="mdi:chevron-down"
               <p class="text-xs text-gray-500 dark:text-gray-400">Not signed in</p>
             </div>
             <Icon
-name="mdi:chevron-down"
+              name="mdi:chevron-down"
               class="w-5 h-5 flex-shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200"
-              :class="{ 'rotate-180': accountDropdownRef?.isOpen }" />
+              :class="{ 'rotate-180': accountDropdownRef?.isOpen }"
+            />
           </UiButton>
         </template>
 
@@ -383,19 +518,44 @@ const props = defineProps({
   sharedNoteIds: { type: Array, default: () => [] },
   sharedNotesMap: { type: Map, default: () => new Map() },
   analyticsNotesMap: { type: Map, default: () => new Map() },
-  pendingNoteIds: { type: Set, default: () => new Set() }
+  pendingNoteIds: { type: Set, default: () => new Set() },
 })
 
 const emit = defineEmits([
-  'new-note', 'select-note', 'delete-note', 'edit-note',
-  'show-help', 'show-locale-settings', 'show-language',
-  'show-auth', 'logout', 'edit-profile',
-  'bulk-delete', 'selection-change', 'reorder',
-  'share-note', 'unshare-note', 'show-properties', 'open-analytics',
-  'duplicate-note', 'export-note', 'copy-to-clipboard', 'print-note',
-  'archive-note', 'unarchive-note', 'bulk-archive', 'bulk-unarchive', 'bulk-group',
-  'add-to-group', 'toggle-group-collapse', 'edit-group', 'delete-group',
-  'move-note-to-group', 'reorder-groups', 'reorder-all', 'reorder-within-group'
+  'new-note',
+  'select-note',
+  'delete-note',
+  'edit-note',
+  'show-help',
+  'show-locale-settings',
+  'show-language',
+  'show-auth',
+  'logout',
+  'edit-profile',
+  'bulk-delete',
+  'selection-change',
+  'reorder',
+  'share-note',
+  'unshare-note',
+  'show-properties',
+  'open-analytics',
+  'duplicate-note',
+  'export-note',
+  'copy-to-clipboard',
+  'print-note',
+  'archive-note',
+  'unarchive-note',
+  'bulk-archive',
+  'bulk-unarchive',
+  'bulk-group',
+  'add-to-group',
+  'toggle-group-collapse',
+  'edit-group',
+  'delete-group',
+  'move-note-to-group',
+  'reorder-groups',
+  'reorder-all',
+  'reorder-within-group',
 ])
 
 const searchQuery = ref('')
@@ -404,7 +564,7 @@ const listRef = ref(null)
 const showFilters = ref(false)
 const showArchive = ref(false)
 
-const hasArchivedNotes = computed(() => props.notes.some(n => n.archived))
+const hasArchivedNotes = computed(() => props.notes.some((n) => n.archived))
 
 // Auto-exit archive view when no archived notes remain
 watch(hasArchivedNotes, (has) => {
@@ -424,11 +584,17 @@ const filters = reactive({
   dateRange: '',
   hasDescription: false,
   hasTags: false,
-  emptyOnly: false
+  emptyOnly: false,
 })
 
 const hasActiveFilters = computed(() => {
-  return !filters.searchContent || filters.dateRange !== '' || filters.hasDescription || filters.hasTags || filters.emptyOnly
+  return (
+    !filters.searchContent ||
+    filters.dateRange !== '' ||
+    filters.hasDescription ||
+    filters.hasTags ||
+    filters.emptyOnly
+  )
 })
 
 const clearFilters = () => {
@@ -444,12 +610,14 @@ const clearFilters = () => {
 
 const draggingId = ref(null)
 const draggingType = ref(null) // 'note' | 'group'
-const dropTarget = ref(null)   // { id, type, position: 'before'|'after'|'inside' }
+const dropTarget = ref(null) // { id, type, position: 'before'|'after'|'inside' }
 const hasDragMoved = ref(false) // true once cursor moves to a different item
 
 const GROUP_DROP_THRESHOLD = 0.3
 
-const isFiltering = computed(() => searchQuery.value.trim() !== '' || selectedTags.value.length > 0 || hasActiveFilters.value)
+const isFiltering = computed(
+  () => searchQuery.value.trim() !== '' || selectedTags.value.length > 0 || hasActiveFilters.value,
+)
 const canReorder = computed(() => !selectMode.value && !isFiltering.value)
 
 // ── Auto-expand collapsed groups on hover ────────────────
@@ -459,7 +627,7 @@ const dragExpandedGroupIds = ref(new Set()) // groups we auto-expanded during th
 
 const startHoverExpand = (groupId) => {
   clearHoverExpand()
-  const group = props.groups.find(g => g.id === groupId)
+  const group = props.groups.find((g) => g.id === groupId)
   if (!group || !group.collapsed) return
   hoverExpandTimer = setTimeout(() => {
     emit('toggle-group-collapse', groupId)
@@ -481,7 +649,7 @@ const filteredGroups = computed(() => {
 })
 
 const getGroupNotes = (groupId) => {
-  return filteredNotes.value.filter(n => n.groupId === groupId)
+  return filteredNotes.value.filter((n) => n.groupId === groupId)
 }
 
 const sidebarItems = computed(() => {
@@ -507,10 +675,22 @@ const displayItems = computed(() => {
       if (!item.data.collapsed) {
         if (children.length > 0) {
           for (const n of children) {
-            list.push({ id: n.id, kind: 'grouped-note', sortOrder: n.sortOrder ?? 0, data: n, parentGroupId: item.id })
+            list.push({
+              id: n.id,
+              kind: 'grouped-note',
+              sortOrder: n.sortOrder ?? 0,
+              data: n,
+              parentGroupId: item.id,
+            })
           }
         } else {
-          list.push({ id: `${item.id}__empty`, kind: 'group-empty', sortOrder: 0, data: null, parentGroupId: item.id })
+          list.push({
+            id: `${item.id}__empty`,
+            kind: 'group-empty',
+            sortOrder: 0,
+            data: null,
+            parentGroupId: item.id,
+          })
         }
       }
     }
@@ -523,13 +703,21 @@ const dropInsertIndex = computed(() => {
   const dt = dropTarget.value
   if (dt.position === 'inside') return -1
   if (dt.id === '__bottom__') return displayItems.value.length
-  const targetIdx = displayItems.value.findIndex(i => i.id === dt.id)
+  const targetIdx = displayItems.value.findIndex((i) => i.id === dt.id)
   if (targetIdx === -1) return -1
   return dt.position === 'before' ? targetIdx : targetIdx + 1
 })
 
-const isDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && !touchDragActive.value && hasDragMoved.value
-const isTouchDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && touchDragActive.value && hasDragMoved.value
+const isDraggedItem = (id) =>
+  draggingId.value !== null &&
+  draggingId.value === id &&
+  !touchDragActive.value &&
+  hasDragMoved.value
+const isTouchDraggedItem = (id) =>
+  draggingId.value !== null &&
+  draggingId.value === id &&
+  touchDragActive.value &&
+  hasDragMoved.value
 
 /**
  * Returns inline style for the gap indicator's height.
@@ -596,7 +784,10 @@ const onDragStart = (e, id, type) => {
   // Clean up clone after a frame (browser captures it synchronously)
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      if (dragImageEl) { dragImageEl.remove(); dragImageEl = null }
+      if (dragImageEl) {
+        dragImageEl.remove()
+        dragImageEl = null
+      }
     })
   })
 }
@@ -625,8 +816,6 @@ const onDrop = () => {
   clearHoverExpand()
   commitReorder()
 }
-
-
 
 // -- Touch --
 
@@ -657,7 +846,10 @@ const createTouchClone = (el) => {
 const cleanupTouchDrag = () => {
   clearTimeout(touchHoldTimer)
   touchHoldTimer = null
-  if (touchCloneEl) { touchCloneEl.remove(); touchCloneEl = null }
+  if (touchCloneEl) {
+    touchCloneEl.remove()
+    touchCloneEl = null
+  }
   touchDragActive.value = false
 }
 
@@ -691,13 +883,17 @@ const onTouchStart = (e, id, type) => {
   // Phase 1: waiting for hold timer. If finger moves too much, cancel.
   const onWaitingMove = (ev) => {
     const t = ev.touches[0]
-    if (Math.abs(t.clientX - startX) > TOUCH_MOVE_THRESHOLD ||
-        Math.abs(t.clientY - startY) > TOUCH_MOVE_THRESHOLD) {
+    if (
+      Math.abs(t.clientX - startX) > TOUCH_MOVE_THRESHOLD ||
+      Math.abs(t.clientY - startY) > TOUCH_MOVE_THRESHOLD
+    ) {
       cancelHold()
     }
   }
 
-  const onWaitingEnd = () => { cancelHold() }
+  const onWaitingEnd = () => {
+    cancelHold()
+  }
 
   document.addEventListener('touchmove', onWaitingMove, { passive: true })
   document.addEventListener('touchend', onWaitingEnd)
@@ -720,11 +916,15 @@ const onTouchStart = (e, id, type) => {
     dragExpandedGroupIds.value = new Set()
 
     // Haptic feedback
-    try { window.navigator?.vibrate?.(30) } catch (_) { /* ignore */ }
+    try {
+      window.navigator?.vibrate?.(30)
+    } catch (_) {
+      /* ignore */
+    }
 
     // Create floating clone
     touchCloneEl = createTouchClone(el)
-    touchCloneEl.style.top = (startY - 26) + 'px'
+    touchCloneEl.style.top = startY - 26 + 'px'
 
     // Phase 2 listeners: drag move + end
     const onDragMove = (ev) => {
@@ -732,7 +932,7 @@ const onTouchStart = (e, id, type) => {
       const touch = ev.touches[0]
 
       if (touchCloneEl) {
-        touchCloneEl.style.top = (touch.clientY - 26) + 'px'
+        touchCloneEl.style.top = touch.clientY - 26 + 'px'
       }
 
       // Auto-scroll near edges (scrollTop works even with overflow:hidden via JS)
@@ -782,7 +982,7 @@ const getItemAtY = (y) => {
         id: item.dataset.itemId,
         type: kind === 'group' ? 'group' : 'note',
         position: y < rect.top + rect.height / 2 ? 'before' : 'after',
-        rect
+        rect,
       }
     }
     // Track closest item for when cursor is in the gap
@@ -801,7 +1001,7 @@ const getItemAtY = (y) => {
       id: closest.item.dataset.itemId,
       type: kind === 'group' ? 'group' : 'note',
       position: closest.distTop < closest.distBottom ? 'before' : 'after',
-      rect: closest.rect
+      rect: closest.rect,
     }
   }
   return null
@@ -824,7 +1024,7 @@ const updateDropTarget = (clientY) => {
       } else if (hy > hh * (1 - GROUP_DROP_THRESHOLD)) {
         // Below the group header — if the group is expanded, treat as "inside"
         // (first position in the group), not "after" (which means ungrouped)
-        const group = props.groups.find(g => g.id === hit.id)
+        const group = props.groups.find((g) => g.id === hit.id)
         if (group && !group.collapsed) {
           dropTarget.value = { id: hit.id, type: hit.type, position: 'inside' }
         } else {
@@ -865,10 +1065,11 @@ const commitReorder = () => {
   }
 
   const dt = dropTarget.value
-  const draggedNote = draggingType.value === 'note'
-    ? filteredNotes.value.find(n => n.id === draggingId.value)
-    : null
-  const targetDisplayItem = displayItems.value.find(i => i.id === dt.id)
+  const draggedNote =
+    draggingType.value === 'note'
+      ? filteredNotes.value.find((n) => n.id === draggingId.value)
+      : null
+  const targetDisplayItem = displayItems.value.find((i) => i.id === dt.id)
 
   if (draggingType.value === 'note') {
     // ── Note → bottom drop zone → ungroup and place at end
@@ -877,10 +1078,10 @@ const commitReorder = () => {
         emit('move-note-to-group', { noteId: draggingId.value, groupId: null })
       }
       const topLevel = [...sidebarItems.value]
-      const fromIdx = topLevel.findIndex(i => i.id === draggingId.value)
+      const fromIdx = topLevel.findIndex((i) => i.id === draggingId.value)
       let movedItem
       if (fromIdx !== -1) {
-        [movedItem] = topLevel.splice(fromIdx, 1)
+        ;[movedItem] = topLevel.splice(fromIdx, 1)
       } else {
         movedItem = { id: draggingId.value, kind: 'note', sortOrder: 0, data: draggedNote }
       }
@@ -906,15 +1107,18 @@ const commitReorder = () => {
       if (oldGroupId && newGroupId === oldGroupId && targetDisplayItem?.kind === 'grouped-note') {
         const siblings = getGroupNotes(oldGroupId)
         const ordered = [...siblings]
-        const fromIdx = ordered.findIndex(n => n.id === draggingId.value)
-        const toIdx = ordered.findIndex(n => n.id === dt.id)
+        const fromIdx = ordered.findIndex((n) => n.id === draggingId.value)
+        const toIdx = ordered.findIndex((n) => n.id === dt.id)
         if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
           const [moved] = ordered.splice(fromIdx, 1)
-          let insertAt = ordered.findIndex(n => n.id === dt.id)
+          let insertAt = ordered.findIndex((n) => n.id === dt.id)
           if (insertAt === -1) insertAt = ordered.length
           if (dt.position === 'after') insertAt++
           ordered.splice(insertAt, 0, moved)
-          emit('reorder-within-group', { groupId: oldGroupId, orderedNoteIds: ordered.map(n => n.id) })
+          emit('reorder-within-group', {
+            groupId: oldGroupId,
+            orderedNoteIds: ordered.map((n) => n.id),
+          })
         }
       }
       // ── Cross-group or ungrouped reorder
@@ -926,20 +1130,23 @@ const commitReorder = () => {
 
         // If moving into a group, reorder within that group
         if (newGroupId && targetDisplayItem?.kind === 'grouped-note') {
-          const siblings = getGroupNotes(newGroupId).filter(n => n.id !== draggingId.value)
-          const targetIdx = siblings.findIndex(n => n.id === dt.id)
+          const siblings = getGroupNotes(newGroupId).filter((n) => n.id !== draggingId.value)
+          const targetIdx = siblings.findIndex((n) => n.id === dt.id)
           let insertAt = targetIdx === -1 ? siblings.length : targetIdx
           if (dt.position === 'after') insertAt++
           siblings.splice(insertAt, 0, draggedNote)
-          emit('reorder-within-group', { groupId: newGroupId, orderedNoteIds: siblings.map(n => n.id) })
+          emit('reorder-within-group', {
+            groupId: newGroupId,
+            orderedNoteIds: siblings.map((n) => n.id),
+          })
         }
         // If moving to top-level, reorder top-level
         else if (!newGroupId) {
           const topLevel = [...sidebarItems.value]
-          const fromIdx = topLevel.findIndex(i => i.id === draggingId.value)
+          const fromIdx = topLevel.findIndex((i) => i.id === draggingId.value)
           let movedItem
           if (fromIdx !== -1) {
-            [movedItem] = topLevel.splice(fromIdx, 1)
+            ;[movedItem] = topLevel.splice(fromIdx, 1)
           } else {
             movedItem = { id: draggingId.value, kind: 'note', sortOrder: 0, data: draggedNote }
           }
@@ -948,7 +1155,7 @@ const commitReorder = () => {
           if (targetDisplayItem?.kind === 'grouped-note') {
             targetTopId = targetDisplayItem.parentGroupId
           }
-          let insertAt = topLevel.findIndex(i => i.id === targetTopId)
+          let insertAt = topLevel.findIndex((i) => i.id === targetTopId)
           if (insertAt === -1) insertAt = topLevel.length
           if (dt.position === 'after') insertAt++
           topLevel.splice(insertAt, 0, movedItem)
@@ -961,7 +1168,7 @@ const commitReorder = () => {
   // ── Group reorder
   else if (draggingType.value === 'group') {
     const topLevel = [...sidebarItems.value]
-    const fromIdx = topLevel.findIndex(i => i.id === draggingId.value)
+    const fromIdx = topLevel.findIndex((i) => i.id === draggingId.value)
     if (fromIdx !== -1) {
       const [moved] = topLevel.splice(fromIdx, 1)
       if (dt.id === '__bottom__') {
@@ -971,7 +1178,7 @@ const commitReorder = () => {
         if (targetDisplayItem?.kind === 'grouped-note') {
           targetTopId = targetDisplayItem.parentGroupId
         }
-        let insertAt = topLevel.findIndex(i => i.id === targetTopId)
+        let insertAt = topLevel.findIndex((i) => i.id === targetTopId)
         if (insertAt === -1) insertAt = topLevel.length
         if (dt.position === 'after') insertAt++
         topLevel.splice(insertAt, 0, moved)
@@ -995,7 +1202,7 @@ const emitUnifiedOrder = (topLevel) => {
   const orders = topLevel.map((item, idx) => ({
     id: item.id,
     kind: item.kind,
-    sortOrder: idx
+    sortOrder: idx,
   }))
   emit('reorder-all', orders)
 }
@@ -1006,12 +1213,18 @@ const selectMode = ref(false)
 const selectedIds = ref(new Set())
 
 const allSelected = computed(() => {
-  return filteredNotes.value.length > 0 && filteredNotes.value.every(n => selectedIds.value.has(n.id))
+  return (
+    filteredNotes.value.length > 0 && filteredNotes.value.every((n) => selectedIds.value.has(n.id))
+  )
 })
 
 const toggleSelectMode = () => {
   if (selectMode.value) exitSelectMode()
-  else { selectMode.value = true; selectedIds.value = new Set(); emit('selection-change', []) }
+  else {
+    selectMode.value = true
+    selectedIds.value = new Set()
+    emit('selection-change', [])
+  }
 }
 
 const exitSelectMode = () => {
@@ -1033,7 +1246,7 @@ const toggleSelectAll = () => {
     selectedIds.value = new Set()
     emit('selection-change', [])
   } else {
-    const ids = filteredNotes.value.map(n => n.id)
+    const ids = filteredNotes.value.map((n) => n.id)
     selectedIds.value = new Set(ids)
     emit('selection-change', ids)
   }
@@ -1075,47 +1288,50 @@ const filteredNotes = computed(() => {
   let result = props.notes
 
   // Filter by archive state
-  result = result.filter(n => showArchive.value ? !!n.archived : !n.archived)
+  result = result.filter((n) => (showArchive.value ? !!n.archived : !n.archived))
 
   const q = searchQuery.value.trim().toLowerCase()
   if (q) {
-    result = result.filter(n => {
+    result = result.filter((n) => {
       const matchTitle = (n.title || '').toLowerCase().includes(q)
       const matchDesc = (n.description || '').toLowerCase().includes(q)
-      const matchTags = (n.tags || []).some(t => t.toLowerCase().includes(q))
+      const matchTags = (n.tags || []).some((t) => t.toLowerCase().includes(q))
       const matchContent = filters.searchContent && (n.content || '').toLowerCase().includes(q)
       const matchInternalName = (n.internalName || '').toLowerCase().includes(q)
       return matchTitle || matchDesc || matchTags || matchContent || matchInternalName
     })
   }
   if (selectedTags.value.length) {
-    result = result.filter(n =>
-      selectedTags.value.every(t => (n.tags || []).includes(t))
-    )
+    result = result.filter((n) => selectedTags.value.every((t) => (n.tags || []).includes(t)))
   }
   if (filters.dateRange) {
     const now = Date.now()
     const day = 86400000
-    result = result.filter(n => {
+    result = result.filter((n) => {
       const updated = new Date(n.updatedAt).getTime()
       const age = now - updated
       switch (filters.dateRange) {
-        case 'today': return age < day
-        case 'week': return age < 7 * day
-        case 'month': return age < 30 * day
-        case 'older': return age >= 30 * day
-        default: return true
+        case 'today':
+          return age < day
+        case 'week':
+          return age < 7 * day
+        case 'month':
+          return age < 30 * day
+        case 'older':
+          return age >= 30 * day
+        default:
+          return true
       }
     })
   }
   if (filters.hasDescription) {
-    result = result.filter(n => (n.description || '').trim().length > 0)
+    result = result.filter((n) => (n.description || '').trim().length > 0)
   }
   if (filters.hasTags) {
-    result = result.filter(n => (n.tags || []).length > 0)
+    result = result.filter((n) => (n.tags || []).length > 0)
   }
   if (filters.emptyOnly) {
-    result = result.filter(n => !(n.content || '').trim())
+    result = result.filter((n) => !(n.content || '').trim())
   }
   return result.slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 })
@@ -1123,7 +1339,10 @@ const filteredNotes = computed(() => {
 
 <style scoped>
 .drag-gap-el {
-  transition: height 0.15s ease-out, margin 0.15s ease-out, border-width 0.15s ease-out;
+  transition:
+    height 0.15s ease-out,
+    margin 0.15s ease-out,
+    border-width 0.15s ease-out;
   margin-right: 6px;
 }
 </style>

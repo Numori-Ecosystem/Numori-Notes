@@ -1,5 +1,7 @@
 <template>
-  <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">
+  <kbd
+    class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400"
+  >
     <slot />
   </kbd>
 </template>

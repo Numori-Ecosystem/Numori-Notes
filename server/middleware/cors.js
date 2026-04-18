@@ -12,7 +12,7 @@ const capacitorOrigins = ['https://localhost', 'capacitor://localhost']
 
 const configuredOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
-  .map(o => o.trim())
+  .map((o) => o.trim())
   .filter(Boolean)
 
 const allowedOrigins = [...new Set([...capacitorOrigins, ...configuredOrigins])]
@@ -44,7 +44,7 @@ export default defineEventHandler((event) => {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Device-Info',
     'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Max-Age': '86400'
+    'Access-Control-Max-Age': '86400',
   })
 
   if (event.method === 'OPTIONS') {

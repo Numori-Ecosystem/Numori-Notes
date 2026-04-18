@@ -16,7 +16,10 @@ export default defineEventHandler(async (event) => {
   const { recoveryToken, newAuthKey } = body || {}
 
   if (!recoveryToken || !newAuthKey) {
-    throw createError({ statusCode: 400, statusMessage: 'Recovery token and new credentials are required' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Recovery token and new credentials are required',
+    })
   }
 
   const secret = process.env.JWT_SECRET
@@ -33,7 +36,10 @@ export default defineEventHandler(async (event) => {
 
   // Update password hash
   const newHash = await bcrypt.hash(newAuthKey, 12)
-  await query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [newHash, payload.userId])
+  await query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [
+    newHash,
+    payload.userId,
+  ])
 
   // Delete all encrypted notes — they can't be decrypted without the old password
   await query('DELETE FROM notes WHERE user_id = $1', [payload.userId])
@@ -53,13 +59,20 @@ export default defineEventHandler(async (event) => {
 
   const result = await query(
     'SELECT id, email, name, avatar_url, created_at, email_verified FROM users WHERE id = $1',
-    [payload.userId]
+    [payload.userId],
   )
   const user = result.rows[0]
 
   return {
-    user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatar_url, createdAt: user.created_at, emailVerified: user.email_verified },
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatarUrl: user.avatar_url,
+      createdAt: user.created_at,
+      emailVerified: user.email_verified,
+    },
     token,
-    notesDeleted: true
+    notesDeleted: true,
   }
 })

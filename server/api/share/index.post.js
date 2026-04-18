@@ -4,7 +4,9 @@ import { query } from '../../utils/db.js'
 
 // Ensure password_hint column exists (idempotent, safe to call on every request)
 async function ensurePasswordHintColumn() {
-  await query(`ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS password_hint TEXT`).catch(() => {})
+  await query(`ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS password_hint TEXT`).catch(
+    () => {},
+  )
 }
 
 /**
@@ -23,7 +25,19 @@ async function ensurePasswordHintColumn() {
 export default defineEventHandler(async (event) => {
   const auth = await optionalAuth(event)
   const body = await readBody(event)
-  const { title, content, description, tags, anonymous, sharerName, sharerEmail, expiresInDays, collectAnalytics, encrypted, passwordHint } = body || {}
+  const {
+    title,
+    content,
+    description,
+    tags,
+    anonymous,
+    sharerName,
+    sharerEmail,
+    expiresInDays,
+    collectAnalytics,
+    encrypted,
+    passwordHint,
+  } = body || {}
 
   if (!content && !title) {
     throw createError({ statusCode: 400, statusMessage: 'Title or content is required to share' })
@@ -60,8 +74,36 @@ export default defineEventHandler(async (event) => {
 
   await ensurePasswordHintColumn()
 
-  const columns = ['hash', 'user_id', 'title', 'description', 'tags', 'content', 'sharer_name', 'sharer_email', 'anonymous', 'expires_at', 'collect_analytics', 'encrypted', 'source_client_id']
-  const params = [hash, userId, title || 'Shared Note', description || '', tagsValue, content || '', name, email, isAnonymous, expiresAt, collectAnalytics === true, encrypted === true, body.sourceClientId || null]
+  const columns = [
+    'hash',
+    'user_id',
+    'title',
+    'description',
+    'tags',
+    'content',
+    'sharer_name',
+    'sharer_email',
+    'anonymous',
+    'expires_at',
+    'collect_analytics',
+    'encrypted',
+    'source_client_id',
+  ]
+  const params = [
+    hash,
+    userId,
+    title || 'Shared Note',
+    description || '',
+    tagsValue,
+    content || '',
+    name,
+    email,
+    isAnonymous,
+    expiresAt,
+    collectAnalytics === true,
+    encrypted === true,
+    body.sourceClientId || null,
+  ]
 
   if (hint) {
     columns.push('password_hint')

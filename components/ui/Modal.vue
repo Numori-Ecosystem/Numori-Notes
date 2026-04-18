@@ -11,9 +11,11 @@
       leave-to-class="opacity-0"
     >
       <div
-v-if="show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+        v-if="show"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
         :class="[zClass, paddingClass]"
-        @click.self="!persistent && $emit('close')">
+        @click.self="!persistent && $emit('close')"
+      >
         <Transition
           enter-active-class="transition ease-out duration-300"
           enter-from-class="opacity-0 scale-95"
@@ -24,10 +26,11 @@ v-if="show" class="fixed inset-0 flex items-center justify-center bg-black bg-op
           appear
         >
           <div
-v-if="show"
+            v-if="show"
             class="bg-white dark:bg-gray-925 overflow-hidden flex flex-col"
             :class="[panelClass, maxWidthClass, roundedClass]"
-            @click.stop>
+            @click.stop
+          >
             <slot />
           </div>
         </Transition>
@@ -131,5 +134,7 @@ const maxWidthClass = computed(() => {
 })
 
 // Full-screen mode uses no rounding; all other sizes get rounded-lg
-const roundedClass = computed(() => props.maxWidth === 'full' ? 'rounded-none md:rounded-lg' : 'rounded-lg')
+const roundedClass = computed(() =>
+  props.maxWidth === 'full' ? 'rounded-none md:rounded-lg' : 'rounded-lg',
+)
 </script>

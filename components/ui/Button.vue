@@ -3,7 +3,7 @@
   <component
     :is="tag"
     :type="isButton ? nativeType : undefined"
-    :disabled="isButton ? (disabled || loading) : undefined"
+    :disabled="isButton ? disabled || loading : undefined"
     :href="tag === 'a' ? href : undefined"
     :class="mergedClasses"
     :title="title"
@@ -223,7 +223,13 @@ const sizeClasses = computed(() => {
 // ── Shape classes ─────────────────────────────────────────
 const shapeClasses = computed(() => {
   if (isInlineVariant.value) return ''
-  const map = { round: 'rounded-lg', pill: 'rounded-full', square: 'rounded-none', circle: 'rounded-full', none: '' }
+  const map = {
+    round: 'rounded-lg',
+    pill: 'rounded-full',
+    square: 'rounded-none',
+    circle: 'rounded-full',
+    none: '',
+  }
   return map[props.shape] || map.round
 })
 
@@ -238,11 +244,11 @@ const colorVariantClasses = computed(() => {
   if (v === 'menu-item') {
     const effectiveColor = c === 'primary' ? 'gray' : c
     const map = {
-      gray:    'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
-      red:     'text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30',
-      green:   'text-success-600 dark:text-success-400 hover:bg-gray-100 dark:hover:bg-gray-700',
-      amber:   'text-amber-600 dark:text-amber-400 hover:bg-gray-100 dark:hover:bg-gray-700',
-      white:   'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
+      gray: 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
+      red: 'text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30',
+      green: 'text-success-600 dark:text-success-400 hover:bg-gray-100 dark:hover:bg-gray-700',
+      amber: 'text-amber-600 dark:text-amber-400 hover:bg-gray-100 dark:hover:bg-gray-700',
+      white: 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
     }
     return map[effectiveColor] || map.gray
   }
@@ -251,11 +257,12 @@ const colorVariantClasses = computed(() => {
   if (v === 'list-item') {
     const effectiveColor = c === 'primary' ? 'gray' : c
     const map = {
-      gray:    'text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50',
-      red:     'text-red-600 dark:text-red-400 hover:bg-red-200/50 dark:hover:bg-red-800/30',
-      green:   'text-success-600 dark:text-success-400 hover:bg-gray-200/70 dark:hover:bg-gray-700/50',
-      amber:   'text-amber-600 dark:text-amber-400 hover:bg-gray-200/70 dark:hover:bg-gray-700/50',
-      white:   'text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50',
+      gray: 'text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50',
+      red: 'text-red-600 dark:text-red-400 hover:bg-red-200/50 dark:hover:bg-red-800/30',
+      green:
+        'text-success-600 dark:text-success-400 hover:bg-gray-200/70 dark:hover:bg-gray-700/50',
+      amber: 'text-amber-600 dark:text-amber-400 hover:bg-gray-200/70 dark:hover:bg-gray-700/50',
+      white: 'text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/50',
     }
     return map[effectiveColor] || map.gray
   }
@@ -264,11 +271,12 @@ const colorVariantClasses = computed(() => {
   if (v === 'solid') {
     const map = {
       primary: 'bg-primary-600 hover:bg-primary-700 text-white shadow-sm hover:shadow-md',
-      gray:    'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
-      red:     'bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md',
-      green:   'bg-success-600 hover:bg-success-700 text-white shadow-sm hover:shadow-md',
-      amber:   'bg-amber-600 hover:bg-amber-700 text-white shadow-sm hover:shadow-md',
-      white:   'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-200 shadow-sm',
+      gray: 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
+      red: 'bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md',
+      green: 'bg-success-600 hover:bg-success-700 text-white shadow-sm hover:shadow-md',
+      amber: 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm hover:shadow-md',
+      white:
+        'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-200 shadow-sm',
     }
     return map[c] || map.primary
   }
@@ -276,12 +284,16 @@ const colorVariantClasses = computed(() => {
   // Outline
   if (v === 'outline') {
     const map = {
-      primary: 'border border-primary-500 text-primary-600 dark:text-primary-400 bg-transparent hover:bg-primary-50 dark:hover:bg-primary-900/20',
-      gray:    'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800',
-      red:     'border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20',
-      green:   'border border-success-300 dark:border-success-700 text-success-600 dark:text-success-400 bg-transparent hover:bg-success-50 dark:hover:bg-success-900/20',
-      amber:   'border border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400 bg-transparent hover:bg-amber-50 dark:hover:bg-amber-900/20',
-      white:   'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700',
+      primary:
+        'border border-primary-500 text-primary-600 dark:text-primary-400 bg-transparent hover:bg-primary-50 dark:hover:bg-primary-900/20',
+      gray: 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800',
+      red: 'border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20',
+      green:
+        'border border-success-300 dark:border-success-700 text-success-600 dark:text-success-400 bg-transparent hover:bg-success-50 dark:hover:bg-success-900/20',
+      amber:
+        'border border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400 bg-transparent hover:bg-amber-50 dark:hover:bg-amber-900/20',
+      white:
+        'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700',
     }
     return map[c] || map.primary
   }
@@ -289,12 +301,16 @@ const colorVariantClasses = computed(() => {
   // Dashed
   if (v === 'dashed') {
     const map = {
-      primary: 'border border-dashed border-primary-400 dark:border-primary-600 text-primary-600 dark:text-primary-400 bg-transparent hover:bg-primary-50 dark:hover:bg-primary-900/20',
-      gray:    'border border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800',
-      red:     'border border-dashed border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20',
-      green:   'border border-dashed border-success-300 dark:border-success-700 text-success-600 dark:text-success-400 bg-transparent hover:bg-success-50 dark:hover:bg-success-900/20',
-      amber:   'border border-dashed border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400 bg-transparent hover:bg-amber-50 dark:hover:bg-amber-900/20',
-      white:   'border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-700',
+      primary:
+        'border border-dashed border-primary-400 dark:border-primary-600 text-primary-600 dark:text-primary-400 bg-transparent hover:bg-primary-50 dark:hover:bg-primary-900/20',
+      gray: 'border border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800',
+      red: 'border border-dashed border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20',
+      green:
+        'border border-dashed border-success-300 dark:border-success-700 text-success-600 dark:text-success-400 bg-transparent hover:bg-success-50 dark:hover:bg-success-900/20',
+      amber:
+        'border border-dashed border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400 bg-transparent hover:bg-amber-50 dark:hover:bg-amber-900/20',
+      white:
+        'border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-700',
     }
     return map[c] || map.primary
   }
@@ -302,12 +318,16 @@ const colorVariantClasses = computed(() => {
   // Ghost
   if (v === 'ghost') {
     const map = {
-      primary: 'text-primary-600 dark:text-primary-400 bg-transparent hover:bg-primary-50 dark:hover:bg-primary-900/20',
-      gray:    'text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800',
-      red:     'text-red-600 dark:text-red-400 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20',
-      green:   'text-success-600 dark:text-success-400 bg-transparent hover:bg-success-50 dark:hover:bg-success-900/20',
-      amber:   'text-amber-600 dark:text-amber-400 bg-transparent hover:bg-amber-50 dark:hover:bg-amber-900/20',
-      white:   'text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700',
+      primary:
+        'text-primary-600 dark:text-primary-400 bg-transparent hover:bg-primary-50 dark:hover:bg-primary-900/20',
+      gray: 'text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800',
+      red: 'text-red-600 dark:text-red-400 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20',
+      green:
+        'text-success-600 dark:text-success-400 bg-transparent hover:bg-success-50 dark:hover:bg-success-900/20',
+      amber:
+        'text-amber-600 dark:text-amber-400 bg-transparent hover:bg-amber-50 dark:hover:bg-amber-900/20',
+      white:
+        'text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700',
     }
     return map[c] || map.primary
   }
@@ -316,11 +336,11 @@ const colorVariantClasses = computed(() => {
   if (v === 'text') {
     const map = {
       primary: 'text-primary-600 dark:text-primary-400 bg-transparent hover:underline',
-      gray:    'text-gray-600 dark:text-gray-400 bg-transparent hover:underline',
-      red:     'text-red-600 dark:text-red-400 bg-transparent hover:underline',
-      green:   'text-success-600 dark:text-success-400 bg-transparent hover:underline',
-      amber:   'text-amber-600 dark:text-amber-400 bg-transparent hover:underline',
-      white:   'text-gray-700 dark:text-gray-300 bg-transparent hover:underline',
+      gray: 'text-gray-600 dark:text-gray-400 bg-transparent hover:underline',
+      red: 'text-red-600 dark:text-red-400 bg-transparent hover:underline',
+      green: 'text-success-600 dark:text-success-400 bg-transparent hover:underline',
+      amber: 'text-amber-600 dark:text-amber-400 bg-transparent hover:underline',
+      white: 'text-gray-700 dark:text-gray-300 bg-transparent hover:underline',
     }
     return map[c] || map.primary
   }
@@ -329,11 +349,11 @@ const colorVariantClasses = computed(() => {
   if (v === 'link') {
     const map = {
       primary: 'text-primary-600 dark:text-primary-400 hover:underline p-0',
-      gray:    'text-gray-500 dark:text-gray-400 hover:underline p-0',
-      red:     'text-red-600 dark:text-red-400 hover:underline p-0',
-      green:   'text-success-600 dark:text-success-400 hover:underline p-0',
-      amber:   'text-amber-600 dark:text-amber-400 hover:underline p-0',
-      white:   'text-gray-700 dark:text-gray-300 hover:underline p-0',
+      gray: 'text-gray-500 dark:text-gray-400 hover:underline p-0',
+      red: 'text-red-600 dark:text-red-400 hover:underline p-0',
+      green: 'text-success-600 dark:text-success-400 hover:underline p-0',
+      amber: 'text-amber-600 dark:text-amber-400 hover:underline p-0',
+      white: 'text-gray-700 dark:text-gray-300 hover:underline p-0',
     }
     return map[c] || map.primary
   }
@@ -366,8 +386,10 @@ const mergedClasses = computed(() => {
 const internalClasses = computed(() => {
   const base = 'inline-flex items-center transition-colors select-none'
   const justify = isInlineVariant.value ? '' : 'justify-center'
-  const blockClass = (props.block || isInlineVariant.value) ? 'w-full' : ''
-  const weight = ['ghost', 'text', 'link', 'menu-item', 'list-item'].includes(props.variant) ? '' : 'font-medium'
+  const blockClass = props.block || isInlineVariant.value ? 'w-full' : ''
+  const weight = ['ghost', 'text', 'link', 'menu-item', 'list-item'].includes(props.variant)
+    ? ''
+    : 'font-medium'
   return [
     base,
     justify,
@@ -377,6 +399,8 @@ const internalClasses = computed(() => {
     colorVariantClasses.value,
     stateClasses.value,
     blockClass,
-  ].filter(Boolean).join(' ')
+  ]
+    .filter(Boolean)
+    .join(' ')
 })
 </script>

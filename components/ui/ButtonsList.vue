@@ -2,18 +2,21 @@
   <div>
     <!-- Optional section label above the list -->
     <p
-v-if="label" class="text-[10px] font-medium uppercase tracking-wider px-1 mb-1.5"
-      :class="danger ? 'text-red-400 dark:text-red-600' : 'text-gray-400 dark:text-gray-600'">
+      v-if="label"
+      class="text-[10px] font-medium uppercase tracking-wider px-1 mb-1.5"
+      :class="danger ? 'text-red-400 dark:text-red-600' : 'text-gray-400 dark:text-gray-600'"
+    >
       {{ label }}
     </p>
     <div
-class="overflow-hidden divide-y"
+      class="overflow-hidden divide-y"
       :class="[
         shapeClass,
         danger
           ? 'bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 divide-red-100 dark:divide-red-900/30'
-          : 'bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 divide-gray-100 dark:divide-gray-800'
-      ]">
+          : 'bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 divide-gray-100 dark:divide-gray-800',
+      ]"
+    >
       <slot />
     </div>
   </div>

@@ -77,8 +77,10 @@ const emit = defineEmits(['update:modelValue', 'input'])
 
 const widthClass = computed(() => {
   switch (props.width) {
-    case 'flex': return 'flex-1 h-1.5'
-    default: return 'w-full'
+    case 'flex':
+      return 'flex-1 h-1.5'
+    default:
+      return 'w-full'
   }
 })
 

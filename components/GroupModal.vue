@@ -13,20 +13,27 @@
       <div class="space-y-4">
         <UiFormField label="Name">
           <UiInput
-ref="nameInput" v-model="localName" type="text" placeholder="Group name" :validate="false"
-            @keydown.enter="save" />
+            ref="nameInput"
+            v-model="localName"
+            type="text"
+            placeholder="Group name"
+            :validate="false"
+            @keydown.enter="save"
+          />
         </UiFormField>
         <UiFormField label="Internal Name" hint="Auto-generated from name. Edit to customise.">
           <UiInput
-v-model="localInternalName" type="text" placeholder="group_name" :validate="false"
-            @update:model-value="internalNameManuallyEdited = true" />
+            v-model="localInternalName"
+            type="text"
+            placeholder="group_name"
+            :validate="false"
+            @update:model-value="internalNameManuallyEdited = true"
+          />
         </UiFormField>
       </div>
 
       <div class="flex justify-end gap-2 mt-6">
-        <UiButton variant="ghost" color="gray" @click="$emit('close')">
-          Cancel
-        </UiButton>
+        <UiButton variant="ghost" color="gray" @click="$emit('close')"> Cancel </UiButton>
         <UiButton :disabled="!localName.trim()" @click="save">
           {{ editingGroupId ? 'Save' : 'Create' }}
         </UiButton>
@@ -55,24 +62,47 @@ const nameInput = ref(null)
 
 watch(localName, (val) => {
   internalNameManuallyEdited.value = false
-  localInternalName.value = uniqueInternalName(val, [], 'new_group', props.editingGroupId, props.allGroups)
+  localInternalName.value = uniqueInternalName(
+    val,
+    [],
+    'new_group',
+    props.editingGroupId,
+    props.allGroups,
+  )
 })
 
-watch(() => props.isOpen, (open) => {
-  if (open) {
-    localName.value = props.initialName
-    localInternalName.value = props.initialInternalName || uniqueInternalName(props.initialName, [], 'new_group', props.editingGroupId, props.allGroups)
-    internalNameManuallyEdited.value = false
-    nextTick(() => nameInput.value?.focus())
-  }
-})
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      localName.value = props.initialName
+      localInternalName.value =
+        props.initialInternalName ||
+        uniqueInternalName(
+          props.initialName,
+          [],
+          'new_group',
+          props.editingGroupId,
+          props.allGroups,
+        )
+      internalNameManuallyEdited.value = false
+      nextTick(() => nameInput.value?.focus())
+    }
+  },
+)
 
 const save = () => {
   if (!localName.value.trim()) return
   const rawName = internalNameManuallyEdited.value
     ? normaliseName(localInternalName.value)
     : normaliseName(localName.value)
-  const finalInternalName = uniqueInternalName(rawName, [], 'new_group', props.editingGroupId, props.allGroups)
+  const finalInternalName = uniqueInternalName(
+    rawName,
+    [],
+    'new_group',
+    props.editingGroupId,
+    props.allGroups,
+  )
   emit('save', {
     id: props.editingGroupId,
     name: localName.value.trim(),

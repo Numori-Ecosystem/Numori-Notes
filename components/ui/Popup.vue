@@ -12,10 +12,12 @@
       leave-to-class="opacity-0 scale-95"
     >
       <div
-v-if="show" ref="panelRef"
+        v-if="show"
+        ref="panelRef"
         class="absolute bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1"
         :class="[width, panelZ]"
-        :style="positionStyle">
+        :style="positionStyle"
+      >
         <slot />
       </div>
     </Transition>
@@ -139,11 +141,15 @@ const updatePosition = () => {
   })
 }
 
-watch(() => [props.show, props.x, props.y, props.offsetY], () => {
-  if (props.show) {
-    // Set initial position immediately so the panel renders near the right spot
-    clampedPos.value = { left: props.x, top: props.y + props.offsetY }
-    updatePosition()
-  }
-}, { immediate: true })
+watch(
+  () => [props.show, props.x, props.y, props.offsetY],
+  () => {
+    if (props.show) {
+      // Set initial position immediately so the panel renders near the right spot
+      clampedPos.value = { left: props.x, top: props.y + props.offsetY }
+      updatePosition()
+    }
+  },
+  { immediate: true },
+)
 </script>

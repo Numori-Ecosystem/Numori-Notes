@@ -1,5 +1,9 @@
 <template>
-  <div v-if="direction === 'vertical'" class="flex-shrink-0" :class="[verticalClasses, colorClass]" />
+  <div
+    v-if="direction === 'vertical'"
+    class="flex-shrink-0"
+    :class="[verticalClasses, colorClass]"
+  />
   <div v-else :class="[horizontalClasses, colorClass]" />
 </template>
 

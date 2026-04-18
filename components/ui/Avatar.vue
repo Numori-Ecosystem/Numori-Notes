@@ -1,8 +1,9 @@
 <template>
   <!-- Circular avatar container with image or fallback icon -->
   <div
-class="rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-    :class="[sizeClass, bgClass, ringClass]">
+    class="rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+    :class="[sizeClass, bgClass, ringClass]"
+  >
     <img v-if="src" :src="src" :alt="alt" class="w-full h-full object-cover" >
     <Icon v-else :name="fallbackIcon" :class="iconSizeClass" />
   </div>
@@ -92,6 +93,6 @@ const bgClass = computed(() => {
 })
 
 const ringClass = computed(() =>
-  props.ring ? 'ring-2 ring-primary-200 dark:ring-primary-800 shadow-sm' : ''
+  props.ring ? 'ring-2 ring-primary-200 dark:ring-primary-800 shadow-sm' : '',
 )
 </script>

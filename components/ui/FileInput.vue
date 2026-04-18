@@ -86,7 +86,7 @@ function onChange(e) {
   if (!files.length) return
 
   if (props.maxSize > 0) {
-    const oversized = files.find(f => f.size > props.maxSize)
+    const oversized = files.find((f) => f.size > props.maxSize)
     if (oversized) {
       const maxMB = (props.maxSize / 1024 / 1024).toFixed(1)
       emit('error', { type: 'maxSize', file: oversized, message: `File exceeds ${maxMB} MB limit` })

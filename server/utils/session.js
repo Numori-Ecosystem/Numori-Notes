@@ -19,7 +19,7 @@ export async function hashToken(token) {
 export function parseDeviceName(ua, deviceInfo) {
   // Native Capacitor apps send "android; Pixel 8 Pro" or "ios; iPhone" etc.
   if (deviceInfo) {
-    const parts = deviceInfo.split(';').map(s => s.trim())
+    const parts = deviceInfo.split(';').map((s) => s.trim())
     const platform = (parts[0] || '').toLowerCase()
     const model = parts[1] || ''
 
@@ -73,17 +73,18 @@ export async function createSession(userId, token, event, expiresInSeconds = 7 *
   const deviceInfo = getHeader(event, 'x-device-info') || ''
   const deviceName = parseDeviceName(ua, deviceInfo)
 
-  const ip = getHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim()
-    || getHeader(event, 'x-real-ip')
-    || event.node?.req?.socket?.remoteAddress
-    || null
+  const ip =
+    getHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim() ||
+    getHeader(event, 'x-real-ip') ||
+    event.node?.req?.socket?.remoteAddress ||
+    null
 
   const expiresAt = new Date(Date.now() + expiresInSeconds * 1000)
 
   const result = await query(
     `INSERT INTO sessions (user_id, token_hash, device_name, ip_address, expires_at)
      VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-    [userId, tokenHash, deviceName, ip, expiresAt.toISOString()]
+    [userId, tokenHash, deviceName, ip, expiresAt.toISOString()],
   )
 
   const sessionId = result.rows[0]?.id
@@ -103,7 +104,7 @@ export async function touchSession(tokenHash) {
     `SELECT s.id, s.expires_at, s.user_id, u.session_duration
      FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.token_hash = $1`,
-    [tokenHash]
+    [tokenHash],
   )
   const session = result.rows[0]
   if (!session) return null
@@ -117,10 +118,10 @@ export async function touchSession(tokenHash) {
   // Slide expires_at forward from now based on user's session_duration
   const duration = session.session_duration || 7 * 24 * 3600
   const newExpiresAt = new Date(Date.now() + duration * 1000)
-  await query(
-    `UPDATE sessions SET last_used_at = NOW(), expires_at = $1 WHERE id = $2`,
-    [newExpiresAt.toISOString(), session.id]
-  )
+  await query(`UPDATE sessions SET last_used_at = NOW(), expires_at = $1 WHERE id = $2`, [
+    newExpiresAt.toISOString(),
+    session.id,
+  ])
 
   return session
 }
@@ -129,20 +130,20 @@ export async function touchSession(tokenHash) {
  * Delete all sessions for a user except the current one.
  */
 export async function revokeOtherSessions(userId, currentTokenHash) {
-  await query(
-    'DELETE FROM sessions WHERE user_id = $1 AND token_hash != $2',
-    [userId, currentTokenHash]
-  )
+  await query('DELETE FROM sessions WHERE user_id = $1 AND token_hash != $2', [
+    userId,
+    currentTokenHash,
+  ])
 }
 
 /**
  * Delete a specific session by id (must belong to user).
  */
 export async function revokeSession(userId, sessionId) {
-  const result = await query(
-    'DELETE FROM sessions WHERE id = $1 AND user_id = $2 RETURNING id',
-    [sessionId, userId]
-  )
+  const result = await query('DELETE FROM sessions WHERE id = $1 AND user_id = $2 RETURNING id', [
+    sessionId,
+    userId,
+  ])
   return result.rows.length > 0
 }
 
@@ -159,7 +160,7 @@ export async function revokeAllSessions(userId) {
  */
 export async function purgeExpiredSessions() {
   const result = await query(
-    `DELETE FROM sessions WHERE expires_at IS NOT NULL AND expires_at < NOW()`
+    `DELETE FROM sessions WHERE expires_at IS NOT NULL AND expires_at < NOW()`,
   )
   return result.rowCount || 0
 }

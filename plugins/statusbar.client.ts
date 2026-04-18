@@ -16,5 +16,8 @@ export default defineNuxtPlugin(() => {
   syncStatusBar(colorMode.value)
 
   // React to theme changes
-  watch(() => colorMode.value, (mode) => syncStatusBar(mode))
+  watch(
+    () => colorMode.value,
+    (mode) => syncStatusBar(mode),
+  )
 })

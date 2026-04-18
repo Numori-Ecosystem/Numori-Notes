@@ -18,13 +18,14 @@ export default defineEventHandler(async (event) => {
     // Check tombstone — don't resurrect deleted notes
     const tombstone = await query(
       'SELECT 1 FROM deleted_notes WHERE user_id = $1 AND client_id = $2',
-      [auth.userId, clientId]
+      [auth.userId, clientId],
     )
     if (tombstone.rows.length > 0) {
       throw createError({ statusCode: 410, statusMessage: 'Note has been deleted' })
     }
 
-    const result = await query(`
+    const result = await query(
+      `
       INSERT INTO notes (user_id, client_id, title, description, tags, content)
       VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT (user_id, client_id) WHERE client_id IS NOT NULL
@@ -35,7 +36,16 @@ export default defineEventHandler(async (event) => {
         content = EXCLUDED.content,
         updated_at = NOW()
       RETURNING id, client_id, title, description, tags, content, created_at, updated_at
-    `, [auth.userId, clientId, title || 'Untitled Note', description || '', JSON.stringify(tags || []), content || ''])
+    `,
+      [
+        auth.userId,
+        clientId,
+        title || 'Untitled Note',
+        description || '',
+        JSON.stringify(tags || []),
+        content || '',
+      ],
+    )
 
     const row = result.rows[0]
     return {
@@ -46,15 +56,24 @@ export default defineEventHandler(async (event) => {
       tags: row.tags,
       content: row.content,
       createdAt: row.created_at,
-      updatedAt: row.updated_at
+      updatedAt: row.updated_at,
     }
   }
 
-  const result = await query(`
+  const result = await query(
+    `
     INSERT INTO notes (user_id, title, description, tags, content)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING id, client_id, title, description, tags, content, created_at, updated_at
-  `, [auth.userId, title || 'Untitled Note', description || '', JSON.stringify(tags || []), content || ''])
+  `,
+    [
+      auth.userId,
+      title || 'Untitled Note',
+      description || '',
+      JSON.stringify(tags || []),
+      content || '',
+    ],
+  )
 
   const row = result.rows[0]
   return {
@@ -65,6 +84,6 @@ export default defineEventHandler(async (event) => {
     tags: row.tags,
     content: row.content,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
   }
 })

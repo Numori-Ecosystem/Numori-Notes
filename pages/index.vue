@@ -6,71 +6,103 @@
     <!-- Email verification banner — shown for logged-in users with unverified email -->
     <EmailVerificationBanner
       :visible="auth.isLoggedIn.value && auth.user.value?.emailVerified === false"
-      @click="showEmailVerificationModal = true" />
+      @click="showEmailVerificationModal = true"
+    />
 
     <!-- Mobile-friendly Toolbar -->
     <div
-class="transition-all duration-300 ease-in-out flex-shrink-0 relative z-30"
-      :class="focusMode ? 'max-h-0 overflow-hidden opacity-0' : 'max-h-40 opacity-100'">
+      class="transition-all duration-300 ease-in-out flex-shrink-0 relative z-30"
+      :class="focusMode ? 'max-h-0 overflow-hidden opacity-0' : 'max-h-40 opacity-100'"
+    >
       <AppHeader
-:current-note="currentNote" :inline-mode="showInlineResults" :markdown-mode="markdownMode"
-      :mod-label="modLabel"
-      :selection-count="selectedNoteIds.length"
-      :is-logged-in="auth.isLoggedIn.value"
-      :can-undo="editorRef?.canUndo ?? false"
-      :can-redo="editorRef?.canRedo ?? false"
-      :editor-font-size="localePrefs.preferences.editorFontSize ?? 16"
-      :check-for-update="sw.checkForUpdate"
-      @toggle-sidebar="showSidebar = !showSidebar"
-      @show-meta="currentNote && (showMetaModal = true)" @apply-format="applyFormat"
-      @indent="editorRef?.indentLine()" @outdent="editorRef?.outdentLine()"
-      @undo="editorRef?.undo()" @redo="editorRef?.redo()"
-      @update:inline-mode="showInlineResults = $event"
-      @update:markdown-mode="markdownMode = $event"
-      @zoom-in="handleZoomIn"
-      @zoom-out="handleZoomOut"
-      @zoom-reset="handleZoomReset"
-      @toggle-focus="focusMode = true"
-      @show-templates="showTemplates = true"
-      @show-help="showHelp = true"
-      @file-new="createNote"
-      @file-open="handleOpenFile"
-      @file-duplicate="handleDuplicate"
-      @file-export-text="handleExportText"
-      @file-export-markdown="handleExportMarkdown"
-      @file-export-pdf="handleExportPdf"
-      @file-export-json="handleExportJson"
-      @file-export-all="handleExportAll"
-      @file-import="handleImport"
-      @file-copy="handleCopy"
-      @file-print="handlePrint"
-      @file-about="showAbout = true" />
+        :current-note="currentNote"
+        :inline-mode="showInlineResults"
+        :markdown-mode="markdownMode"
+        :mod-label="modLabel"
+        :selection-count="selectedNoteIds.length"
+        :is-logged-in="auth.isLoggedIn.value"
+        :can-undo="editorRef?.canUndo ?? false"
+        :can-redo="editorRef?.canRedo ?? false"
+        :editor-font-size="localePrefs.preferences.editorFontSize ?? 16"
+        :check-for-update="sw.checkForUpdate"
+        @toggle-sidebar="showSidebar = !showSidebar"
+        @show-meta="currentNote && (showMetaModal = true)"
+        @apply-format="applyFormat"
+        @indent="editorRef?.indentLine()"
+        @outdent="editorRef?.outdentLine()"
+        @undo="editorRef?.undo()"
+        @redo="editorRef?.redo()"
+        @update:inline-mode="showInlineResults = $event"
+        @update:markdown-mode="markdownMode = $event"
+        @zoom-in="handleZoomIn"
+        @zoom-out="handleZoomOut"
+        @zoom-reset="handleZoomReset"
+        @toggle-focus="focusMode = true"
+        @show-templates="showTemplates = true"
+        @show-help="showHelp = true"
+        @file-new="createNote"
+        @file-open="handleOpenFile"
+        @file-duplicate="handleDuplicate"
+        @file-export-text="handleExportText"
+        @file-export-markdown="handleExportMarkdown"
+        @file-export-pdf="handleExportPdf"
+        @file-export-json="handleExportJson"
+        @file-export-all="handleExportAll"
+        @file-import="handleImport"
+        @file-copy="handleCopy"
+        @file-print="handlePrint"
+        @file-about="showAbout = true"
+      />
     </div>
 
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Sidebar - Notes List (desktop) -->
       <aside
-class="flex-shrink-0 hidden lg:block transition-all duration-300 ease-in-out relative z-20"
-        :class="!focusMode && showSidebar ? 'w-80 opacity-100' : 'w-0 opacity-0 overflow-hidden'">
-        <div class="w-80 h-full relative shadow-[4px_0_12px_-4px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_12px_-4px_rgba(0,0,0,0.5)]">
+        class="flex-shrink-0 hidden lg:block transition-all duration-300 ease-in-out relative z-20"
+        :class="!focusMode && showSidebar ? 'w-80 opacity-100' : 'w-0 opacity-0 overflow-hidden'"
+      >
+        <div
+          class="w-80 h-full relative shadow-[4px_0_12px_-4px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_12px_-4px_rgba(0,0,0,0.5)]"
+        >
           <Transition
             enter-active-class="transition-opacity duration-500"
             enter-from-class="opacity-0"
             enter-to-class="opacity-100"
             leave-active-class="transition-opacity duration-500"
             leave-from-class="opacity-100"
-            leave-to-class="opacity-0">
-            <div v-if="sidebarGlow" class="absolute inset-0 z-10 pointer-events-none bg-primary-500/25 dark:bg-primary-400/20" />
+            leave-to-class="opacity-0"
+          >
+            <div
+              v-if="sidebarGlow"
+              class="absolute inset-0 z-10 pointer-events-none bg-primary-500/25 dark:bg-primary-400/20"
+            />
           </Transition>
           <MainSidebar
-:notes="notes" :groups="groups" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" :pending-note-ids="pendingNoteIds" @new-note="createNote" @select-note="selectNote"
-            @delete-note="confirmDelete" @edit-note="openEditModal"
-            @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
+            :notes="notes"
+            :groups="groups"
+            :current-note-id="currentNoteId"
+            :all-tags="allTags"
+            :is-logged-in="auth.isLoggedIn.value"
+            :user="auth.user.value"
+            :shared-note-ids="sharedNoteIds"
+            :shared-notes-map="sharedNotesMap"
+            :analytics-notes-map="analyticsNotesMap"
+            :pending-note-ids="pendingNoteIds"
+            @new-note="createNote"
+            @select-note="selectNote"
+            @delete-note="confirmDelete"
+            @edit-note="openEditModal"
+            @bulk-delete="confirmBulkDelete"
+            @selection-change="onSelectionChange"
             @show-help="showHelp = true"
-            @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true"
-            @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile"
-            @share-note="handleShareNote" @show-properties="handleShowProperties"
+            @show-language="showLanguageModal = true"
+            @show-locale-settings="showLocaleSettings = true"
+            @show-auth="showAuthModal = true"
+            @logout="handleLogout"
+            @edit-profile="handleShowProfile"
+            @share-note="handleShareNote"
+            @show-properties="handleShowProperties"
             @unshare-note="handleUnshareNote"
             @open-analytics="handleOpenAnalytics"
             @reorder="handleReorder"
@@ -90,9 +122,10 @@ class="flex-shrink-0 hidden lg:block transition-all duration-300 ease-in-out rel
             @move-note-to-group="handleMoveNoteToGroup"
             @reorder-groups="handleReorderGroups"
             @reorder-all="handleReorderAll"
-            @reorder-within-group="handleReorderWithinGroup" />
+            @reorder-within-group="handleReorderWithinGroup"
+          />
         </div>
-        </aside>
+      </aside>
 
       <!-- Mobile sidebar with slide transition -->
       <Teleport to="body">
@@ -102,8 +135,13 @@ class="flex-shrink-0 hidden lg:block transition-all duration-300 ease-in-out rel
           enter-to-class="opacity-100"
           leave-active-class="transition-opacity duration-200 ease-in"
           leave-from-class="opacity-100"
-          leave-to-class="opacity-0">
-          <div v-if="showSidebar" class="fixed inset-0 bg-black/50 z-20 lg:hidden" @click="showSidebar = false" />
+          leave-to-class="opacity-0"
+        >
+          <div
+            v-if="showSidebar"
+            class="fixed inset-0 bg-black/50 z-20 lg:hidden"
+            @click="showSidebar = false"
+          />
         </Transition>
         <Transition
           enter-active-class="transition-transform duration-300 ease-out"
@@ -111,10 +149,16 @@ class="flex-shrink-0 hidden lg:block transition-all duration-300 ease-in-out rel
           enter-to-class="translate-x-0"
           leave-active-class="transition-transform duration-200 ease-in"
           leave-from-class="translate-x-0"
-          leave-to-class="-translate-x-full">
+          leave-to-class="-translate-x-full"
+        >
           <aside
-v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
-            :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)' }">
+            v-if="showSidebar"
+            class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
+            :style="{
+              paddingTop: 'env(safe-area-inset-top, 0px)',
+              paddingLeft: 'env(safe-area-inset-left, 0px)',
+            }"
+          >
             <div class="h-full relative">
               <Transition
                 enter-active-class="transition-opacity duration-500"
@@ -122,37 +166,59 @@ v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
                 enter-to-class="opacity-100"
                 leave-active-class="transition-opacity duration-500"
                 leave-from-class="opacity-100"
-                leave-to-class="opacity-0">
-                <div v-if="sidebarGlow" class="absolute inset-0 z-10 pointer-events-none bg-primary-500/25 dark:bg-primary-400/20" />
+                leave-to-class="opacity-0"
+              >
+                <div
+                  v-if="sidebarGlow"
+                  class="absolute inset-0 z-10 pointer-events-none bg-primary-500/25 dark:bg-primary-400/20"
+                />
               </Transition>
               <MainSidebar
-:notes="notes" :groups="groups" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" :pending-note-ids="pendingNoteIds" @new-note="createNote" @select-note="selectNote"
-              @delete-note="confirmDelete" @edit-note="openEditModal"
-              @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
-              @show-help="showHelp = true"
-              @show-language="showLanguageModal = true" @show-locale-settings="showLocaleSettings = true"
-              @show-auth="showAuthModal = true" @logout="handleLogout" @edit-profile="handleShowProfile"
-              @share-note="handleShareNote" @show-properties="handleShowProperties"
-              @unshare-note="handleUnshareNote"
-              @open-analytics="handleOpenAnalytics"
-              @reorder="handleReorder"
-              @duplicate-note="handleDuplicateById"
-              @export-note="handleExportById"
-              @copy-to-clipboard="handleCopyById"
-              @print-note="handlePrintById"
-              @archive-note="handleArchiveNote"
-              @unarchive-note="handleUnarchiveNote"
-              @bulk-archive="handleBulkArchive"
-              @bulk-unarchive="handleBulkUnarchive"
-              @bulk-group="handleBulkGroup"
-              @add-to-group="handleAddToGroup"
-              @toggle-group-collapse="handleToggleGroupCollapse"
-              @edit-group="handleEditGroup"
-              @delete-group="handleDeleteGroup"
-              @move-note-to-group="handleMoveNoteToGroup"
-              @reorder-groups="handleReorderGroups"
-              @reorder-all="handleReorderAll"
-              @reorder-within-group="handleReorderWithinGroup" />
+                :notes="notes"
+                :groups="groups"
+                :current-note-id="currentNoteId"
+                :all-tags="allTags"
+                :is-logged-in="auth.isLoggedIn.value"
+                :user="auth.user.value"
+                :shared-note-ids="sharedNoteIds"
+                :shared-notes-map="sharedNotesMap"
+                :analytics-notes-map="analyticsNotesMap"
+                :pending-note-ids="pendingNoteIds"
+                @new-note="createNote"
+                @select-note="selectNote"
+                @delete-note="confirmDelete"
+                @edit-note="openEditModal"
+                @bulk-delete="confirmBulkDelete"
+                @selection-change="onSelectionChange"
+                @show-help="showHelp = true"
+                @show-language="showLanguageModal = true"
+                @show-locale-settings="showLocaleSettings = true"
+                @show-auth="showAuthModal = true"
+                @logout="handleLogout"
+                @edit-profile="handleShowProfile"
+                @share-note="handleShareNote"
+                @show-properties="handleShowProperties"
+                @unshare-note="handleUnshareNote"
+                @open-analytics="handleOpenAnalytics"
+                @reorder="handleReorder"
+                @duplicate-note="handleDuplicateById"
+                @export-note="handleExportById"
+                @copy-to-clipboard="handleCopyById"
+                @print-note="handlePrintById"
+                @archive-note="handleArchiveNote"
+                @unarchive-note="handleUnarchiveNote"
+                @bulk-archive="handleBulkArchive"
+                @bulk-unarchive="handleBulkUnarchive"
+                @bulk-group="handleBulkGroup"
+                @add-to-group="handleAddToGroup"
+                @toggle-group-collapse="handleToggleGroupCollapse"
+                @edit-group="handleEditGroup"
+                @delete-group="handleDeleteGroup"
+                @move-note-to-group="handleMoveNoteToGroup"
+                @reorder-groups="handleReorderGroups"
+                @reorder-all="handleReorderAll"
+                @reorder-within-group="handleReorderWithinGroup"
+              />
             </div>
           </aside>
         </Transition>
@@ -160,29 +226,53 @@ v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
 
       <!-- Editor Area -->
       <main
-class="flex-1 overflow-hidden flex flex-col isolate transition-[padding] duration-300 relative"
-        :style="focusMode ? { paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' } : {}">
+        class="flex-1 overflow-hidden flex flex-col isolate transition-[padding] duration-300 relative"
+        :style="
+          focusMode
+            ? {
+                paddingTop: 'env(safe-area-inset-top, 0px)',
+                paddingLeft: 'env(safe-area-inset-left, 0px)',
+                paddingRight: 'env(safe-area-inset-right, 0px)',
+              }
+            : {}
+        "
+      >
         <!-- Header shadow overlay -->
-        <div class="absolute top-0 left-0 right-0 h-3 z-10 pointer-events-none bg-gradient-to-b from-black/[0.06] to-transparent dark:from-black/[0.25]"/>
+        <div
+          class="absolute top-0 left-0 right-0 h-3 z-10 pointer-events-none bg-gradient-to-b from-black/[0.06] to-transparent dark:from-black/[0.25]"
+        />
         <NoteEditor
-v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-inline="showInlineResults !== 'off'"
+          v-if="currentNote"
+          ref="editorRef"
+          :content="currentNote.content"
+          :show-inline="showInlineResults !== 'off'"
           :inline-align="showInlineResults === 'off' ? 'left' : showInlineResults"
           :locale-preferences="localePrefs.preferences"
           :markdown-mode="markdownMode"
           :shortcut-handlers="shortcutHandlers"
           :placeholder="'Start typing... Try: 10 + 20, or use # for headers, // for comments'"
-          @update:content="updateContent" />
+          @update:content="updateContent"
+        />
         <div v-else class="flex items-center justify-center h-full px-6">
           <div class="text-center max-w-sm space-y-6">
             <!-- Icon -->
-            <div class="mx-auto w-16 h-16 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-              <Icon name="mdi:file-document-outline" class="w-8 h-8 text-primary-500 dark:text-primary-400" />
+            <div
+              class="mx-auto w-16 h-16 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center"
+            >
+              <Icon
+                name="mdi:file-document-outline"
+                class="w-8 h-8 text-primary-500 dark:text-primary-400"
+              />
             </div>
 
             <!-- Heading + subtext -->
             <div class="space-y-2">
-              <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">No note selected</h2>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Pick an existing note from the sidebar or start fresh with a new one.</p>
+              <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                No note selected
+              </h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                Pick an existing note from the sidebar or start fresh with a new one.
+              </p>
             </div>
 
             <!-- Action buttons -->
@@ -191,7 +281,13 @@ v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-inline="
                 <Icon name="mdi:plus" class="w-5 h-5" />
                 Create new note
               </UiButton>
-              <UiButton variant="outline" color="white" size="lg" class="w-full sm:w-auto" @click="showSidebar = true">
+              <UiButton
+                variant="outline"
+                color="white"
+                size="lg"
+                class="w-full sm:w-auto"
+                @click="showSidebar = true"
+              >
                 <Icon name="mdi:menu" class="w-5 h-5" />
                 Browse notes
               </UiButton>
@@ -208,13 +304,19 @@ v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-inline="
 
     <!-- Mobile: formatting toolbar (hidden on native apps where native keyboard toolbar is used) -->
     <div
-v-if="currentNote && !isNativeApp" class="lg:hidden fixed left-0 right-0 z-10 transition-[bottom] duration-150 ease-out px-1.5 pb-1.5"
-      :style="{ bottom: mobileKeyboardOffset + 'px' }">
+      v-if="currentNote && !isNativeApp"
+      class="lg:hidden fixed left-0 right-0 z-10 transition-[bottom] duration-150 ease-out px-1.5 pb-1.5"
+      :style="{ bottom: mobileKeyboardOffset + 'px' }"
+    >
       <div
-class="overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-xl"
-        :style="{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
+        class="overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-xl"
+        :style="{
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+        }"
+      >
         <FormattingToolbar
-container-class="px-2 py-1.5"
+          container-class="px-2 py-1.5"
           :show-dismiss="hasVirtualKeyboard"
           :can-undo="editorRef?.canUndo ?? false"
           :can-redo="editorRef?.canRedo ?? false"
@@ -223,13 +325,15 @@ container-class="px-2 py-1.5"
           @outdent="editorRef?.outdentLine()"
           @undo="editorRef?.undo()"
           @redo="editorRef?.redo()"
-          @dismiss-keyboard="editorRef?.blur()" />
+          @dismiss-keyboard="editorRef?.blur()"
+        />
       </div>
     </div>
 
     <!-- Modals -->
     <NoteMetaModal
-:is-open="showMetaModal" :title="currentNote?.title || ''"
+      :is-open="showMetaModal"
+      :title="currentNote?.title || ''"
       :internal-name="currentNote?.internalName || ''"
       :description="currentNote?.description || ''"
       :tags="currentNote?.tags || []"
@@ -237,20 +341,30 @@ container-class="px-2 py-1.5"
       :note-id="currentNote?.id"
       :all-notes="notes"
       :shared="currentNote ? sharedNoteIds.includes(currentNote.id) : false"
-      :share-hash="currentNote ? (sharedNotesMap.get(currentNote.id) || null) : null"
-      :analytics-hash="currentNote ? (analyticsNotesMap.get(currentNote.id) || null) : null"
+      :share-hash="currentNote ? sharedNotesMap.get(currentNote.id) || null : null"
+      :analytics-hash="currentNote ? analyticsNotesMap.get(currentNote.id) || null : null"
       @close="showMetaModal = false"
-      @save="updateMeta" @delete="confirmDelete"
+      @save="updateMeta"
+      @delete="confirmDelete"
       @share="handleShareNote"
       @unshare="handleUnshareNote"
-      @open-analytics="handleOpenAnalytics" />
+      @open-analytics="handleOpenAnalytics"
+    />
 
     <HelpModal :is-open="showHelp" :mod-label="modLabel" @close="showHelp = false" />
-    <AboutModal :is-open="showAbout" :check-for-update="sw.checkForUpdate" @close="showAbout = false" />
-    <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
+    <AboutModal
+      :is-open="showAbout"
+      :check-for-update="sw.checkForUpdate"
+      @close="showAbout = false"
+    />
+    <TemplatesModal
+      :is-open="showTemplates"
+      @close="showTemplates = false"
+      @insert="insertTemplate"
+    />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
     <SettingsModal
-:is-open="showLocaleSettings"
+      :is-open="showLocaleSettings"
       :preferences="localePrefs.preferences"
       :apply-preset="localePrefs.applyPreset"
       :set-preference="localePrefs.setPreference"
@@ -258,34 +372,42 @@ container-class="px-2 py-1.5"
       :save="localePrefs.save"
       :reset="localePrefs.reset"
       @close="showLocaleSettings = false"
-      @relaunch-wizard="showLocaleSettings = false; welcomeWizard.isOpen.value = true" />
+      @relaunch-wizard="
+        showLocaleSettings = false
+        welcomeWizard.isOpen.value = true
+      "
+    />
 
     <ExportOptionsModal
-:is-open="showExportOptions"
+      :is-open="showExportOptions"
       @close="showExportOptions = false"
-      @confirm="handleExportConfirm" />
+      @confirm="handleExportConfirm"
+    />
 
     <ConfirmDeleteModal
-:is-open="showDeleteConfirm"
+      :is-open="showDeleteConfirm"
       @close="showDeleteConfirm = false"
-      @confirm="handleDeleteConfirm" />
+      @confirm="handleDeleteConfirm"
+    />
 
     <ConfirmBulkDeleteModal
-:is-open="showBulkDeleteConfirm"
+      :is-open="showBulkDeleteConfirm"
       :count="pendingBulkDeleteIds.length"
       @close="showBulkDeleteConfirm = false"
-      @confirm="handleBulkDeleteConfirm" />
+      @confirm="handleBulkDeleteConfirm"
+    />
 
     <WelcomeWizard
-:is-open="welcomeWizard.isOpen.value"
+      :is-open="welcomeWizard.isOpen.value"
       :preferences="localePrefs.preferences"
       :apply-preset="localePrefs.applyPreset"
       :save-preferences="localePrefs.save"
-      @complete="welcomeWizard.complete()" />
+      @complete="welcomeWizard.complete()"
+    />
 
     <!-- Auth & Share modals -->
     <AuthModal
-:is-open="showAuthModal"
+      :is-open="showAuthModal"
       :loading="auth.loading.value"
       :error="auth.error.value"
       @close="showAuthModal = false"
@@ -293,36 +415,40 @@ container-class="px-2 py-1.5"
       @register="handleRegister"
       @forgot-password="handleForgotPassword"
       @verify-recovery="handleVerifyRecovery"
-      @reset-password="handleResetPassword" />
+      @reset-password="handleResetPassword"
+    />
 
     <EmailVerificationModal
-:is-open="showEmailVerificationModal"
+      :is-open="showEmailVerificationModal"
       :loading="auth.loading.value"
       :error="auth.error.value"
       @close="showEmailVerificationModal = false"
       @verify="handleVerifyEmail"
-      @resend="handleResendVerification" />
+      @resend="handleResendVerification"
+    />
 
     <ShareModal
-:is-open="showShareModal"
+      :is-open="showShareModal"
       :note="currentNote"
       :is-logged-in="auth.isLoggedIn.value"
       :user-name="auth.user.value?.name || ''"
       :user-email="auth.user.value?.email || ''"
       :auth-headers="auth.authHeaders.value"
-      :existing-hash="currentNote ? (sharedNotesMap.get(currentNote.id) || null) : null"
+      :existing-hash="currentNote ? sharedNotesMap.get(currentNote.id) || null : null"
       @close="handleShareModalClose"
       @unshare="handleShareModalUnshare"
-      @open-analytics="handleOpenAnalytics" />
+      @open-analytics="handleOpenAnalytics"
+    />
 
     <ShareAnalyticsModal
-:is-open="showAnalyticsModal"
+      :is-open="showAnalyticsModal"
       :hash="analyticsHash"
       :auth-headers="auth.authHeaders.value"
-      @close="showAnalyticsModal = false" />
+      @close="showAnalyticsModal = false"
+    />
 
     <ProfileModal
-:is-open="showProfileModal"
+      :is-open="showProfileModal"
       :user="auth.user.value"
       :last-synced-at="lastSyncedAt"
       :auth-headers="auth.authHeaders.value"
@@ -335,51 +461,71 @@ container-class="px-2 py-1.5"
       @unshare="handleProfileUnshare"
       @open-analytics="handleOpenAnalytics"
       @sync-now="syncNow"
-      @show-notes="handleShowNotes" />
+      @show-notes="handleShowNotes"
+    />
 
     <SyncIndicator :syncing="syncing" />
 
     <!-- Group modals -->
     <GroupModal
-:is-open="showGroupModal"
+      :is-open="showGroupModal"
       :editing-group-id="editingGroupId"
       :initial-name="editingGroupName"
       :initial-internal-name="editingGroupInternalName"
       :all-groups="groups"
       @close="showGroupModal = false"
-      @save="handleGroupModalSave" />
+      @save="handleGroupModalSave"
+    />
 
     <DeleteGroupModal
-:is-open="showDeleteGroupModal"
+      :is-open="showDeleteGroupModal"
       :group-name="pendingDeleteGroup?.name || ''"
       :note-count="pendingDeleteGroupNoteCount"
       :other-groups="otherGroupsForDelete"
       @close="showDeleteGroupModal = false"
-      @confirm="handleDeleteGroupConfirm" />
+      @confirm="handleDeleteGroupConfirm"
+    />
 
     <AddToGroupModal
-:is-open="showAddToGroupModal"
+      :is-open="showAddToGroupModal"
       :groups="groups"
-      :current-group-id="addToGroupNoteId ? (notes.find(n => n.id === addToGroupNoteId)?.groupId || null) : null"
-      @close="showAddToGroupModal = false; bulkGroupNoteIds = null; addToGroupNoteId = null"
+      :current-group-id="
+        addToGroupNoteId ? notes.find((n) => n.id === addToGroupNoteId)?.groupId || null : null
+      "
+      @close="
+        showAddToGroupModal = false
+        bulkGroupNoteIds = null
+        addToGroupNoteId = null
+      "
       @select="handleAddToGroupSelect"
-      @create-new="handleAddToGroupCreateNew" />
+      @create-new="handleAddToGroupCreateNew"
+    />
 
     <UpdateNotification
       :visible="sw.updateAvailable.value"
       :is-native="sw.isNative"
       @apply="sw.applyUpdate"
-      @dismiss="sw.dismissUpdate" />
+      @dismiss="sw.dismissUpdate"
+    />
 
     <ToastNotification :toasts="toast.toasts.value" />
 
     <!-- Focus mode exit button -->
     <UiButton
-v-if="focusMode" variant="ghost"
-      color="gray" icon-only class="fixed z-50 pl-2.5 pb-2.5 rounded-bl-xl focus-exit-enter"
-      :style="{ top: 'env(safe-area-inset-top, 0px)', right: 'env(safe-area-inset-right, 0px)', paddingRight: '4px', paddingTop: '4px' }"
+      v-if="focusMode"
+      variant="ghost"
+      color="gray"
+      icon-only
+      class="fixed z-50 pl-2.5 pb-2.5 rounded-bl-xl focus-exit-enter"
+      :style="{
+        top: 'env(safe-area-inset-top, 0px)',
+        right: 'env(safe-area-inset-right, 0px)',
+        paddingRight: '4px',
+        paddingTop: '4px',
+      }"
       title="Exit focus mode"
-      @click="focusMode = false">
+      @click="focusMode = false"
+    >
       <Icon name="mdi:fullscreen-exit" class="w-4 h-4 block" />
     </UiButton>
   </div>
@@ -388,9 +534,50 @@ v-if="focusMode" variant="ghost"
 <script setup>
 import db from '~/db.js'
 
-const { notes, currentNoteId, currentNote, allTags, deletedIds, addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes, clearDeletedIds, reorderNotes, moveNotesToGroup, removeNotesFromGroup, archiveNote, unarchiveNote, bulkArchive, bulkUnarchive, removeWelcomeNoteIfNeeded } = useNotes()
-const { groups, deletedGroupIds, addGroup, updateGroup, deleteGroup: deleteGroupFromDb, toggleGroupCollapsed, reorderGroups, saveGroups, clearDeletedGroupIds } = useGroups()
-const { exportNoteAsText, exportNoteAsJson, exportNoteAsMarkdown, exportNoteAsPdf, exportAllNotes, openFile, importNotes, duplicateNote, copyToClipboard, printNote } = useFileActions()
+const {
+  notes,
+  currentNoteId,
+  currentNote,
+  allTags,
+  deletedIds,
+  addNote,
+  deleteNote,
+  updateNoteContent,
+  updateNoteMeta,
+  saveNotes,
+  clearDeletedIds,
+  reorderNotes,
+  moveNotesToGroup,
+  removeNotesFromGroup,
+  archiveNote,
+  unarchiveNote,
+  bulkArchive,
+  bulkUnarchive,
+  removeWelcomeNoteIfNeeded,
+} = useNotes()
+const {
+  groups,
+  deletedGroupIds,
+  addGroup,
+  updateGroup,
+  deleteGroup: deleteGroupFromDb,
+  toggleGroupCollapsed,
+  reorderGroups,
+  saveGroups,
+  clearDeletedGroupIds,
+} = useGroups()
+const {
+  exportNoteAsText,
+  exportNoteAsJson,
+  exportNoteAsMarkdown,
+  exportNoteAsPdf,
+  exportAllNotes,
+  openFile,
+  importNotes,
+  duplicateNote,
+  copyToClipboard,
+  printNote,
+} = useFileActions()
 const { evaluateLines } = useCalculator()
 const localePrefs = useLocalePreferences()
 const welcomeWizard = useWelcomeWizard()
@@ -400,20 +587,45 @@ const toast = useToast()
 
 let _onDataWipe = null
 let _onSessionRevoked = null
-const { syncing, lastSyncedAt, syncError: _syncError, pendingNoteIds, isOnline: _isOnline, sync: _sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds, () => _onDataWipe?.(), () => _onSessionRevoked?.(), removeWelcomeNoteIfNeeded, groups, saveGroups, deletedGroupIds, clearDeletedGroupIds)
+const {
+  syncing,
+  lastSyncedAt,
+  syncError: _syncError,
+  pendingNoteIds,
+  isOnline: _isOnline,
+  sync: _sync,
+  syncNow,
+  debouncedSync,
+} = useSync(
+  auth,
+  notes,
+  saveNotes,
+  deletedIds,
+  clearDeletedIds,
+  () => _onDataWipe?.(),
+  () => _onSessionRevoked?.(),
+  removeWelcomeNoteIfNeeded,
+  groups,
+  saveGroups,
+  deletedGroupIds,
+  clearDeletedGroupIds,
+)
 
 // If restore() found a stale token from a revoked session, clear in-memory notes
 // (IndexedDB was already cleared by restore, but loadNotes ran first)
-watch(() => auth.wasSessionInvalid.value, (invalid) => {
-  if (invalid) {
-    notes.value = []
-    currentNoteId.value = null
-    deletedIds.value = []
-    deletedGroupIds.value = []
-    groups.value = []
-    lastSyncedAt.value = null
-  }
-})
+watch(
+  () => auth.wasSessionInvalid.value,
+  (invalid) => {
+    if (invalid) {
+      notes.value = []
+      currentNoteId.value = null
+      deletedIds.value = []
+      deletedGroupIds.value = []
+      groups.value = []
+      lastSyncedAt.value = null
+    }
+  },
+)
 
 /** Called by other devices via SSE when data was wiped from the profile modal. */
 _onDataWipe = async () => {
@@ -445,14 +657,23 @@ _onSessionRevoked = async () => {
   // Then clean up IndexedDB (async)
   await db.notes.clear()
   await db.groups.clear()
-  await db.appState.bulkDelete(['auth_token', 'enc_key', 'deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
+  await db.appState.bulkDelete([
+    'auth_token',
+    'enc_key',
+    'deleted_note_ids',
+    'deleted_group_ids',
+    'last_synced_at',
+  ])
 }
 const sw = useServiceWorker()
 
 // Sync the update-check poll interval with user preferences
-watch(() => localePrefs.preferences.updateCheckInterval, (val) => {
-  sw.setPollInterval(val ?? 30)
-})
+watch(
+  () => localePrefs.preferences.updateCheckInterval,
+  (val) => {
+    sw.setPollInterval(val ?? 30)
+  },
+)
 localePrefs.ready.then(() => {
   sw.setPollInterval(localePrefs.preferences.updateCheckInterval ?? 30)
 })
@@ -461,7 +682,7 @@ localePrefs.ready.then(() => {
 const createNote = () => {
   // Bump group sortOrders so the new note (sortOrder 0) appears at the top
   const now = new Date().toISOString()
-  groups.value.forEach(g => {
+  groups.value.forEach((g) => {
     g.sortOrder = (g.sortOrder ?? 0) + 1
     g.updatedAt = now
   })
@@ -477,13 +698,13 @@ const handleReorder = (orderedIds) => {
 }
 
 const handleReorderAll = (orders) => {
-  const noteOrders = orders.filter(o => o.kind === 'note')
-  const groupOrders = orders.filter(o => o.kind === 'group')
+  const noteOrders = orders.filter((o) => o.kind === 'note')
+  const groupOrders = orders.filter((o) => o.kind === 'group')
 
   // Apply sortOrders to notes
   const now = new Date().toISOString()
   for (const { id, sortOrder } of noteOrders) {
-    const note = notes.value.find(n => n.id === id)
+    const note = notes.value.find((n) => n.id === id)
     if (note) {
       note.sortOrder = sortOrder
       note.updatedAt = now
@@ -494,7 +715,7 @@ const handleReorderAll = (orders) => {
 
   // Apply sortOrders to groups
   for (const { id, sortOrder } of groupOrders) {
-    const group = groups.value.find(g => g.id === id)
+    const group = groups.value.find((g) => g.id === id)
     if (group) {
       group.sortOrder = sortOrder
       group.updatedAt = now
@@ -509,7 +730,7 @@ const handleReorderAll = (orders) => {
 const handleReorderWithinGroup = ({ groupId: _groupId, orderedNoteIds }) => {
   const now = new Date().toISOString()
   orderedNoteIds.forEach((id, index) => {
-    const note = notes.value.find(n => n.id === id)
+    const note = notes.value.find((n) => n.id === id)
     if (note) {
       note.sortOrder = index
       note.updatedAt = now
@@ -521,7 +742,11 @@ const handleReorderWithinGroup = ({ groupId: _groupId, orderedNoteIds }) => {
 }
 
 // Keyboard shortcuts — must be declared before refs so handlers can reference them
-const { isMac: _isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShortcuts({
+const {
+  isMac: _isMac,
+  modLabel,
+  handlers: shortcutHandlers,
+} = useKeyboardShortcuts({
   save: () => {
     // Notes auto-save, but we still intercept to prevent browser save dialog
   },
@@ -530,7 +755,9 @@ const { isMac: _isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShort
   print: () => handlePrint(),
   duplicate: () => handleDuplicate(),
   exportText: () => handleExportText(),
-  help: () => { showHelp.value = true },
+  help: () => {
+    showHelp.value = true
+  },
   exportAll: () => handleExportAll(),
 })
 
@@ -544,11 +771,17 @@ const showLocaleSettings = ref(false)
 const showAbout = ref(false)
 const showInlineResults = computed({
   get: () => localePrefs.preferences.inlineMode ?? 'left',
-  set: (v) => { localePrefs.preferences.inlineMode = v; localePrefs.save() }
+  set: (v) => {
+    localePrefs.preferences.inlineMode = v
+    localePrefs.save()
+  },
 })
 const markdownMode = computed({
   get: () => localePrefs.preferences.markdownMode ?? 'edit',
-  set: (v) => { localePrefs.preferences.markdownMode = v; localePrefs.save() }
+  set: (v) => {
+    localePrefs.preferences.markdownMode = v
+    localePrefs.save()
+  },
 })
 
 const handleZoomIn = () => {
@@ -586,7 +819,9 @@ if (import.meta.client && platform === 'web') {
       } else if (!on && document.fullscreenElement) {
         await document.exitFullscreen()
       }
-    } catch { /* fullscreen not supported or denied */ }
+    } catch {
+      /* fullscreen not supported or denied */
+    }
   })
 
   useEventListener(document, 'fullscreenchange', () => {
@@ -606,7 +841,9 @@ if (import.meta.client && isNativeApp) {
       } else {
         await StatusBar.show()
       }
-    } catch { /* status bar plugin not available */ }
+    } catch {
+      /* status bar plugin not available */
+    }
   })
 }
 
@@ -632,7 +869,12 @@ const sharedNotesMap = ref(new Map()) // noteId -> hash (active shares only)
 const analyticsNotesMap = ref(new Map()) // noteId -> hash (any share with analytics, including unshared)
 
 const loadSharedNotes = async () => {
-  if (!auth.isLoggedIn.value) { sharedNoteIds.value = []; sharedNotesMap.value = new Map(); analyticsNotesMap.value = new Map(); return }
+  if (!auth.isLoggedIn.value) {
+    sharedNoteIds.value = []
+    sharedNotesMap.value = new Map()
+    analyticsNotesMap.value = new Map()
+    return
+  }
   try {
     const shared = await apiFetch('/api/share/my', { headers: auth.authHeaders.value })
     const map = new Map()
@@ -641,8 +883,8 @@ const loadSharedNotes = async () => {
     for (const sn of shared) {
       // Match by sourceClientId (E2E-safe) or fall back to title match (legacy)
       const match = sn.sourceClientId
-        ? notes.value.find(n => n.id === sn.sourceClientId)
-        : notes.value.find(n => n.title === sn.title)
+        ? notes.value.find((n) => n.id === sn.sourceClientId)
+        : notes.value.find((n) => n.title === sn.title)
       if (match) {
         if (sn.isActive) {
           ids.push(match.id)
@@ -664,26 +906,31 @@ const loadSharedNotes = async () => {
 }
 
 // Reload shared notes when auth changes or after sharing
-watch(() => auth.isLoggedIn.value, async (loggedIn, wasLoggedIn) => {
-  if (loggedIn) {
-    loadSharedNotes()
-  } else {
-    sharedNoteIds.value = []; sharedNotesMap.value = new Map(); analyticsNotesMap.value = new Map()
-    // If we transitioned from logged-in to logged-out (session revoked, restore failed, etc.),
-    // clear local notes so no data is left behind from a revoked session.
-    if (wasLoggedIn) {
-      notes.value = []
-      currentNoteId.value = null
-      deletedIds.value = []
-      deletedGroupIds.value = []
-      groups.value = []
-      await db.notes.clear()
-      await db.groups.clear()
-      await db.appState.bulkDelete(['deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
-      lastSyncedAt.value = null
+watch(
+  () => auth.isLoggedIn.value,
+  async (loggedIn, wasLoggedIn) => {
+    if (loggedIn) {
+      loadSharedNotes()
+    } else {
+      sharedNoteIds.value = []
+      sharedNotesMap.value = new Map()
+      analyticsNotesMap.value = new Map()
+      // If we transitioned from logged-in to logged-out (session revoked, restore failed, etc.),
+      // clear local notes so no data is left behind from a revoked session.
+      if (wasLoggedIn) {
+        notes.value = []
+        currentNoteId.value = null
+        deletedIds.value = []
+        deletedGroupIds.value = []
+        groups.value = []
+        await db.notes.clear()
+        await db.groups.clear()
+        await db.appState.bulkDelete(['deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
+        lastSyncedAt.value = null
+      }
     }
-  }
-})
+  },
+)
 
 onMounted(() => {
   if (auth.isLoggedIn.value) loadSharedNotes()
@@ -725,14 +972,18 @@ const handleLogin = async ({ email, password }) => {
   try {
     await auth.login(email, password)
     showAuthModal.value = false
-  } catch { /* error shown in modal */ }
+  } catch {
+    /* error shown in modal */
+  }
 }
 
 const handleRegister = async ({ email, password, name }) => {
   try {
     await auth.register(email, password, name)
     showAuthModal.value = false
-  } catch { /* error shown in modal */ }
+  } catch {
+    /* error shown in modal */
+  }
 }
 
 // Password recovery handlers
@@ -740,14 +991,18 @@ const handleForgotPassword = async ({ email, onSuccess }) => {
   try {
     await auth.forgotPassword(email)
     onSuccess()
-  } catch { /* error shown in modal */ }
+  } catch {
+    /* error shown in modal */
+  }
 }
 
 const handleVerifyRecovery = async ({ email, code, onSuccess }) => {
   try {
     const token = await auth.verifyRecovery(email, code)
     onSuccess(token)
-  } catch { /* error shown in modal */ }
+  } catch {
+    /* error shown in modal */
+  }
 }
 
 const handleResetPassword = async ({ recoveryToken, newPassword }) => {
@@ -762,7 +1017,9 @@ const handleResetPassword = async ({ recoveryToken, newPassword }) => {
     await db.groups.clear()
     await db.appState.delete('deleted_note_ids')
     await db.appState.delete('deleted_group_ids')
-  } catch { /* error shown in modal */ }
+  } catch {
+    /* error shown in modal */
+  }
 }
 
 // Email verification handlers
@@ -770,13 +1027,17 @@ const handleVerifyEmail = async (code) => {
   try {
     await auth.verifyEmail(code)
     showEmailVerificationModal.value = false
-  } catch { /* error shown in modal */ }
+  } catch {
+    /* error shown in modal */
+  }
 }
 
 const handleResendVerification = async () => {
   try {
     await auth.sendVerification()
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 /** Clear all local notes from IndexedDB — called on logout, password change, account deletion.
@@ -811,7 +1072,7 @@ const handleChangePassword = async ({ currentPassword, newPassword, onProgress }
   // Fetch all server-side notes for re-encryption during password change.
   // The auth.changePassword method will decrypt each with the old key
   // and re-encrypt with the new key, then send them atomically.
-  const serverNotes = notes.value.map(n => ({
+  const serverNotes = notes.value.map((n) => ({
     clientId: n.id,
     title: n.title,
     description: n.description,
@@ -822,7 +1083,7 @@ const handleChangePassword = async ({ currentPassword, newPassword, onProgress }
     internalName: n.internalName || '',
     groupId: n.groupId || null,
     createdAt: n.createdAt,
-    updatedAt: n.updatedAt
+    updatedAt: n.updatedAt,
   }))
   await auth.changePassword(currentPassword, newPassword, serverNotes, onProgress)
   // changePassword calls logout() internally — clear local data and show login
@@ -875,10 +1136,12 @@ const handleUnshareNote = async (noteId) => {
   try {
     await apiFetch(`/api/share/${hash}`, {
       method: 'DELETE',
-      headers: auth.authHeaders.value
+      headers: auth.authHeaders.value,
     })
     await loadSharedNotes()
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 // Show properties (open meta modal for a specific note)
@@ -934,9 +1197,15 @@ onMounted(async () => {
     try {
       const data = JSON.parse(row.value)
       const newNote = createNote()
-      updateNoteMeta(newNote.id, { title: data.title, description: data.description, tags: data.tags })
+      updateNoteMeta(newNote.id, {
+        title: data.title,
+        description: data.description,
+        tags: data.tags,
+      })
       updateNoteContent(newNote.id, data.content)
-    } catch { /* ignore bad data */ }
+    } catch {
+      /* ignore bad data */
+    }
   }
 })
 
@@ -1040,10 +1309,18 @@ const handleExportConfirm = (withResults) => {
   const calc = withResults ? evaluateLines : null
   const note = currentNote.value
   switch (pendingExportAction.value) {
-    case 'text': exportNoteAsText(note, calc); break
-    case 'markdown': exportNoteAsMarkdown(note, calc); break
-    case 'pdf': exportNoteAsPdf(note, calc); break
-    case 'print': printNote(note, calc); break
+    case 'text':
+      exportNoteAsText(note, calc)
+      break
+    case 'markdown':
+      exportNoteAsMarkdown(note, calc)
+      break
+    case 'pdf':
+      exportNoteAsPdf(note, calc)
+      break
+    case 'print':
+      printNote(note, calc)
+      break
   }
   pendingExportAction.value = null
 }
@@ -1052,7 +1329,11 @@ const handleOpenFile = async () => {
   try {
     const data = await openFile()
     const newNote = createNote()
-    updateNoteMeta(newNote.id, { title: data.title, description: data.description, tags: data.tags })
+    updateNoteMeta(newNote.id, {
+      title: data.title,
+      description: data.description,
+      tags: data.tags,
+    })
     updateNoteContent(newNote.id, data.content)
   } catch {
     // User cancelled or file read failed
@@ -1064,7 +1345,11 @@ const handleDuplicate = () => {
   const data = duplicateNote(currentNote.value)
   if (data) {
     const newNote = createNote()
-    updateNoteMeta(newNote.id, { title: data.title, description: data.description, tags: data.tags })
+    updateNoteMeta(newNote.id, {
+      title: data.title,
+      description: data.description,
+      tags: data.tags,
+    })
     updateNoteContent(newNote.id, data.content)
   }
 }
@@ -1072,7 +1357,7 @@ const handleDuplicate = () => {
 const handleExportText = () => {
   if (selectedNoteIds.value.length > 0) {
     // Bulk: export selected as JSON backup
-    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    const selected = notes.value.filter((n) => selectedNoteIds.value.includes(n.id))
     exportAllNotes(selected)
   } else {
     askExportOptions('text')
@@ -1080,7 +1365,7 @@ const handleExportText = () => {
 }
 const handleExportMarkdown = () => {
   if (selectedNoteIds.value.length > 0) {
-    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    const selected = notes.value.filter((n) => selectedNoteIds.value.includes(n.id))
     exportAllNotes(selected)
   } else {
     askExportOptions('markdown')
@@ -1088,7 +1373,7 @@ const handleExportMarkdown = () => {
 }
 const handleExportPdf = () => {
   if (selectedNoteIds.value.length > 0) {
-    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    const selected = notes.value.filter((n) => selectedNoteIds.value.includes(n.id))
     exportAllNotes(selected)
   } else {
     askExportOptions('pdf')
@@ -1096,7 +1381,7 @@ const handleExportPdf = () => {
 }
 const handleExportJson = () => {
   if (selectedNoteIds.value.length > 0) {
-    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    const selected = notes.value.filter((n) => selectedNoteIds.value.includes(n.id))
     exportAllNotes(selected)
   } else {
     exportNoteAsJson(currentNote.value)
@@ -1104,7 +1389,7 @@ const handleExportJson = () => {
 }
 const handleExportAll = () => {
   if (selectedNoteIds.value.length > 0) {
-    const selected = notes.value.filter(n => selectedNoteIds.value.includes(n.id))
+    const selected = notes.value.filter((n) => selectedNoteIds.value.includes(n.id))
     exportAllNotes(selected)
   } else {
     exportAllNotes(notes.value)
@@ -1116,7 +1401,11 @@ const handleImport = async () => {
     const result = await importNotes()
     for (const noteData of result.notes) {
       const newNote = createNote()
-      updateNoteMeta(newNote.id, { title: noteData.title, description: noteData.description, tags: noteData.tags })
+      updateNoteMeta(newNote.id, {
+        title: noteData.title,
+        description: noteData.description,
+        tags: noteData.tags,
+      })
       updateNoteContent(newNote.id, noteData.content)
     }
   } catch {
@@ -1135,7 +1424,7 @@ const handleCopy = async () => {
 const handlePrint = () => askExportOptions('print')
 
 // Sidebar per-note action handlers (receive note ID)
-const findNote = (id) => notes.value.find(n => n.id === id)
+const findNote = (id) => notes.value.find((n) => n.id === id)
 
 const handleDuplicateById = (id) => {
   const note = findNote(id)
@@ -1143,7 +1432,11 @@ const handleDuplicateById = (id) => {
   const data = duplicateNote(note)
   if (data) {
     const newNote = createNote()
-    updateNoteMeta(newNote.id, { title: data.title, description: data.description, tags: data.tags })
+    updateNoteMeta(newNote.id, {
+      title: data.title,
+      description: data.description,
+      tags: data.tags,
+    })
     updateNoteContent(newNote.id, data.content)
   }
 }
@@ -1157,7 +1450,11 @@ const handleExportById = (id) => {
 const handleCopyById = async (id) => {
   const note = findNote(id)
   if (!note) return
-  try { await copyToClipboard(note) } catch { /* ignore */ }
+  try {
+    await copyToClipboard(note)
+  } catch {
+    /* ignore */
+  }
 }
 
 const handlePrintById = (id) => {
@@ -1181,13 +1478,19 @@ const handleUnarchiveNote = (id) => {
 const handleBulkArchive = (ids) => {
   bulkArchive(ids)
   syncNow()
-  toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} archived`, { type: 'success', icon: 'mdi:archive-outline' })
+  toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} archived`, {
+    type: 'success',
+    icon: 'mdi:archive-outline',
+  })
 }
 
 const handleBulkUnarchive = (ids) => {
   bulkUnarchive(ids)
   syncNow()
-  toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} unarchived`, { type: 'success', icon: 'mdi:package-up' })
+  toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} unarchived`, {
+    type: 'success',
+    icon: 'mdi:package-up',
+  })
 }
 
 // ── Group management ─────────────────────────────────────
@@ -1204,16 +1507,16 @@ const addToGroupNoteId = ref(null)
 const bulkGroupNoteIds = ref(null)
 
 const pendingDeleteGroup = computed(() => {
-  return groups.value.find(g => g.id === pendingDeleteGroupId.value) || null
+  return groups.value.find((g) => g.id === pendingDeleteGroupId.value) || null
 })
 
 const pendingDeleteGroupNoteCount = computed(() => {
   if (!pendingDeleteGroupId.value) return 0
-  return notes.value.filter(n => n.groupId === pendingDeleteGroupId.value).length
+  return notes.value.filter((n) => n.groupId === pendingDeleteGroupId.value).length
 })
 
 const otherGroupsForDelete = computed(() => {
-  return groups.value.filter(g => g.id !== pendingDeleteGroupId.value)
+  return groups.value.filter((g) => g.id !== pendingDeleteGroupId.value)
 })
 
 const handleAddToGroup = (noteId) => {
@@ -1230,7 +1533,7 @@ const handleBulkGroup = (noteIds) => {
 const handleAddToGroupSelect = (groupId) => {
   if (bulkGroupNoteIds.value) {
     moveNotesToGroup(bulkGroupNoteIds.value, groupId)
-    bulkGroupNoteIds.value.forEach(id => syncNow(id))
+    bulkGroupNoteIds.value.forEach((id) => syncNow(id))
     bulkGroupNoteIds.value = null
   } else if (addToGroupNoteId.value) {
     moveNotesToGroup([addToGroupNoteId.value], groupId)
@@ -1257,7 +1560,7 @@ const handleGroupModalSave = ({ id, name, internalName }) => {
     // If we were adding notes to a new group, assign them
     if (bulkGroupNoteIds.value) {
       moveNotesToGroup(bulkGroupNoteIds.value, group.id)
-      bulkGroupNoteIds.value.forEach(nid => syncNow(nid))
+      bulkGroupNoteIds.value.forEach((nid) => syncNow(nid))
       bulkGroupNoteIds.value = null
     } else if (addToGroupNoteId.value) {
       moveNotesToGroup([addToGroupNoteId.value], group.id)
@@ -1268,7 +1571,7 @@ const handleGroupModalSave = ({ id, name, internalName }) => {
 }
 
 const handleEditGroup = (groupId) => {
-  const group = groups.value.find(g => g.id === groupId)
+  const group = groups.value.find((g) => g.id === groupId)
   if (!group) return
   editingGroupId.value = groupId
   editingGroupName.value = group.name
@@ -1288,10 +1591,10 @@ const handleDeleteGroupConfirm = (action, moveToGroupId) => {
   if (action === 'keep') {
     removeNotesFromGroup(groupId)
   } else if (action === 'move' && moveToGroupId) {
-    const noteIds = notes.value.filter(n => n.groupId === groupId).map(n => n.id)
+    const noteIds = notes.value.filter((n) => n.groupId === groupId).map((n) => n.id)
     moveNotesToGroup(noteIds, moveToGroupId)
   } else if (action === 'delete-all') {
-    const noteIds = notes.value.filter(n => n.groupId === groupId).map(n => n.id)
+    const noteIds = notes.value.filter((n) => n.groupId === groupId).map((n) => n.id)
     for (const id of noteIds) deleteNote(id)
   }
 
@@ -1315,7 +1618,6 @@ const handleReorderGroups = (orderedIds) => {
   syncNow()
 }
 </script>
-
 
 <style scoped>
 .focus-exit-enter {

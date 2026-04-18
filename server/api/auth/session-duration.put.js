@@ -20,7 +20,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid session duration' })
   }
 
-  await query('UPDATE users SET session_duration = $1, updated_at = NOW() WHERE id = $2', [duration, auth.userId])
+  await query('UPDATE users SET session_duration = $1, updated_at = NOW() WHERE id = $2', [
+    duration,
+    auth.userId,
+  ])
 
   return { ok: true, duration }
 })

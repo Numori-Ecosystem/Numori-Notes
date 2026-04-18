@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
 
   const result = await query(sql, params)
 
-  return result.rows.map(row => ({
+  return result.rows.map((row) => ({
     id: row.id,
     clientId: row.client_id,
     title: row.title,
@@ -32,6 +32,6 @@ export default defineEventHandler(async (event) => {
     tags: row.tags,
     content: row.content,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
   }))
 })

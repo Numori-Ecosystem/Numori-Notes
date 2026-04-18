@@ -29,7 +29,11 @@ export function notifySync(userId, excludeSessionId = null) {
   const data = `data: ${JSON.stringify({ type: 'sync', timestamp: new Date().toISOString() })}\n\n`
   for (const [sessionId, stream] of sessions) {
     if (sessionId !== excludeSessionId) {
-      try { stream.write(data) } catch { /* client disconnected */ }
+      try {
+        stream.write(data)
+      } catch {
+        /* client disconnected */
+      }
     }
   }
 }
@@ -45,7 +49,11 @@ export function notifyDataWipe(userId, excludeSessionId = null) {
   const data = `data: ${JSON.stringify({ type: 'data-wipe', timestamp: new Date().toISOString() })}\n\n`
   for (const [sessionId, stream] of sessions) {
     if (sessionId !== excludeSessionId) {
-      try { stream.write(data) } catch { /* client disconnected */ }
+      try {
+        stream.write(data)
+      } catch {
+        /* client disconnected */
+      }
     }
   }
 }
@@ -64,6 +72,10 @@ export function notifySessionRevoked(userId, excludeSessionId = null, _revokedSe
     if (sessionId === excludeSessionId) continue
     // If specific IDs given, we can't match SSE sessionIds to DB session IDs directly,
     // so when revoking "all others" we just notify everyone except the current session.
-    try { stream.write(data) } catch { /* client disconnected */ }
+    try {
+      stream.write(data)
+    } catch {
+      /* client disconnected */
+    }
   }
 }

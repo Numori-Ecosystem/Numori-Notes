@@ -5,7 +5,9 @@ import { enrichShareView } from '../../utils/geo.js'
 
 // Ensure password_hint column exists (idempotent, safe to call on every request)
 async function ensurePasswordHintColumn() {
-  await query(`ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS password_hint TEXT`).catch(() => {})
+  await query(`ALTER TABLE shared_notes ADD COLUMN IF NOT EXISTS password_hint TEXT`).catch(
+    () => {},
+  )
 }
 
 /**
@@ -21,11 +23,14 @@ export default defineEventHandler(async (event) => {
 
   await ensurePasswordHintColumn()
 
-  const result = await query(`
+  const result = await query(
+    `
     SELECT id, hash, title, description, tags, content, sharer_name, sharer_email,
            anonymous, expires_at, created_at, collect_analytics, deleted_at, encrypted, password_hint
     FROM shared_notes WHERE hash = $1
-  `, [hash])
+  `,
+    [hash],
+  )
 
   if (result.rows.length === 0) {
     throw createError({ statusCode: 404, statusMessage: 'Shared note not found' })
@@ -52,13 +57,15 @@ export default defineEventHandler(async (event) => {
     tags: row.tags,
     content: row.content,
     encrypted: row.encrypted === true,
-    sharer: row.anonymous ? null : {
-      name: row.sharer_name,
-      email: row.sharer_email
-    },
+    sharer: row.anonymous
+      ? null
+      : {
+          name: row.sharer_name,
+          email: row.sharer_email,
+        },
     createdAt: row.created_at,
     expiresAt: row.expires_at,
-    passwordHint: row.password_hint || null
+    passwordHint: row.password_hint || null,
   }
 })
 
@@ -94,7 +101,7 @@ async function recordEvent(event, sharedNoteId, eventType) {
 
   const forwarded = getHeader(event, 'x-forwarded-for')
   const realIp = getHeader(event, 'x-real-ip')
-  const ipAddress = forwarded ? forwarded.split(',')[0].trim() : (realIp || null)
+  const ipAddress = forwarded ? forwarded.split(',')[0].trim() : realIp || null
 
   let viewerUserId = null
   let viewerName = null
@@ -106,10 +113,9 @@ async function recordEvent(event, sharedNoteId, eventType) {
   let privacyOn = false
 
   if (auth) {
-    const privResult = await query(
-      'SELECT privacy_no_tracking, name FROM users WHERE id = $1',
-      [auth.userId]
-    )
+    const privResult = await query('SELECT privacy_no_tracking, name FROM users WHERE id = $1', [
+      auth.userId,
+    ])
     const viewer = privResult.rows[0]
     privacyOn = !viewer || viewer.privacy_no_tracking
     if (viewer && !viewer.privacy_no_tracking) {
@@ -129,15 +135,38 @@ async function recordEvent(event, sharedNoteId, eventType) {
     recordSecChUa = secChUa
   }
 
-  const fingerprint = buildFingerprint(auth, privacyOn, ipAddress, userAgent, acceptLang, dnt, sharedNoteId)
+  const fingerprint = buildFingerprint(
+    auth,
+    privacyOn,
+    ipAddress,
+    userAgent,
+    acceptLang,
+    dnt,
+    sharedNoteId,
+  )
 
   // Insert the record first, then enrich with geolocation asynchronously
-  query(`
+  query(
+    `
     INSERT INTO share_views (shared_note_id, viewer_user_id, viewer_name, user_agent, ip_address, referrer, event_type, viewer_fingerprint, accept_language, dnt, sec_ch_ua)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     RETURNING id
-  `, [sharedNoteId, viewerUserId, viewerName, recordUserAgent, recordIp, referrer, eventType, fingerprint, recordAcceptLang, recordDnt, recordSecChUa])
-    .then(res => {
+  `,
+    [
+      sharedNoteId,
+      viewerUserId,
+      viewerName,
+      recordUserAgent,
+      recordIp,
+      referrer,
+      eventType,
+      fingerprint,
+      recordAcceptLang,
+      recordDnt,
+      recordSecChUa,
+    ],
+  )
+    .then((res) => {
       const recordId = res.rows[0]?.id
       const geoIp = recordIp || ipAddress
       if (recordId) {
@@ -146,4 +175,3 @@ async function recordEvent(event, sharedNoteId, eventType) {
     })
     .catch(() => {})
 }
-

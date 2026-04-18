@@ -53,13 +53,10 @@ function fromBase64(str) {
  * Import a password string as a PBKDF2 base key.
  */
 async function importPasswordKey(password) {
-  return crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(password),
-    'PBKDF2',
-    false,
-    ['deriveBits', 'deriveKey']
-  )
+  return crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, [
+    'deriveBits',
+    'deriveKey',
+  ])
 }
 
 // ── Personal note key derivation ─────────────────────────────────────────
@@ -73,10 +70,12 @@ export async function deriveAuthKey(password) {
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', salt: AUTH_SALT, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
     baseKey,
-    256
+    256,
   )
   // Return as hex string for easy transport
-  return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('')
+  return Array.from(new Uint8Array(bits))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
 }
 
 /**
@@ -91,7 +90,7 @@ export async function deriveEncKey(password) {
     baseKey,
     { name: 'AES-GCM', length: 256 },
     true, // extractable — needed for sessionStorage persistence
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   )
 }
 
@@ -108,13 +107,10 @@ export async function exportKey(key) {
  */
 export async function importKey(base64) {
   const raw = fromBase64(base64)
-  return crypto.subtle.importKey(
-    'raw',
-    raw,
-    { name: 'AES-GCM', length: 256 },
-    true,
-    ['encrypt', 'decrypt']
-  )
+  return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM', length: 256 }, true, [
+    'encrypt',
+    'decrypt',
+  ])
 }
 
 // ── Shared note key derivation ───────────────────────────────────────────
@@ -133,7 +129,7 @@ export async function deriveShareKey(sharePassword) {
     baseKey,
     { name: 'AES-GCM', length: 256 },
     false,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   )
 }
 
@@ -155,14 +151,10 @@ export function generateSharePassword() {
 export async function encrypt(plaintext, key) {
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const encoded = new TextEncoder().encode(plaintext)
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encoded
-  )
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded)
   return JSON.stringify({
     iv: toBase64(iv),
-    ct: toBase64(ciphertext)
+    ct: toBase64(ciphertext),
   })
 }
 
@@ -176,7 +168,7 @@ export async function decrypt(encryptedStr, key) {
   const decrypted = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv: fromBase64(iv) },
     key,
-    fromBase64(ct)
+    fromBase64(ct),
   )
   return new TextDecoder().decode(decrypted)
 }
@@ -207,7 +199,7 @@ export async function encryptNote(note, key) {
     encrypt(note.description || '', key),
     encrypt(JSON.stringify(note.tags || []), key),
     encrypt(note.content || '', key),
-    encrypt(note.internalName || '', key)
+    encrypt(note.internalName || '', key),
   ])
   return { ...note, title, description, tags, content, internalName }
 }
@@ -224,7 +216,9 @@ export async function decryptNote(note, key) {
     decrypt(note.description, key),
     decrypt(note.tags, key),
     decrypt(note.content, key),
-    hasEncryptedInternalName ? decrypt(note.internalName, key) : Promise.resolve(note.internalName || '')
+    hasEncryptedInternalName
+      ? decrypt(note.internalName, key)
+      : Promise.resolve(note.internalName || ''),
   ])
   return { ...note, title, description, tags: JSON.parse(tagsStr), content, internalName }
 }
@@ -237,7 +231,7 @@ export async function encryptSharedNote(data, key) {
     encrypt(data.title || '', key),
     encrypt(data.description || '', key),
     encrypt(JSON.stringify(data.tags || []), key),
-    encrypt(data.content || '', key)
+    encrypt(data.content || '', key),
   ])
   return { ...data, title, description, tags, content, encrypted: true }
 }
@@ -250,7 +244,7 @@ export async function decryptSharedNote(data, key) {
     decrypt(data.title, key),
     decrypt(data.description, key),
     decrypt(data.tags, key),
-    decrypt(data.content, key)
+    decrypt(data.content, key),
   ])
   return { ...data, title, description, tags: JSON.parse(tagsStr), content }
 }

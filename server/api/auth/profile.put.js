@@ -15,7 +15,10 @@ export default defineEventHandler(async (event) => {
   let emailChanging = false
   if (email) {
     const emailNorm = email.toLowerCase().trim()
-    const existing = await query('SELECT id FROM users WHERE email = $1 AND id != $2', [emailNorm, auth.userId])
+    const existing = await query('SELECT id FROM users WHERE email = $1 AND id != $2', [
+      emailNorm,
+      auth.userId,
+    ])
     if (existing.rows.length > 0) {
       throw createError({ statusCode: 409, statusMessage: 'This email is already in use' })
     }
@@ -25,7 +28,8 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const result = await query(`
+  const result = await query(
+    `
     UPDATE users SET
       name = COALESCE($1, name),
       email = COALESCE($2, email),
@@ -34,13 +38,15 @@ export default defineEventHandler(async (event) => {
       updated_at = NOW()
     WHERE id = $4
     RETURNING id, email, name, avatar_url, created_at, email_verified
-  `, [
-    name ?? null,
-    email ? email.toLowerCase().trim() : null,
-    avatarUrl ?? null,
-    auth.userId,
-    emailChanging
-  ])
+  `,
+    [
+      name ?? null,
+      email ? email.toLowerCase().trim() : null,
+      avatarUrl ?? null,
+      auth.userId,
+      emailChanging,
+    ],
+  )
 
   const user = result.rows[0]
 
@@ -51,7 +57,7 @@ export default defineEventHandler(async (event) => {
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
       await query(
         'UPDATE users SET otp_code = $1, otp_expires_at = $2, otp_purpose = $3 WHERE id = $4',
-        [code, expiresAt.toISOString(), 'email_verification', auth.userId]
+        [code, expiresAt.toISOString(), 'email_verification', auth.userId],
       )
       await sendVerificationEmail(user.email, code)
     } catch (err) {
@@ -59,5 +65,12 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatar_url, createdAt: user.created_at, emailVerified: user.email_verified }
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    avatarUrl: user.avatar_url,
+    createdAt: user.created_at,
+    emailVerified: user.email_verified,
+  }
 })

@@ -10,7 +10,8 @@ let pool
  */
 export function useDb() {
   if (!pool) {
-    const { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB } = process.env
+    const { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB } =
+      process.env
     if (!POSTGRES_USER || !POSTGRES_HOST || !POSTGRES_DB) {
       throw new Error('Missing required POSTGRES_* environment variables')
     }
@@ -20,7 +21,7 @@ export function useDb() {
       host: POSTGRES_HOST,
       port: parseInt(POSTGRES_PORT || '5432', 10),
       database: POSTGRES_DB,
-      max: 20
+      max: 20,
     })
   }
   return pool

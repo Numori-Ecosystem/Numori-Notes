@@ -80,6 +80,6 @@ const props = defineProps({
 const labelClasses = computed(() =>
   props.inline
     ? 'block text-sm font-medium text-gray-700 dark:text-gray-400'
-    : 'block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1'
+    : 'block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1',
 )
 </script>

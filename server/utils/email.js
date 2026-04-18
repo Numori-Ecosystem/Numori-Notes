@@ -25,12 +25,12 @@ function getTransporter() {
     // For port 465 with implicit TLS, secure=true is required
     tls: {
       // Don't fail on self-signed certs in dev
-      rejectUnauthorized: process.env.NODE_ENV === 'production'
+      rejectUnauthorized: process.env.NODE_ENV === 'production',
     },
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
+      pass: process.env.SMTP_PASS,
+    },
   })
 
   return _transporter
@@ -119,7 +119,7 @@ export async function sendVerificationEmail(to, code) {
         </td></tr>
       </table>
       <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">This code expires in <span style="font-weight: 600; color: #6b7280;">15 minutes</span>.</p>
-    `)
+    `),
   })
 }
 
@@ -153,6 +153,6 @@ export async function sendPasswordRecoveryEmail(to, code) {
         </td></tr>
       </table>
       <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">This code expires in <span style="font-weight: 600; color: #6b7280;">15 minutes</span>.</p>
-    `)
+    `),
   })
 }

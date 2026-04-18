@@ -6,13 +6,19 @@
       :class="{
         'border-t-2 border-t-primary-500': dropIndicator === 'before',
         'border-b-2 border-b-primary-500': dropIndicator === 'after',
-        'ring-2 ring-inset ring-primary-400 bg-primary-50/50 dark:bg-primary-900/20': dropIndicator === 'inside'
+        'ring-2 ring-inset ring-primary-400 bg-primary-50/50 dark:bg-primary-900/20':
+          dropIndicator === 'inside',
       }"
-      @click="$emit('toggle-collapse', group.id)">
+      @click="$emit('toggle-collapse', group.id)"
+    >
       <Icon
         :name="group.collapsed ? 'mdi:chevron-right' : 'mdi:chevron-down'"
-        class="w-4 h-4 flex-shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-150" />
-      <Icon name="mdi:folder-outline" class="w-4 h-4 flex-shrink-0 text-primary-500 dark:text-primary-400" />
+        class="w-4 h-4 flex-shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-150"
+      />
+      <Icon
+        name="mdi:folder-outline"
+        class="w-4 h-4 flex-shrink-0 text-primary-500 dark:text-primary-400"
+      />
       <div class="flex-1 min-w-0">
         <span class="text-sm font-medium text-gray-800 dark:text-gray-300 truncate block">
           {{ group.name }}
@@ -24,8 +30,13 @@
       <!-- Three-dots menu -->
       <div ref="menuRef" class="relative flex-shrink-0" tabindex="-1" @focusout="onFocusOut">
         <UiButton
-variant="ghost" color="gray" icon-only class="-m-1" title="Group actions"
-          @click.stop="toggleMenu">
+          variant="ghost"
+          color="gray"
+          icon-only
+          class="-m-1"
+          title="Group actions"
+          @click.stop="toggleMenu"
+        >
           <Icon name="mdi:dots-vertical" class="w-4 h-4" />
         </UiButton>
         <Transition
@@ -34,11 +45,13 @@ variant="ghost" color="gray" icon-only class="-m-1" title="Group actions"
           enter-to-class="opacity-100 scale-100"
           leave-active-class="transition-all duration-100 ease-in"
           leave-from-class="opacity-100 scale-100"
-          leave-to-class="opacity-0 scale-95">
+          leave-to-class="opacity-0 scale-95"
+        >
           <div
-v-show="menuOpen"
+            v-show="menuOpen"
             class="absolute right-0 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1"
-            :class="dropUp ? 'bottom-full mb-1' : 'top-full mt-1'">
+            :class="dropUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+          >
             <UiButton variant="menu-item" @click.stop="handleAction('edit')">
               <Icon name="mdi:pencil-outline" class="w-4 h-4" />
               Edit Group

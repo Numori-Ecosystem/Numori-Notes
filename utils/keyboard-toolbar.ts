@@ -4,8 +4,8 @@ import type { PluginListenerHandle } from '@capacitor/core'
 export interface KeyboardToolbarButton {
   id: string
   title: string
-  icon?: string        // SF Symbol name
-  separator?: boolean  // renders a divider instead of a button
+  icon?: string // SF Symbol name
+  separator?: boolean // renders a divider instead of a button
 }
 
 export interface KeyboardToolbarPlugin {
@@ -15,7 +15,7 @@ export interface KeyboardToolbarPlugin {
   updateButtonStates(options: { disabledIds: string[] }): Promise<void>
   addListener(
     eventName: 'buttonTapped',
-    handler: (data: { id: string }) => void
+    handler: (data: { id: string }) => void,
   ): Promise<PluginListenerHandle>
 }
 

@@ -12,10 +12,7 @@
       :leave-from-class="transitionClasses.leaveFrom"
       :leave-to-class="transitionClasses.leaveTo"
     >
-      <div
-        v-show="isOpen"
-        :class="panelClasses"
-      >
+      <div v-show="isOpen" :class="panelClasses">
         <slot :close="close" />
       </div>
     </Transition>

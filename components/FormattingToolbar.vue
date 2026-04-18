@@ -3,21 +3,27 @@
     <!-- Undo / Redo (pinned left) -->
     <div class="flex items-center flex-shrink-0">
       <UiButton
-:disabled="!canUndo" variant="ghost"
-        color="gray" icon-only :class="canUndo
-          ? ''
-          : 'text-gray-300 dark:text-gray-700 cursor-default'" title="Undo"
+        :disabled="!canUndo"
+        variant="ghost"
+        color="gray"
+        icon-only
+        :class="canUndo ? '' : 'text-gray-300 dark:text-gray-700 cursor-default'"
+        title="Undo"
         @mousedown.prevent
-        @click="$emit('undo')">
+        @click="$emit('undo')"
+      >
         <Icon name="mdi:undo" class="w-5 h-5 block" />
       </UiButton>
       <UiButton
-:disabled="!canRedo" variant="ghost"
-        color="gray" icon-only :class="canRedo
-          ? ''
-          : 'text-gray-300 dark:text-gray-700 cursor-default'" title="Redo"
+        :disabled="!canRedo"
+        variant="ghost"
+        color="gray"
+        icon-only
+        :class="canRedo ? '' : 'text-gray-300 dark:text-gray-700 cursor-default'"
+        title="Redo"
         @mousedown.prevent
-        @click="$emit('redo')">
+        @click="$emit('redo')"
+      >
         <Icon name="mdi:redo" class="w-5 h-5 block" />
       </UiButton>
       <UiDivider direction="vertical" />
@@ -25,34 +31,50 @@
 
     <!-- Scrollable format buttons (middle) -->
     <div
-ref="scrollRef"
+      ref="scrollRef"
       class="flex items-center gap-0.5 overflow-x-auto min-w-0 scrollbar-none"
       :class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
       @mousedown="onDragStart"
       @mousemove="onDragMove"
       @mouseup="onDragEnd"
-      @mouseleave="onDragEnd">
+      @mouseleave="onDragEnd"
+    >
       <UiButton
-v-for="btn in buttons" :key="btn.title"
+        v-for="btn in buttons"
+        :key="btn.title"
         variant="ghost"
         color="gray"
-        icon-only class="flex-shrink-0" :title="btn.title" @mousedown.prevent
-        @click="$emit('apply-format', btn.before, btn.after)">
+        icon-only
+        class="flex-shrink-0"
+        :title="btn.title"
+        @mousedown.prevent
+        @click="$emit('apply-format', btn.before, btn.after)"
+      >
         <Icon :name="btn.icon" class="w-5 h-5 block" />
       </UiButton>
       <!-- Separator -->
       <UiDivider direction="vertical" class="flex-shrink-0" />
       <!-- Indent / Outdent -->
       <UiButton
-variant="ghost" color="gray"
-        icon-only class="flex-shrink-0" title="Indent (nest)" @mousedown.prevent
-        @click="$emit('indent')">
+        variant="ghost"
+        color="gray"
+        icon-only
+        class="flex-shrink-0"
+        title="Indent (nest)"
+        @mousedown.prevent
+        @click="$emit('indent')"
+      >
         <Icon name="mdi:format-indent-increase" class="w-5 h-5 block" />
       </UiButton>
       <UiButton
-variant="ghost" color="gray"
-        icon-only class="flex-shrink-0" title="Outdent (unnest)" @mousedown.prevent
-        @click="$emit('outdent')">
+        variant="ghost"
+        color="gray"
+        icon-only
+        class="flex-shrink-0"
+        title="Outdent (unnest)"
+        @mousedown.prevent
+        @click="$emit('outdent')"
+      >
         <Icon name="mdi:format-indent-decrease" class="w-5 h-5 block" />
       </UiButton>
     </div>
@@ -61,9 +83,13 @@ variant="ghost" color="gray"
     <div v-if="showDismiss" class="flex items-center flex-shrink-0">
       <UiDivider direction="vertical" />
       <UiButton
-variant="ghost" color="gray"
-        icon-only title="Dismiss keyboard" @mousedown.prevent
-        @click="$emit('dismiss-keyboard')">
+        variant="ghost"
+        color="gray"
+        icon-only
+        title="Dismiss keyboard"
+        @mousedown.prevent
+        @click="$emit('dismiss-keyboard')"
+      >
         <Icon name="mdi:keyboard-close" class="w-5 h-5 block" />
       </UiButton>
     </div>
@@ -76,19 +102,19 @@ import { ref } from 'vue'
 defineProps({
   containerClass: {
     type: String,
-    default: ''
+    default: '',
   },
   canUndo: {
     type: Boolean,
-    default: false
+    default: false,
   },
   canRedo: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showDismiss: {
     type: Boolean,
-    default: false
+    default: false,
   },
 })
 

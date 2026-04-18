@@ -7,29 +7,34 @@ export default defineNuxtPlugin(() => {
   const isCapacitor = !!(window as unknown as { Capacitor?: unknown }).Capacitor
 
   if (!isCapacitor && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((registration) => {
-      // Check for updates periodically (every 30 minutes)
-      setInterval(() => registration.update(), 30 * 60 * 1000)
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/' })
+      .then((registration) => {
+        // Check for updates periodically (every 30 minutes)
+        setInterval(() => registration.update(), 30 * 60 * 1000)
 
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing
-        if (!newWorker) return
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing
+          if (!newWorker) return
 
-        newWorker.addEventListener('statechange', () => {
-          // A new SW is installed and waiting — notify the app
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            window.dispatchEvent(new CustomEvent('sw-update-available', { detail: { registration } }))
-          }
+          newWorker.addEventListener('statechange', () => {
+            // A new SW is installed and waiting — notify the app
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.dispatchEvent(
+                new CustomEvent('sw-update-available', { detail: { registration } }),
+              )
+            }
+          })
+        })
+
+        // Handle controller change (after skipWaiting) — reload to activate new version
+        let refreshing = false
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return
+          refreshing = true
+          window.location.reload()
         })
       })
-
-      // Handle controller change (after skipWaiting) — reload to activate new version
-      let refreshing = false
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return
-        refreshing = true
-        window.location.reload()
-      })
-    }).catch(() => {})
+      .catch(() => {})
   }
 })
