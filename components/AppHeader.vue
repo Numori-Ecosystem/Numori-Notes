@@ -1,8 +1,20 @@
 <template>
-  <header class="bg-gray-100 dark:bg-gray-900 flex-shrink-0" :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
+  <header
+    class="bg-gray-100 dark:bg-gray-900 flex-shrink-0"
+    :style="{
+      paddingTop: 'env(safe-area-inset-top, 0px)',
+      paddingLeft: 'env(safe-area-inset-left, 0px)',
+      paddingRight: 'env(safe-area-inset-right, 0px)',
+    }"
+  >
     <div class="flex flex-col px-3 py-1.5 gap-0.5">
       <!-- Top row: Centered title -->
-      <UiButton variant="ghost" color="gray" class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md" @click="$emit('show-meta')">
+      <UiButton
+        variant="ghost"
+        color="gray"
+        class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md"
+        @click="$emit('show-meta')"
+      >
         <h1 class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-400 truncate">
           {{ currentNote?.title || 'Numori' }}
         </h1>
@@ -13,12 +25,18 @@
         <!-- Left: Sidebar toggle + dropdowns -->
         <div class="flex items-center gap-0.5">
           <UiButton
-variant="ghost" color="gray" icon-only title="Toggle notes list"
-            @click="$emit('toggle-sidebar')">
+            variant="ghost"
+            color="gray"
+            icon-only
+            title="Toggle notes list"
+            @click="$emit('toggle-sidebar')"
+          >
             <Icon name="mdi:menu" class="w-4.5 h-4.5 block" />
           </UiButton>
           <FileDropdown
-:has-note="!!currentNote" :mod-label="modLabel" :selection-count="selectionCount"
+            :has-note="!!currentNote"
+            :mod-label="modLabel"
+            :selection-count="selectionCount"
             @new-note="$emit('file-new')"
             @open-file="$emit('file-open')"
             @duplicate="$emit('file-duplicate')"
@@ -29,7 +47,8 @@ variant="ghost" color="gray" icon-only title="Toggle notes list"
             @export-all="$emit('file-export-all')"
             @import="$emit('file-import')"
             @copy="$emit('file-copy')"
-            @print="$emit('file-print')" />
+            @print="$emit('file-print')"
+          />
           <ViewDropdown
             :markdown-mode="markdownMode"
             :editor-font-size="editorFontSize"
@@ -40,22 +59,24 @@ variant="ghost" color="gray" icon-only title="Toggle notes list"
             @zoom-reset="$emit('zoom-reset')"
             @templates="$emit('show-templates')"
             @help="$emit('show-help')"
-            @about="$emit('file-about')" />
+            @about="$emit('file-about')"
+          />
         </div>
 
         <!-- Center: Markdown formatting (desktop only) -->
         <FormattingToolbar
-class="hidden lg:flex flex-1 justify-center"
+          class="hidden lg:flex flex-1 justify-center"
           :can-undo="canUndo"
           :can-redo="canRedo"
           @apply-format="(before, after) => $emit('apply-format', before, after)"
           @indent="$emit('indent')"
           @outdent="$emit('outdent')"
           @undo="$emit('undo')"
-          @redo="$emit('redo')" />
+          @redo="$emit('redo')"
+        />
 
         <!-- Spacer on mobile -->
-        <div class="flex-1 lg:hidden"/>
+        <div class="flex-1 lg:hidden" />
 
         <!-- Right: Actions -->
         <div class="flex items-center gap-0.5">
@@ -74,8 +95,12 @@ class="hidden lg:flex flex-1 justify-center"
 
           <!-- Focus mode -->
           <UiButton
-variant="ghost" color="gray" icon-only title="Focus mode"
-            @click="$emit('toggle-focus')">
+            variant="ghost"
+            color="gray"
+            icon-only
+            title="Focus mode"
+            @click="$emit('toggle-focus')"
+          >
             <Icon name="mdi:fullscreen" class="w-5 h-5 block" />
           </UiButton>
         </div>
@@ -88,44 +113,44 @@ variant="ghost" color="gray" icon-only title="Focus mode"
 defineProps({
   currentNote: {
     type: Object,
-    default: null
+    default: null,
   },
   inlineMode: {
     type: String,
-    default: 'left'
+    default: 'left',
   },
   markdownMode: {
     type: String,
-    default: 'edit'
+    default: 'edit',
   },
   modLabel: {
     type: String,
-    default: 'Ctrl'
+    default: 'Ctrl',
   },
   selectionCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   isLoggedIn: {
     type: Boolean,
-    default: false
+    default: false,
   },
   canUndo: {
     type: Boolean,
-    default: false
+    default: false,
   },
   canRedo: {
     type: Boolean,
-    default: false
+    default: false,
   },
   editorFontSize: {
     type: Number,
-    default: 16
+    default: 16,
   },
   checkForUpdate: {
     type: Function,
-    default: null
-  }
+    default: null,
+  },
 })
 
 defineEmits([

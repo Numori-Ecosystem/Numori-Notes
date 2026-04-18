@@ -26,12 +26,19 @@ export default withNuxt(
       'vue/no-deprecated-events-api': 'error',
 
       // ── Unused variables / imports ────────────────────────────────
-      '@typescript-eslint/no-unused-vars': ['error', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_',
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       'no-unused-vars': 'off', // defer to the TS rule above
+
+      // ── Formatting (let Prettier handle these) ────────────────────
+      'vue/first-attribute-linebreak': 'off',
+      'vue/max-attributes-per-line': 'off',
 
       // ── General quality ───────────────────────────────────────────
       'no-console': ['warn', { allow: ['warn', 'error'] }],
