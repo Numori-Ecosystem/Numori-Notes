@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- Optional section label above the list -->
     <p v-if="label" class="text-[10px] font-medium uppercase tracking-wider px-1 mb-1.5"
       :class="danger ? 'text-red-400 dark:text-red-600' : 'text-gray-400 dark:text-gray-600'">
       {{ label }}
@@ -17,12 +18,46 @@
 </template>
 
 <script setup>
+/**
+ * UiButtonsList — Grouped list container for UiButtonsListItem rows.
+ *
+ * Renders a bordered, rounded container with dividers between child items.
+ * Supports an optional uppercase section label and a danger (red) color scheme
+ * for destructive action groups. Designed to be used in settings panels and
+ * profile pages.
+ *
+ * @example Basic settings list
+ * <UiButtonsList label="Account">
+ *   <UiButtonsListItem icon="mdi:account">Profile</UiButtonsListItem>
+ *   <UiButtonsListItem icon="mdi:lock">Security</UiButtonsListItem>
+ * </UiButtonsList>
+ *
+ * @example Danger zone
+ * <UiButtonsList label="Danger Zone" danger>
+ *   <UiButtonsListItem icon="mdi:trash-can" danger>Delete Account</UiButtonsListItem>
+ * </UiButtonsList>
+ */
 const props = defineProps({
-  /** Section label shown above the list */
+  /**
+   * Section label displayed above the list in uppercase.
+   * @type {string}
+   * @default ''
+   */
   label: { type: String, default: '' },
-  /** Use danger/red styling for the container */
+
+  /**
+   * Use danger/red styling for the container border, background, and label.
+   * @type {boolean}
+   * @default false
+   */
   danger: { type: Boolean, default: false },
-  /** Border radius: 'xl' (default), 'lg', 'none' */
+
+  /**
+   * Border radius preset for the container.
+   * @type {string}
+   * @default 'xl'
+   * @values 'xl' | 'lg' | 'none'
+   */
   rounded: { type: String, default: 'xl' },
 })
 

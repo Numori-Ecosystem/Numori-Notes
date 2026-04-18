@@ -1,10 +1,6 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal-backdrop">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-        @click.self="$emit('close')">
-        <Transition name="modal-panel" appear>
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-lg max-w-sm w-full p-4 sm:p-5 max-h-[85vh] overflow-y-auto overflow-x-hidden">
+  <UiModal :show="isOpen" max-width="sm" @close="$emit('close')" panel-class="max-h-[85vh]">
+    <div class="p-4 sm:p-5 overflow-y-auto overflow-x-hidden">
 
             <!-- Header -->
             <div class="flex items-center justify-between mb-4">
@@ -140,9 +136,9 @@
                 <label class="flex items-center gap-2 cursor-pointer">
                   <UiCheckbox v-model="collectAnalytics" />
                   <span class="text-sm text-gray-700 dark:text-gray-400">Enable view analytics</span>
-                  <div class="relative group">
+                  <UiTooltip width="w-56 sm:w-64">
                     <Icon name="mdi:information-outline" class="w-4 h-4 text-gray-400 cursor-help" />
-                    <div class="absolute bottom-full right-0 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 mb-2 w-56 sm:w-64 px-3 py-2 rounded-lg bg-gray-900 dark:bg-gray-700 text-white text-xs leading-relaxed shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
+                    <template #content>
                       <p class="font-medium mb-1">View Analytics</p>
                       <p>When enabled, the following data is collected each time someone opens or imports your shared note:</p>
                       <ul class="list-disc pl-3 mt-1 space-y-0.5">
@@ -156,9 +152,8 @@
                         <li>Timestamp of each event</li>
                       </ul>
                       <p class="mt-1.5 text-gray-300">Emails are never collected. Signed-in users with privacy protection will appear as "Unknown" with no device or IP data. Analytics persist even after you stop sharing.</p>
-                      <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
-                    </div>
-                  </div>
+                    </template>
+                  </UiTooltip>
                 </label>
               </div>
 
@@ -167,11 +162,8 @@
                 Share Note
               </UiButton>
             </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </UiModal>
 </template>
 
 <script setup>
@@ -331,13 +323,4 @@ const copyLink = async () => {
 }
 </script>
 
-<style scoped>
-.modal-backdrop-enter-active,
-.modal-backdrop-leave-active { transition: opacity 0.2s ease; }
-.modal-backdrop-enter-from,
-.modal-backdrop-leave-to { opacity: 0; }
-.modal-panel-enter-active { transition: all 0.2s ease-out; }
-.modal-panel-leave-active { transition: all 0.15s ease-in; }
-.modal-panel-enter-from,
-.modal-panel-leave-to { opacity: 0; transform: scale(0.95); }
-</style>
+

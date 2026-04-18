@@ -2,7 +2,7 @@
   <div class="w-full">
     <div class="relative flex">
 
-      <!-- Number: minus button on left (both-sides mode) -->
+      <!-- Number stepper: minus button on left (both-sides layout) -->
       <button v-if="isNumber && stepperLayout === 'both-sides'" type="button" tabindex="-1"
         class="flex items-center justify-center w-9 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none"
         :class="{ 'opacity-50 pointer-events-none': disabled }"
@@ -10,7 +10,7 @@
         <Icon name="mdi:minus" class="w-4 h-4" />
       </button>
 
-      <!-- Number: stacked buttons on left -->
+      <!-- Number stepper: stacked up/down buttons on left -->
       <div v-if="isNumber && stepperLayout === 'stacked-left'"
         class="flex flex-col w-6 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-lg overflow-hidden"
         :class="{ 'opacity-50 pointer-events-none': disabled }">
@@ -26,8 +26,27 @@
         </button>
       </div>
 
-      <!-- The actual input -->
+      <!-- Textarea mode: multi-line text input with custom scrollbar styling -->
+      <textarea
+        v-if="isTextarea"
+        ref="inputRef"
+        :value="modelValue"
+        :placeholder="placeholder"
+        :required="required"
+        :disabled="disabled"
+        :readonly="readonly"
+        :rows="rows"
+        :maxlength="maxlength"
+        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm transition-colors [scrollbar-width:thin] [scrollbar-color:theme(colors.gray.300)_transparent] dark:[scrollbar-color:theme(colors.gray.600)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-500"
+        :class="resizeClass"
+        :style="textareaStyle"
+        @input="onInput"
+        @blur="onBlur"
+      />
+
+      <!-- The actual input element (text, number, password, email, phone) -->
       <input
+        v-else
         ref="inputRef"
         :type="computedType"
         :value="modelValue"
@@ -50,7 +69,7 @@
         @keydown="onKeydown"
       />
 
-      <!-- Password toggle -->
+      <!-- Password visibility toggle button -->
       <button v-if="isPassword && showToggle" type="button" tabindex="-1"
         class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         :aria-label="passwordVisible ? 'Hide password' : 'Show password'"
@@ -58,7 +77,7 @@
         <Icon :name="passwordVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
       </button>
 
-      <!-- Number: stacked buttons on right -->
+      <!-- Number stepper: stacked up/down buttons on right -->
       <div v-if="isNumber && stepperLayout === 'stacked-right'"
         class="flex flex-col w-6 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-lg overflow-hidden"
         :class="{ 'opacity-50 pointer-events-none': disabled }">
@@ -74,7 +93,7 @@
         </button>
       </div>
 
-      <!-- Number: plus button on right (both-sides mode) -->
+      <!-- Number stepper: plus button on right (both-sides layout) -->
       <button v-if="isNumber && stepperLayout === 'both-sides'" type="button" tabindex="-1"
         class="flex items-center justify-center w-9 rounded-r-lg border border-l-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none"
         :class="{ 'opacity-50 pointer-events-none': disabled }"
@@ -83,7 +102,7 @@
       </button>
     </div>
 
-    <!-- Validation error -->
+    <!-- Validation error message (shown after first blur) -->
     <p v-if="showError && validationError" class="text-xs text-red-600 dark:text-red-400 mt-1">
       {{ validationError }}
     </p>
@@ -91,34 +110,211 @@
 </template>
 
 <script setup>
+/**
+ * UiInput — Multi-purpose input component supporting text, number, password, email,
+ * phone, and textarea modes in a single unified interface.
+ *
+ * Features:
+ * - Number mode with configurable stepper layouts (both-sides, stacked-left, stacked-right, none)
+ * - Password mode with show/hide toggle
+ * - Textarea mode with configurable resize, min/max dimensions
+ * - Built-in validation for email, phone, and number patterns
+ * - Custom regex validation with configurable error messages
+ * - Exposes `focus()` method and `el` ref for parent control
+ *
+ * @example Basic text input
+ * <UiInput v-model="name" placeholder="Enter your name" />
+ *
+ * @example Number input with min/max
+ * <UiInput v-model="quantity" type="number" :min="0" :max="100" :step="1" />
+ *
+ * @example Password with toggle
+ * <UiInput v-model="password" type="password" />
+ *
+ * @example Textarea
+ * <UiInput v-model="bio" type="textarea" :rows="5" resize="vertical" />
+ *
+ * @example Email with validation
+ * <UiInput v-model="email" type="email" :validate="true" />
+ */
 const props = defineProps({
+  /**
+   * Bound value (v-model).
+   * @type {string | number}
+   * @default ''
+   */
   modelValue: { type: [String, Number], default: '' },
+
+  /**
+   * Input type determining the mode and behavior.
+   * @type {string}
+   * @default 'text'
+   * @values 'text' | 'number' | 'password' | 'email' | 'phone' | 'textarea'
+   */
   type: { type: String, default: 'text' },
+
+  /**
+   * Placeholder text shown when the input is empty.
+   * @type {string}
+   * @default ''
+   */
   placeholder: { type: String, default: '' },
+
+  /**
+   * Whether the field is required for form validation.
+   * @type {boolean}
+   * @default false
+   */
   required: { type: Boolean, default: false },
+
+  /**
+   * Disabled state — dims the input and prevents interaction.
+   * @type {boolean}
+   * @default false
+   */
   disabled: { type: Boolean, default: false },
+
+  /**
+   * Read-only state — allows focus/selection but prevents editing.
+   * @type {boolean}
+   * @default false
+   */
   readonly: { type: Boolean, default: false },
+
+  /**
+   * HTML autocomplete attribute hint for the browser.
+   * @type {string}
+   * @default undefined
+   */
   autocomplete: { type: String, default: undefined },
+
+  /**
+   * Minimum character length for text validation.
+   * @type {number}
+   * @default undefined
+   */
   minlength: { type: Number, default: undefined },
+
+  /**
+   * Maximum character length for text validation.
+   * @type {number}
+   * @default undefined
+   */
   maxlength: { type: Number, default: undefined },
+
+  // ── Textarea-specific props ──
+
+  /**
+   * Number of visible text rows (textarea mode only).
+   * @type {number}
+   * @default 3
+   */
+  rows: { type: Number, default: 3 },
+
+  /**
+   * Resize behavior for textarea mode.
+   * @type {string}
+   * @default 'none'
+   * @values 'none' | 'vertical' | 'horizontal' | 'both'
+   */
+  resize: { type: String, default: 'none' },
+
+  /**
+   * Minimum height CSS value for textarea (e.g. '80px', '5rem').
+   * @type {string}
+   * @default undefined
+   */
+  minHeight: { type: String, default: undefined },
+
+  /**
+   * Maximum height CSS value for textarea (e.g. '300px', '20rem').
+   * @type {string}
+   * @default undefined
+   */
+  maxHeight: { type: String, default: undefined },
+
+  /**
+   * Minimum width CSS value for textarea (e.g. '200px').
+   * @type {string}
+   * @default undefined
+   */
+  minWidth: { type: String, default: undefined },
+
+  /**
+   * Maximum width CSS value for textarea (e.g. '600px').
+   * @type {string}
+   * @default undefined
+   */
+  maxWidth: { type: String, default: undefined },
+
+  /**
+   * HTML pattern attribute for native form validation.
+   * @type {string}
+   * @default undefined
+   */
   pattern: { type: String, default: undefined },
 
-  // Password
+  // ── Password-specific props ──
+
+  /**
+   * Show the password visibility toggle button (password mode only).
+   * @type {boolean}
+   * @default true
+   */
   showToggle: { type: Boolean, default: true },
 
-  // Number
+  // ── Number-specific props ──
+
+  /**
+   * Minimum allowed numeric value.
+   * @type {number}
+   * @default undefined
+   */
   min: { type: Number, default: undefined },
+
+  /**
+   * Maximum allowed numeric value.
+   * @type {number}
+   * @default undefined
+   */
   max: { type: Number, default: undefined },
+
+  /**
+   * Step increment for number stepper buttons.
+   * @type {number}
+   * @default 1
+   */
   step: { type: Number, default: 1 },
-  /** 'stacked-left' | 'stacked-right' | 'both-sides' | 'none' */
+
+  /**
+   * Layout of the +/- stepper buttons for number inputs.
+   * @type {string}
+   * @default 'both-sides'
+   * @values 'stacked-left' | 'stacked-right' | 'both-sides' | 'none'
+   */
   stepperLayout: { type: String, default: 'both-sides' },
 
-  // Validation
-  /** Show validation error below the input (on blur) */
+  // ── Validation props ──
+
+  /**
+   * Enable built-in validation feedback shown below the input on blur.
+   * @type {boolean}
+   * @default true
+   */
   validate: { type: Boolean, default: true },
-  /** Custom regex string — overrides built-in patterns */
+
+  /**
+   * Custom regex pattern string — overrides built-in type-based patterns.
+   * @type {string}
+   * @default undefined
+   */
   validationPattern: { type: String, default: undefined },
-  /** Custom error message */
+
+  /**
+   * Custom error message shown when validation fails.
+   * @type {string}
+   * @default undefined
+   */
   validationMessage: { type: String, default: undefined },
 })
 
@@ -130,9 +326,27 @@ const touched = ref(false)
 
 // --- Computed helpers ---
 
+// Detect input mode from the type prop
 const isPassword = computed(() => props.type === 'password')
 const isNumber = computed(() => props.type === 'number')
+const isTextarea = computed(() => props.type === 'textarea')
 
+// Map resize prop to Tailwind resize utility class
+const resizeClass = computed(() => {
+  const map = { none: 'resize-none', vertical: 'resize-y', horizontal: 'resize-x', both: 'resize' }
+  return map[props.resize] || 'resize-none'
+})
+
+const textareaStyle = computed(() => {
+  const s = {}
+  if (props.minHeight) s.minHeight = props.minHeight
+  if (props.maxHeight) s.maxHeight = props.maxHeight
+  if (props.minWidth) s.minWidth = props.minWidth
+  if (props.maxWidth) s.maxWidth = props.maxWidth
+  return s
+})
+
+// For number type, render as text input so we can filter keystrokes ourselves
 const computedType = computed(() => {
   if (isPassword.value) return passwordVisible.value ? 'text' : 'password'
   if (isNumber.value) return 'text' // we handle number filtering ourselves
@@ -140,6 +354,7 @@ const computedType = computed(() => {
   return props.type
 })
 
+// Set appropriate mobile keyboard via inputmode attribute
 const computedInputMode = computed(() => {
   if (isNumber.value) return 'decimal'
   if (props.type === 'phone') return 'tel'
@@ -179,6 +394,7 @@ const inputClasses = computed(() => {
 
 // --- Validation ---
 
+// Built-in regex patterns for common input types
 const PATTERNS = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   phone: /^\+?[\d\s\-().]{7,}$/,
@@ -218,6 +434,7 @@ watch(validationError, (err) => {
 
 // --- Event handlers ---
 
+// Regex for validating partial number input (allows intermediate states like "-" or ".")
 const NUMBER_ALLOWED = /^-?\d*\.?\d*$/
 
 function onInput(e) {
@@ -275,4 +492,5 @@ defineExpose({
   el: inputRef,
 })
 </script>
+
 

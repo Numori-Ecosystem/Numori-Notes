@@ -1,46 +1,39 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal-backdrop">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-        @click.self="$emit('close')">
-        <Transition name="modal-panel" appear>
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-lg max-w-sm w-full p-4">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">
-                {{ editingGroupId ? 'Edit Group' : 'New Group' }}
-              </h2>
-              <UiButton variant="ghost" color="gray" icon-only size="sm" @click="$emit('close')">
-                <Icon name="mdi:close" class="block w-5 h-5" />
-              </UiButton>
-            </div>
-
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Name</label>
-                <UiInput v-model="localName" type="text" ref="nameInput" placeholder="Group name" :validate="false"
-                  @keydown.enter="save" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Internal Name</label>
-                <UiInput v-model="localInternalName" type="text" placeholder="group_name" :validate="false"
-                  @update:model-value="internalNameManuallyEdited = true" />
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Auto-generated from name. Edit to customise.</p>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-2 mt-6">
-              <UiButton variant="ghost" color="gray" @click="$emit('close')">
-                Cancel
-              </UiButton>
-              <UiButton @click="save" :disabled="!localName.trim()">
-                {{ editingGroupId ? 'Save' : 'Create' }}
-              </UiButton>
-            </div>
-          </div>
-        </Transition>
+  <UiModal :show="isOpen" max-width="sm" @close="$emit('close')">
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">
+          {{ editingGroupId ? 'Edit Group' : 'New Group' }}
+        </h2>
+        <UiButton variant="ghost" color="gray" icon-only size="sm" @click="$emit('close')">
+          <Icon name="mdi:close" class="block w-5 h-5" />
+        </UiButton>
       </div>
-    </Transition>
-  </Teleport>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Name</label>
+          <UiInput v-model="localName" type="text" ref="nameInput" placeholder="Group name" :validate="false"
+            @keydown.enter="save" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Internal Name</label>
+          <UiInput v-model="localInternalName" type="text" placeholder="group_name" :validate="false"
+            @update:model-value="internalNameManuallyEdited = true" />
+          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Auto-generated from name. Edit to customise.</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-6">
+        <UiButton variant="ghost" color="gray" @click="$emit('close')">
+          Cancel
+        </UiButton>
+        <UiButton @click="save" :disabled="!localName.trim()">
+          {{ editingGroupId ? 'Save' : 'Create' }}
+        </UiButton>
+      </div>
+    </div>
+  </UiModal>
 </template>
 
 <script setup>
@@ -89,11 +82,3 @@ const save = () => {
   emit('close')
 }
 </script>
-
-<style scoped>
-.modal-backdrop-enter-active, .modal-backdrop-leave-active { transition: opacity 0.2s ease; }
-.modal-backdrop-enter-from, .modal-backdrop-leave-to { opacity: 0; }
-.modal-panel-enter-active { transition: all 0.2s ease-out; }
-.modal-panel-leave-active { transition: all 0.15s ease-in; }
-.modal-panel-enter-from, .modal-panel-leave-to { opacity: 0; transform: scale(0.95); }
-</style>

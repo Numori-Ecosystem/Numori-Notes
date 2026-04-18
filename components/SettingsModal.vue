@@ -1,13 +1,5 @@
 <template>
-  <Teleport to="body">
-    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
-      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center md:p-4 bg-black bg-opacity-50" @click="closeModal">
-        <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 scale-95"
-          enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-200"
-          leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-          <div v-if="isOpen" @click.stop class="bg-white dark:bg-gray-925 rounded-none md:rounded-lg max-w-5xl w-full h-screen md:h-[90vh] overflow-hidden flex flex-col safe-area-modal">
+  <UiModal :show="isOpen" max-width="5xl" @close="closeModal" padding="md:p-4" panel-class="h-screen md:h-[90vh] safe-area-modal rounded-none md:rounded-lg">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
@@ -444,11 +436,7 @@
               </UiButton>
               <p class="text-xs text-gray-500 dark:text-gray-400-muted">Saved automatically</p>
             </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+  </UiModal>
 </template>
 
 <script setup>

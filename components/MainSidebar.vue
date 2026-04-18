@@ -286,12 +286,7 @@
         <template #trigger="{ toggle }">
           <!-- Logged-in state -->
           <UiButton v-if="isLoggedIn" @click="toggle" variant="list-item" class="text-left">
-            <img v-if="user?.avatarUrl" :src="user.avatarUrl"
-              class="w-9 h-9 rounded-full object-cover flex-shrink-0" alt="Avatar" />
-            <div v-else
-              class="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-              <Icon name="mdi:account" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
-            </div>
+            <UiAvatar :src="user?.avatarUrl" />
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{{ user?.name || 'No name' }}</p>
               <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user?.email }}</p>
@@ -303,9 +298,7 @@
 
           <!-- Logged-out state -->
           <UiButton v-else @click="toggle" variant="list-item" class="text-left">
-            <div class="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-              <Icon name="mdi:account-circle-outline" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            </div>
+            <UiAvatar color="gray" fallback-icon="mdi:account-circle-outline" />
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 dark:text-gray-200">Guest</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">Not signed in</p>

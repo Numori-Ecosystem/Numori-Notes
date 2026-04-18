@@ -1,11 +1,5 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal-backdrop">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50"
-        @click.self="$emit('close')">
-        <Transition name="modal-panel" appear>
-          <div v-if="isOpen"
-            class="bg-white dark:bg-gray-925 rounded-lg max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col">
+  <UiModal :show="isOpen" max-width="md" @close="$emit('close')" padding="p-2 sm:p-4" panel-class="max-h-[85vh]">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
@@ -45,10 +39,7 @@
                 <div class="relative rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-900/20 dark:to-primary-800/10 border border-primary-100 dark:border-primary-900/30 px-4 py-5">
                   <div class="flex items-center gap-4">
                     <UiButton variant="ghost" @click="activeSection = 'avatar'" class="relative group flex-shrink-0" title="Change avatar">
-                      <div class="w-16 h-16 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center overflow-hidden ring-2 ring-primary-200 dark:ring-primary-800 shadow-sm">
-                        <img v-if="user?.avatarUrl" :src="user.avatarUrl" class="w-full h-full object-cover" alt="Avatar" />
-                        <Icon v-else name="mdi:account" class="w-8 h-8 text-primary-600 dark:text-primary-400" />
-                      </div>
+                      <UiAvatar :src="user?.avatarUrl" size="xl" ring />
                       <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <Icon name="mdi:camera" class="w-4 h-4 text-white" />
                       </div>
@@ -196,17 +187,8 @@
                   <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
                 </div>
 
-                <!-- Re-encryption progress bar -->
-                <div v-if="reEncryptProgress" class="space-y-1">
-                  <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
-                    <span>Re-encrypting notes…</span>
-                    <span>{{ reEncryptProgress.current }} / {{ reEncryptProgress.total }}</span>
-                  </div>
-                  <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                    <div class="bg-primary-600 h-2 rounded-full transition-all duration-200"
-                      :style="{ width: `${(reEncryptProgress.current / reEncryptProgress.total) * 100}%` }" />
-                  </div>
-                </div>
+                <UiProgressBar v-if="reEncryptProgress" label="Re-encrypting notes…" show-value
+                  :current="reEncryptProgress.current" :total="reEncryptProgress.total" />
 
                 <UiButton variant="solid" color="primary" block :loading="saving" :disabled="!currentPassword || !newPassword || newPassword !== confirmNewPassword || newPassword.length < 8" @click="savePassword">
                   Update Password
@@ -458,11 +440,7 @@
                 </div>
               </div>
             </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+  </UiModal>
 </template>
 
 <script setup>
@@ -914,13 +892,4 @@ const formatExpiry = (iso) => {
 }
 </script>
 
-<style scoped>
-.modal-backdrop-enter-active,
-.modal-backdrop-leave-active { transition: opacity 0.2s ease; }
-.modal-backdrop-enter-from,
-.modal-backdrop-leave-to { opacity: 0; }
-.modal-panel-enter-active { transition: all 0.2s ease-out; }
-.modal-panel-leave-active { transition: all 0.15s ease-in; }
-.modal-panel-enter-from,
-.modal-panel-leave-to { opacity: 0; transform: scale(0.95); }
-</style>
+

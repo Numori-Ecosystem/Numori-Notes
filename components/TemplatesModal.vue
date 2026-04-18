@@ -1,18 +1,5 @@
 <template>
-  <Teleport to="body">
-    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
-      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
-        @click="close">
-        <Transition enter-active-class="transition ease-out duration-300"
-          enter-from-class="opacity-0 scale-95"
-          enter-to-class="opacity-100 scale-100"
-          leave-active-class="transition ease-in duration-200"
-          leave-from-class="opacity-100 scale-100"
-          leave-to-class="opacity-0 scale-95">
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-lg max-w-5xl w-full h-[95vh] sm:h-screen md:h-[90vh] overflow-hidden flex flex-col"
-            @click.stop>
+  <UiModal :show="isOpen" max-width="5xl" @close="close" padding="p-2 sm:p-4" panel-class="h-[95vh] sm:h-screen md:h-[90vh]">
       <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">{{ $t('templates.title') }}</h2>
         <UiButton @click="close" variant="ghost" color="gray" icon-only>
@@ -101,11 +88,7 @@
           </div>
         </Transition>
       </div>
-      </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+  </UiModal>
 </template>
 
 <script setup>

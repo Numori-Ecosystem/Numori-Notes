@@ -1,14 +1,5 @@
 <template>
-  <Teleport to="body">
-    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
-      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50" @click="$emit('close')">
-        <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 scale-95"
-          enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-200"
-          leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-          <div v-if="isOpen" @click.stop
-            class="bg-white dark:bg-gray-925 rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
+  <UiModal :show="isOpen" max-width="md" @close="$emit('close')" padding="p-2 sm:p-4" panel-class="max-h-[80vh]">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
@@ -96,11 +87,7 @@
                 Close
               </UiButton>
             </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+  </UiModal>
 </template>
 
 <script setup>

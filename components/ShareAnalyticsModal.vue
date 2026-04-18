@@ -1,10 +1,5 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal-backdrop">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-        @click.self="$emit('close')">
-        <Transition name="modal-panel" appear>
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-lg max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col">
+  <UiModal :show="isOpen" max-width="lg" @close="$emit('close')" panel-class="max-h-[85vh]">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
@@ -238,11 +233,7 @@
                 </div>
               </template>
             </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+  </UiModal>
 </template>
 
 <script setup>
@@ -431,13 +422,4 @@ const formatTimestamp = (iso) => {
 }
 </script>
 
-<style scoped>
-.modal-backdrop-enter-active,
-.modal-backdrop-leave-active { transition: opacity 0.2s ease; }
-.modal-backdrop-enter-from,
-.modal-backdrop-leave-to { opacity: 0; }
-.modal-panel-enter-active { transition: all 0.2s ease-out; }
-.modal-panel-leave-active { transition: all 0.15s ease-in; }
-.modal-panel-enter-from,
-.modal-panel-leave-to { opacity: 0; transform: scale(0.95); }
-</style>
+

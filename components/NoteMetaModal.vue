@@ -1,10 +1,6 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal-backdrop">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-        @click.self="$emit('close')">
-        <Transition name="modal-panel" appear>
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-lg max-w-md w-full p-4">
+  <UiModal :show="isOpen" max-width="md" @close="$emit('close')">
+    <div class="p-4">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">
               Note Details
@@ -37,9 +33,7 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                 Description
               </label>
-              <textarea v-model="localDescription" rows="3"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none resize-none"
-                placeholder="Add a description..." />
+              <UiInput v-model="localDescription" type="textarea" :rows="3" placeholder="Add a description..." :validate="false" />
             </div>
 
             <div>
@@ -47,13 +41,12 @@
                 Tags
               </label>
               <div class="flex flex-wrap gap-1.5 mb-2" v-if="localTags.length">
-                <span v-for="(tag, i) in localTags" :key="i"
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+                <UiBadge v-for="(tag, i) in localTags" :key="i">
                   {{ tag }}
                   <UiButton variant="ghost" color="gray" size="xs" icon-only @click="removeTag(i)">
                     <Icon name="mdi:close" class="w-3 h-3" />
                   </UiButton>
-                </span>
+                </UiBadge>
               </div>
               <div class="relative">
                 <UiInput v-model="tagInput" type="text" placeholder="e.g. work, ideas, urgent" :validate="false"
@@ -117,11 +110,8 @@
               Save
             </UiButton>
           </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </UiModal>
 </template>
 
 <script setup>
@@ -236,25 +226,4 @@ const handleDelete = () => {
 }
 </script>
 
-<style scoped>
-.modal-backdrop-enter-active,
-.modal-backdrop-leave-active {
-  transition: opacity 0.2s ease;
-}
-.modal-backdrop-enter-from,
-.modal-backdrop-leave-to {
-  opacity: 0;
-}
 
-.modal-panel-enter-active {
-  transition: all 0.2s ease-out;
-}
-.modal-panel-leave-active {
-  transition: all 0.15s ease-in;
-}
-.modal-panel-enter-from,
-.modal-panel-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>

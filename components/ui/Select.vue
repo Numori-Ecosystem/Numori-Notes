@@ -1,6 +1,6 @@
 <template>
   <div class="relative" ref="containerRef">
-    <!-- Trigger button -->
+    <!-- Trigger button: shows selected value, placeholder, or loading spinner -->
     <button
       type="button"
       :disabled="disabled || loading"
@@ -22,7 +22,7 @@
         :class="{ 'rotate-180': isOpen }" />
     </button>
 
-    <!-- Dropdown panel -->
+    <!-- Dropdown panel: animated scale transition -->
     <Transition
       enter-active-class="transition duration-100 ease-out"
       enter-from-class="opacity-0 scale-95"
@@ -34,7 +34,7 @@
       <div v-show="isOpen"
         class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden"
         :class="dropUp ? 'bottom-full mb-1 mt-0' : ''">
-        <!-- Search input -->
+        <!-- Search input for filtering options -->
         <div v-if="searchable" class="p-1.5">
           <input
             ref="searchRef"
@@ -46,7 +46,7 @@
             @keydown.enter.prevent="selectFirst"
           />
         </div>
-        <!-- Options list -->
+        <!-- Options list: ungrouped flat list or grouped sections -->
         <ul class="max-h-48 overflow-y-auto py-1">
           <li v-if="filteredOptions.length === 0 && filteredGroups.length === 0"
             class="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">
@@ -92,32 +92,109 @@
 </template>
 
 <script setup>
+/**
+ * UiSelect — Custom dropdown select component with search, grouping, icons, and loading state.
+ *
+ * Renders a styled trigger button that opens a dropdown panel with filterable options.
+ * Supports flat option lists and grouped options (via `group` key on option objects).
+ * Includes keyboard navigation (Escape to close, Enter to select first match),
+ * automatic drop-up when near the bottom of the viewport, and a loading spinner state.
+ *
+ * @example Basic select
+ * <UiSelect v-model="color" :options="['Red', 'Green', 'Blue']" placeholder="Pick a color" />
+ *
+ * @example Searchable select with object options
+ * <UiSelect v-model="lang" :options="[{ value: 'en', label: 'English' }, { value: 'es', label: 'Spanish' }]" searchable />
+ *
+ * @example Grouped options with icons
+ * <UiSelect v-model="tool" :options="[
+ *   { value: 'pen', label: 'Pen', icon: 'mdi:pen', group: 'Drawing' },
+ *   { value: 'eraser', label: 'Eraser', icon: 'mdi:eraser', group: 'Drawing' },
+ *   { value: 'text', label: 'Text', icon: 'mdi:format-text', group: 'Insert' },
+ * ]" searchable />
+ *
+ * @example Loading state
+ * <UiSelect v-model="val" :options="[]" :loading="true" loading-text="Fetching..." />
+ */
 const props = defineProps({
-  /** Selected value (v-model) */
-  modelValue: { type: [String, Number, Boolean, null], default: '' },
   /**
-   * Options array. Each item can be:
-   * - A string/number (used as both value and label)
-   * - { value, label, icon?, group? }
+   * Currently selected value (v-model).
+   * @type {string | number | boolean | null}
+   * @default ''
+   */
+  modelValue: { type: [String, Number, Boolean, null], default: '' },
+
+  /**
+   * Array of selectable options. Each item can be:
+   * - A primitive (string/number) used as both value and label
+   * - An object: `{ value, label, icon?, group? }`
+   * @type {Array}
+   * @default []
    */
   options: { type: Array, default: () => [] },
-  /** Placeholder text */
+
+  /**
+   * Placeholder text shown when no option is selected.
+   * @type {string}
+   * @default ''
+   */
   placeholder: { type: String, default: '' },
-  /** Enable search filtering */
+
+  /**
+   * Enable a search input inside the dropdown for filtering options.
+   * @type {boolean}
+   * @default false
+   */
   searchable: { type: Boolean, default: false },
-  /** Disabled state */
+
+  /**
+   * Disabled state — dims the trigger and prevents opening.
+   * @type {boolean}
+   * @default false
+   */
   disabled: { type: Boolean, default: false },
-  /** Size: 'xs' | 'sm' | 'md' */
+
+  /**
+   * Trigger button size controlling padding and font.
+   * @type {string}
+   * @default 'md'
+   * @values 'xs' | 'sm' | 'md'
+   */
   size: { type: String, default: 'md' },
-  /** Full width */
+
+  /**
+   * Full-width mode — trigger stretches to fill its container.
+   * @type {boolean}
+   * @default true
+   */
   block: { type: Boolean, default: true },
-  /** Accessibility label */
+
+  /**
+   * Accessible label for the trigger button.
+   * @type {string}
+   * @default undefined
+   */
   ariaLabel: { type: String, default: undefined },
-  /** Loading state — shows spinner, disables interaction */
+
+  /**
+   * Loading state — shows a spinner and disables interaction.
+   * @type {boolean}
+   * @default false
+   */
   loading: { type: Boolean, default: false },
-  /** Loading text shown next to spinner */
+
+  /**
+   * Text displayed next to the spinner during loading.
+   * @type {string}
+   * @default 'Loading...'
+   */
   loadingText: { type: String, default: 'Loading...' },
-  /** Spinner icon name */
+
+  /**
+   * MDI icon name for the loading spinner.
+   * @type {string}
+   * @default 'mdi:loading'
+   */
   spinner: { type: String, default: 'mdi:loading' },
 })
 
@@ -130,6 +207,7 @@ const searchQuery = ref('')
 const dropUp = ref(false)
 
 // ── Normalize options ────────────────────────────────────
+// Convert primitive options (string/number) into { value, label, icon, group } objects
 const normalizedOptions = computed(() =>
   props.options.map(opt =>
     typeof opt === 'object' && opt !== null
@@ -139,6 +217,7 @@ const normalizedOptions = computed(() =>
 )
 
 // ── Filtering ────────────────────────────────────────────
+// Apply search query filter against option labels (case-insensitive)
 const filteredNormalized = computed(() => {
   if (!searchQuery.value) return normalizedOptions.value
   const q = searchQuery.value.toLowerCase()
@@ -146,8 +225,10 @@ const filteredNormalized = computed(() => {
 })
 
 // ── Grouping ─────────────────────────────────────────────
+// Detect if any option has a group key to enable grouped rendering
 const hasGroups = computed(() => normalizedOptions.value.some(o => o.group))
 
+// Build grouped structure: Map<groupLabel, { label, options[] }>
 const filteredGroups = computed(() => {
   if (!hasGroups.value) return []
   const map = new Map()
@@ -187,6 +268,7 @@ const optionClass = (value) =>
     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
 
 // ── Interactions ─────────────────────────────────────────
+// Toggle dropdown open/close, auto-detect drop direction, and focus search input
 const toggleOpen = () => {
   if (props.disabled || props.loading) return
   isOpen.value = !isOpen.value

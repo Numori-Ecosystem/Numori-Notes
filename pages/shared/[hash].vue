@@ -64,10 +64,9 @@
             <div class="flex items-center gap-2">
               <h1 class="text-base font-semibold text-gray-900 dark:text-gray-200 truncate">{{ note.title }}</h1>
               <div v-if="note.tags?.length" class="hidden sm:flex items-center gap-1.5 flex-shrink-0">
-                <span v-for="tag in note.tags" :key="tag"
-                  class="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                <UiBadge v-for="tag in note.tags" :key="tag" color="gray">
                   {{ tag }}
-                </span>
+                </UiBadge>
               </div>
             </div>
             <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">

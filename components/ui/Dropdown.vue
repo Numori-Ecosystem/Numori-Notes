@@ -1,9 +1,9 @@
 <template>
   <div class="relative" ref="containerRef">
-    <!-- Trigger -->
+    <!-- Trigger slot: receives { open, toggle } for controlling the dropdown -->
     <slot name="trigger" :open="isOpen" :toggle="toggle" />
 
-    <!-- Panel -->
+    <!-- Dropdown panel with animated enter/leave transitions -->
     <Transition
       :enter-active-class="transitionClasses.enterActive"
       :enter-from-class="transitionClasses.enterFrom"
@@ -23,14 +23,64 @@
 </template>
 
 <script setup>
+/**
+ * UiDropdown — Headless dropdown menu with configurable alignment, direction, and transitions.
+ *
+ * Uses a trigger slot that receives `open` state and `toggle` function, and a default
+ * slot for menu content that receives a `close` function. Closes on outside click and
+ * Escape key. Supports both downward and upward drop directions with matching transitions.
+ * Exposes `isOpen`, `toggle()`, and `close()` for programmatic control.
+ *
+ * @example Basic dropdown with button trigger
+ * <UiDropdown>
+ *   <template #trigger="{ toggle }">
+ *     <UiButton @click="toggle">Menu</UiButton>
+ *   </template>
+ *   <UiDropdownItem icon="mdi:pencil" label="Edit" @click="edit" />
+ *   <UiDropdownItem icon="mdi:trash-can" label="Delete" color="red" @click="del" />
+ * </UiDropdown>
+ *
+ * @example Right-aligned, drop-up
+ * <UiDropdown align="right" drop="up" width="w-48">
+ *   <template #trigger="{ toggle }">
+ *     <UiButton variant="ghost" icon-only @click="toggle">
+ *       <Icon name="mdi:dots-vertical" class="w-5 h-5" />
+ *     </UiButton>
+ *   </template>
+ *   <slot />
+ * </UiDropdown>
+ */
 const props = defineProps({
-  /** Panel width class, e.g. 'w-48', 'w-56' */
+  /**
+   * Width class applied to the dropdown panel.
+   * @type {string}
+   * @default 'w-56'
+   * @example 'w-48', 'w-64', 'w-72'
+   */
   width: { type: String, default: 'w-56' },
-  /** Horizontal alignment: 'left' or 'right' */
+
+  /**
+   * Horizontal alignment of the panel relative to the trigger.
+   * @type {string}
+   * @default 'left'
+   * @values 'left' | 'right'
+   */
   align: { type: String, default: 'left' },
-  /** Drop direction: 'down' or 'up' */
+
+  /**
+   * Drop direction — 'down' opens below the trigger, 'up' opens above.
+   * @type {string}
+   * @default 'down'
+   * @values 'down' | 'up'
+   */
   drop: { type: String, default: 'down' },
-  /** Override all panel classes (skips default bg/border/rounded/shadow) */
+
+  /**
+   * Override all default panel classes (bg, border, rounded, shadow).
+   * When set, the built-in panel styling is completely replaced.
+   * @type {string}
+   * @default ''
+   */
   panelClass: { type: String, default: '' },
 })
 
@@ -39,6 +89,7 @@ const emit = defineEmits(['open', 'close'])
 const isOpen = ref(false)
 const containerRef = ref(null)
 
+// Build panel positioning/styling classes, or use custom override
 const panelClasses = computed(() => {
   if (props.panelClass) return props.panelClass
   const align = props.align === 'right' ? 'right-0' : 'left-0'
@@ -46,6 +97,7 @@ const panelClasses = computed(() => {
   return `absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 ${props.width} ${align} ${dropDir}`
 })
 
+// Use slide-up transition for drop="up", scale transition for drop="down"
 const transitionClasses = computed(() => {
   if (props.drop === 'up') {
     return {

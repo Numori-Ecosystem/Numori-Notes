@@ -1,13 +1,5 @@
 <template>
-  <Teleport to="body">
-    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
-      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100" leave-to-class="opacity-0">
-      <div v-if="isOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-50">
-        <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 scale-95"
-          enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-200"
-          leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-lg max-w-lg w-full overflow-hidden shadow-2xl">
+  <UiModal :show="isOpen" max-width="lg" z="z-[60]" persistent>
 
             <!-- Progress dots -->
             <div class="flex justify-center gap-2 pt-5 pb-2">
@@ -196,11 +188,7 @@
                 </UiButton>
               </div>
             </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+  </UiModal>
 </template>
 
 <script setup>

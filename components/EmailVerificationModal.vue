@@ -1,53 +1,45 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal-backdrop">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-        @click.self="$emit('close')">
-        <Transition name="modal-panel" appear>
-          <div v-if="isOpen" class="bg-white dark:bg-gray-925 rounded-lg max-w-sm w-full p-5">
-
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">Verify Email</h2>
-              <UiButton variant="ghost" color="gray" icon-only @click="$emit('close')">
-                <Icon name="mdi:close" class="block w-5 h-5" />
-              </UiButton>
-            </div>
-
-            <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
-              Enter the 6-digit code sent to your email address.
-            </p>
-
-            <div v-if="error" class="mb-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
-              {{ error }}
-            </div>
-
-            <div v-if="success" class="mb-3 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-xs">
-              {{ success }}
-            </div>
-
-            <form @submit.prevent="handleVerify" class="space-y-3">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Verification Code</label>
-                <UiInput v-model="code" type="text" required :maxlength="6" pattern="[0-9]{6}"
-                  validation-pattern="^[0-9]{6}$" validation-message="Enter a 6-digit code"
-                  placeholder="000000" />
-              </div>
-              <UiButton native-type="submit" block :loading="loading" :disabled="loading || code.length !== 6">
-                Verify
-              </UiButton>
-            </form>
-
-            <p class="text-center text-xs text-gray-500 dark:text-gray-500 mt-3">
-              Didn't receive a code?
-              <UiButton variant="link" color="primary" @click="handleResend" :disabled="loading || resendCooldown > 0">
-                {{ resendCooldown > 0 ? `Resend (${resendCooldown}s)` : 'Resend code' }}
-              </UiButton>
-            </p>
-          </div>
-        </Transition>
+  <UiModal :show="isOpen" max-width="sm" @close="$emit('close')">
+    <div class="p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">Verify Email</h2>
+        <UiButton variant="ghost" color="gray" icon-only @click="$emit('close')">
+          <Icon name="mdi:close" class="block w-5 h-5" />
+        </UiButton>
       </div>
-    </Transition>
-  </Teleport>
+
+      <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
+        Enter the 6-digit code sent to your email address.
+      </p>
+
+      <div v-if="error" class="mb-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
+        {{ error }}
+      </div>
+
+      <div v-if="success" class="mb-3 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-xs">
+        {{ success }}
+      </div>
+
+      <form @submit.prevent="handleVerify" class="space-y-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Verification Code</label>
+          <UiInput v-model="code" type="text" required :maxlength="6" pattern="[0-9]{6}"
+            validation-pattern="^[0-9]{6}$" validation-message="Enter a 6-digit code"
+            placeholder="000000" />
+        </div>
+        <UiButton native-type="submit" block :loading="loading" :disabled="loading || code.length !== 6">
+          Verify
+        </UiButton>
+      </form>
+
+      <p class="text-center text-xs text-gray-500 dark:text-gray-500 mt-3">
+        Didn't receive a code?
+        <UiButton variant="link" color="primary" @click="handleResend" :disabled="loading || resendCooldown > 0">
+          {{ resendCooldown > 0 ? `Resend (${resendCooldown}s)` : 'Resend code' }}
+        </UiButton>
+      </p>
+    </div>
+  </UiModal>
 </template>
 
 <script setup>
@@ -88,14 +80,3 @@ const handleResend = () => {
 
 onBeforeUnmount(() => clearInterval(cooldownTimer))
 </script>
-
-<style scoped>
-.modal-backdrop-enter-active,
-.modal-backdrop-leave-active { transition: opacity 0.2s ease; }
-.modal-backdrop-enter-from,
-.modal-backdrop-leave-to { opacity: 0; }
-.modal-panel-enter-active { transition: all 0.2s ease-out; }
-.modal-panel-leave-active { transition: all 0.15s ease-in; }
-.modal-panel-enter-from,
-.modal-panel-leave-to { opacity: 0; transform: scale(0.95); }
-</style>

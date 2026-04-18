@@ -1,4 +1,5 @@
 <template>
+  <!-- Segmented button group rendered as a flex row with role="group" -->
   <div :class="[wrapperClass, containerClass]" role="group">
     <UiButton
       v-for="(opt, idx) in options"
@@ -21,23 +22,79 @@
 </template>
 
 <script setup>
+/**
+ * UiButtonsGroup — Segmented toggle button group for single-select options.
+ *
+ * Renders a row of UiButton elements styled as a connected group (toolbar or tabs).
+ * Only one option can be active at a time (radio-like behavior via v-model).
+ * Supports icon-only toolbar mode and text-based tab mode with automatic sizing,
+ * rounding, and active/inactive styling.
+ *
+ * @example Toolbar with icons
+ * <UiButtonsGroup v-model="view" :options="[
+ *   { value: 'grid', icon: 'mdi:view-grid' },
+ *   { value: 'list', icon: 'mdi:view-list' },
+ * ]" />
+ *
+ * @example Tab-style text group
+ * <UiButtonsGroup v-model="tab" variant="tabs" :options="[
+ *   { value: 'all', label: 'All' },
+ *   { value: 'active', label: 'Active' },
+ *   { value: 'archived', label: 'Archived' },
+ * ]" />
+ */
 const props = defineProps({
-  /** Currently selected value (v-model) */
+  /**
+   * Currently selected option value (v-model).
+   * @type {string | number | boolean}
+   * @default ''
+   */
   modelValue: { type: [String, Number, Boolean], default: '' },
-  /** Array of options: { value, icon?, label?, title? } */
+
+  /**
+   * Array of option objects: `{ value, icon?, label?, title? }`.
+   * At least `value` is required. Provide `icon` for toolbar mode, `label` for tabs.
+   * @type {Array<{ value: string|number, icon?: string, label?: string, title?: string }>}
+   * @required
+   */
   options: { type: Array, required: true },
-  /** Visual style: 'toolbar' (icon toggles) or 'tabs' (text tabs) */
+
+  /**
+   * Visual style of the group.
+   * - 'toolbar': compact icon toggles with gray background
+   * - 'tabs': text-based tabs with lighter background and smaller buttons
+   * @type {string}
+   * @default 'toolbar'
+   * @values 'toolbar' | 'tabs'
+   */
   variant: { type: String, default: 'toolbar' },
-  /** Icon size class for toolbar variant */
+
+  /**
+   * Icon size class applied to icons in toolbar mode.
+   * @type {string}
+   * @default 'w-5 h-5'
+   */
   iconClass: { type: String, default: 'w-5 h-5' },
-  /** Button size: 'xs' | 'sm' | 'md' (toolbar only) */
+
+  /**
+   * Button size for toolbar variant (tabs always use 'xs').
+   * @type {string}
+   * @default 'md'
+   * @values 'xs' | 'sm' | 'md'
+   */
   size: { type: String, default: 'md' },
-  /** Full width (default: true for tabs, false for toolbar) */
+
+  /**
+   * Full-width mode. Defaults to true for tabs, false for toolbar.
+   * @type {boolean}
+   * @default undefined (auto-detected from variant)
+   */
   block: { type: Boolean, default: undefined },
 })
 
 defineEmits(['update:modelValue'])
 
+// Block defaults to true for tabs (full-width) and false for toolbar (inline)
 const isBlock = computed(() => props.block ?? props.variant === 'tabs')
 
 const wrapperClass = computed(() =>
@@ -54,6 +111,7 @@ const buttonSize = computed(() =>
   props.variant === 'tabs' ? 'xs' : props.size
 )
 
+// Apply rounding only to first/last buttons; middle buttons get rounded-none
 const roundingClass = (idx) => {
   const last = props.options.length - 1
   const radius = props.variant === 'tabs' ? 'md' : 'lg'

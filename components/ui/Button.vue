@@ -1,4 +1,5 @@
 <template>
+  <!-- Dynamic root element — renders as button, anchor, or any tag via :is -->
   <component
     :is="tag"
     :type="isButton ? nativeType : undefined"
@@ -12,70 +13,184 @@
     :tabindex="tabindex"
     v-bind="restAttrs"
   >
-    <!-- Loading spinner -->
+    <!-- Loading state: animated spinner replaces slot content -->
     <Icon v-if="loading" :name="spinnerIcon" class="animate-spin" :class="spinnerSizeClass" />
-    <!-- Default slot -->
+    <!-- Default slot: button label, icons, or any child content -->
     <slot v-else />
   </component>
 </template>
 
 <script setup>
+/**
+ * UiButton — Versatile button component with multiple variants, colors, sizes, and shapes.
+ *
+ * Supports rendering as any HTML element (button, anchor, div), eight visual variants
+ * (solid, outline, ghost, dashed, text, link, menu-item, list-item), six color themes,
+ * five sizes, and five shape options. Includes loading state with a configurable spinner,
+ * icon-only mode, block/full-width layout, and full accessibility attribute support.
+ * External Tailwind classes are merged via `tailwind-merge` so they can override internals.
+ *
+ * @example Basic solid button
+ * <UiButton @click="save">Save</UiButton>
+ *
+ * @example Ghost icon button
+ * <UiButton variant="ghost" color="gray" icon-only>
+ *   <Icon name="mdi:close" class="w-5 h-5" />
+ * </UiButton>
+ *
+ * @example Outline danger button with loading
+ * <UiButton variant="outline" color="red" :loading="isSaving">Delete</UiButton>
+ *
+ * @example Menu item in a dropdown
+ * <UiButton variant="menu-item" color="red">
+ *   <Icon name="mdi:trash-can-outline" class="w-4 h-4" /> Delete
+ * </UiButton>
+ *
+ * @example Anchor link
+ * <UiButton tag="a" variant="link" href="/docs">Read docs</UiButton>
+ */
 import { twMerge } from 'tailwind-merge'
 const props = defineProps({
-  /** HTML tag: 'button' | 'a' | 'div' etc. */
+  /**
+   * HTML element tag to render.
+   * @type {string}
+   * @default 'button'
+   * @values 'button' | 'a' | 'div' | any valid HTML tag
+   */
   tag: { type: String, default: 'button' },
-  /** Native button type: 'button' | 'submit' | 'reset' */
+
+  /**
+   * Native button `type` attribute (only applied when tag is 'button').
+   * @type {string}
+   * @default 'button'
+   * @values 'button' | 'submit' | 'reset'
+   */
   nativeType: { type: String, default: 'button' },
 
   /**
-   * Visual variant:
-   * 'solid', 'outline', 'ghost', 'dashed', 'text', 'link', 'menu-item', 'list-item'
+   * Visual variant controlling background, border, and hover styles.
+   * - 'solid'     — filled background with shadow
+   * - 'outline'   — transparent with colored border
+   * - 'ghost'     — transparent, colored on hover
+   * - 'dashed'    — dashed border, transparent background
+   * - 'text'      — plain text, underline on hover
+   * - 'link'      — inline link style, no padding
+   * - 'menu-item' — full-width row for dropdown menus
+   * - 'list-item' — full-width row for settings lists
+   * @type {string}
+   * @default 'solid'
    */
   variant: { type: String, default: 'solid' },
 
   /**
-   * Colour key — maps to tailwind colour scales.
-   * 'primary' | 'gray' | 'red' | 'green' | 'amber' | 'white'
+   * Color theme key mapped to Tailwind color scales.
+   * @type {string}
+   * @default 'primary'
+   * @values 'primary' | 'gray' | 'red' | 'green' | 'amber' | 'white'
    */
   color: { type: String, default: 'primary' },
 
-  /** Size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' */
+  /**
+   * Button size controlling padding, font size, and gap.
+   * @type {string}
+   * @default 'md'
+   * @values 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+   */
   size: { type: String, default: 'md' },
 
-  /** Shape: 'round' | 'pill' | 'square' | 'circle' | 'none' */
+  /**
+   * Border-radius shape of the button.
+   * @type {string}
+   * @default 'round'
+   * @values 'round' (rounded-lg) | 'pill' (rounded-full) | 'square' (rounded-none) | 'circle' (rounded-full) | 'none'
+   */
   shape: { type: String, default: 'round' },
 
-  /** Disabled state */
+  /**
+   * Disabled state — visually dims the button and prevents interaction.
+   * @type {boolean}
+   * @default false
+   */
   disabled: { type: Boolean, default: false },
 
-  /** Loading state — shows spinner, disables button */
+  /**
+   * Loading state — replaces slot content with a spinner and disables the button.
+   * @type {boolean}
+   * @default false
+   */
   loading: { type: Boolean, default: false },
 
-  /** Loading spinner icon name */
+  /**
+   * MDI icon name for the loading spinner.
+   * @type {string}
+   * @default 'mdi:loading'
+   */
   spinner: { type: String, default: 'mdi:loading' },
 
-  /** Block / full-width */
+  /**
+   * Block mode — makes the button full-width (w-full).
+   * @type {boolean}
+   * @default false
+   */
   block: { type: Boolean, default: false },
 
-  /** Icon-only mode — equal width/height padding */
+  /**
+   * Icon-only mode — uses equal padding on all sides for a square/circle button.
+   * @type {boolean}
+   * @default false
+   */
   iconOnly: { type: Boolean, default: false },
 
-  /** href for anchor tags */
+  /**
+   * URL for anchor tags (only applied when tag is 'a').
+   * @type {string}
+   * @default undefined
+   */
   href: { type: String, default: undefined },
 
-  /** Accessibility */
+  /**
+   * Native `title` attribute for hover tooltip.
+   * @type {string}
+   * @default undefined
+   */
   title: { type: String, default: undefined },
+
+  /**
+   * Accessible label for screen readers.
+   * @type {string}
+   * @default undefined
+   */
   ariaLabel: { type: String, default: undefined },
+
+  /**
+   * ARIA checked state for toggle-style buttons.
+   * @type {string | boolean}
+   * @default undefined
+   */
   ariaChecked: { type: [String, Boolean], default: undefined },
+
+  /**
+   * ARIA role override (e.g. 'switch', 'tab').
+   * @type {string}
+   * @default undefined
+   */
   role: { type: String, default: undefined },
+
+  /**
+   * Tab index for keyboard navigation order.
+   * @type {string | number}
+   * @default undefined
+   */
   tabindex: { type: [String, Number], default: undefined },
 })
 
 defineOptions({ inheritAttrs: false })
 
+// Determine element type and variant category for conditional attribute binding
 const isButton = computed(() => props.tag === 'button')
 const isMenuItem = computed(() => props.variant === 'menu-item')
 const isListItem = computed(() => props.variant === 'list-item')
+// Menu-item and list-item variants share full-width, left-aligned layout behavior
 const isInlineVariant = computed(() => isMenuItem.value || isListItem.value)
 
 const spinnerIcon = computed(() => props.spinner)
@@ -110,7 +225,9 @@ const shapeClasses = computed(() => {
   return map[props.shape] || map.round
 })
 
-// ── Colour × Variant classes ──────────────────────────────
+// ── Colour × Variant matrix ──────────────────────────────
+// Each variant defines its own color map. Menu-item and list-item default
+// to gray when color is 'primary' since they sit inside neutral containers.
 const colorVariantClasses = computed(() => {
   const v = props.variant
   const c = props.color
@@ -230,7 +347,7 @@ const stateClasses = computed(() => {
   return 'cursor-pointer'
 })
 
-// ── Merge with external classes (external wins) ──────────
+// ── Merge with external classes (external wins via twMerge) ──
 const attrs = useAttrs()
 
 const restAttrs = computed(() => {

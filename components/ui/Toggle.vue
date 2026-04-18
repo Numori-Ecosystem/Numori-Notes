@@ -1,4 +1,5 @@
 <template>
+  <!-- Accessible toggle switch rendered as a button with role="switch" -->
   <button
     type="button"
     :disabled="disabled"
@@ -23,21 +24,65 @@
 </template>
 
 <script setup>
+/**
+ * UiToggle — Accessible toggle switch component with two sizes and multiple color themes.
+ *
+ * Renders as a `<button role="switch">` with smooth sliding-dot animation.
+ * Supports disabled and read-only states. The `sm` size matches ProfileModal styling
+ * (600-shade active colors), while `md` matches SettingsModal styling (500-shade).
+ *
+ * @example Basic toggle
+ * <UiToggle v-model="darkMode" />
+ *
+ * @example Small green toggle
+ * <UiToggle v-model="notifications" size="sm" color="green" />
+ *
+ * @example Read-only toggle (parent controls state)
+ * <UiToggle :model-value="isActive" readonly @click="handleToggle" />
+ */
 const props = defineProps({
-  /** v-model binding */
+  /**
+   * Current on/off state (v-model).
+   * @type {boolean}
+   * @default false
+   */
   modelValue: { type: Boolean, default: false },
-  /** Disabled state */
+
+  /**
+   * Disabled state — dims the toggle and prevents interaction.
+   * @type {boolean}
+   * @default false
+   */
   disabled: { type: Boolean, default: false },
-  /** Read-only — renders visually but doesn't handle clicks (parent handles toggling) */
+
+  /**
+   * Read-only mode — renders visually but ignores clicks (parent handles toggling).
+   * @type {boolean}
+   * @default false
+   */
   readonly: { type: Boolean, default: false },
-  /** Size: 'sm' (h-5 w-9, ProfileModal style) or 'md' (h-6 w-11, SettingsModal style) */
+
+  /**
+   * Toggle size. 'sm' uses a compact track (h-5 w-9) with 600-shade active colors;
+   * 'md' uses a larger track (h-6 w-11) with 500-shade active colors.
+   * @type {string}
+   * @default 'md'
+   * @values 'sm' | 'md'
+   */
   size: { type: String, default: 'md' },
-  /** Active track color */
+
+  /**
+   * Active (on) track color theme.
+   * @type {string}
+   * @default 'primary'
+   * @values 'primary' | 'green' | 'red'
+   */
   color: { type: String, default: 'primary' },
 })
 
 const emit = defineEmits(['update:modelValue'])
 
+// Active color uses different shade intensities per size for visual consistency
 const activeColor = computed(() => {
   if (props.size === 'sm') {
     // ProfileModal style uses 600

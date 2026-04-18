@@ -1,6 +1,8 @@
 <template>
   <div>
+    <!-- Invisible full-screen backdrop to capture outside clicks -->
     <div v-if="show" class="fixed inset-0" :class="backdropZ" @click="$emit('close')" />
+    <!-- Animated popup panel positioned at (x, y + offsetY) -->
     <Transition
       enter-active-class="transition duration-100 ease-out"
       enter-from-class="opacity-0 scale-95"
@@ -20,13 +22,72 @@
 </template>
 
 <script setup>
+/**
+ * UiPopup — Absolutely positioned popup panel with viewport-aware clamping.
+ *
+ * Renders a floating panel at the given (x, y) coordinates relative to its offset parent.
+ * Automatically clamps position to keep the panel within the visible viewport with an 8px margin.
+ * Includes an invisible full-screen backdrop that emits 'close' on click.
+ *
+ * @example Context menu popup
+ * <UiPopup :show="showMenu" :x="menuX" :y="menuY" @close="showMenu = false">
+ *   <UiDropdownItem icon="mdi:pencil" label="Edit" @click="edit" />
+ *   <UiDropdownItem icon="mdi:trash-can" label="Delete" color="red" @click="del" />
+ * </UiPopup>
+ *
+ * @example Popup with offset and custom width
+ * <UiPopup :show="open" :x="posX" :y="posY" :offset-y="8" width="w-64" @close="open = false">
+ *   <div class="p-3">Custom content</div>
+ * </UiPopup>
+ */
 const props = defineProps({
+  /**
+   * Controls popup visibility.
+   * @type {boolean}
+   * @default false
+   */
   show: { type: Boolean, default: false },
+
+  /**
+   * Horizontal position in pixels relative to the offset parent.
+   * @type {number}
+   * @default 0
+   */
   x: { type: Number, default: 0 },
+
+  /**
+   * Vertical position in pixels relative to the offset parent.
+   * @type {number}
+   * @default 0
+   */
   y: { type: Number, default: 0 },
+
+  /**
+   * Additional vertical offset added to the y position (e.g. to clear a trigger element).
+   * @type {number}
+   * @default 0
+   */
   offsetY: { type: Number, default: 0 },
+
+  /**
+   * Width class for the popup panel.
+   * @type {string}
+   * @default 'w-56'
+   */
   width: { type: String, default: 'w-56' },
+
+  /**
+   * Z-index class for the popup panel.
+   * @type {string}
+   * @default 'z-50'
+   */
   panelZ: { type: String, default: 'z-50' },
+
+  /**
+   * Z-index class for the invisible backdrop behind the panel.
+   * @type {string}
+   * @default 'z-40'
+   */
   backdropZ: { type: String, default: 'z-40' },
 })
 
@@ -40,6 +101,7 @@ const positionStyle = computed(() => ({
   top: clampedPos.value.top + 'px',
 }))
 
+// Clamp the panel position so it stays within the viewport (8px margin)
 const updatePosition = () => {
   let left = props.x
   let top = props.y + props.offsetY

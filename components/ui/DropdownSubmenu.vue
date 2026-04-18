@@ -1,4 +1,5 @@
 <template>
+  <!-- Hover-triggered on desktop, click-triggered on mobile -->
   <div class="relative"
     @mouseenter="!isMobile && (showSub = true)"
     @mouseleave="!isMobile && (showSub = false)">
@@ -9,7 +10,7 @@
         class="w-3.5 h-3.5 block flex-shrink-0 text-gray-400" />
     </UiButton>
 
-    <!-- Mobile: inline accordion -->
+    <!-- Mobile: inline accordion with left border accent -->
     <Transition
       enter-active-class="transition-all duration-100 ease-out"
       enter-from-class="max-h-0 opacity-0"
@@ -23,7 +24,7 @@
       </div>
     </Transition>
 
-    <!-- Desktop: flyout -->
+    <!-- Desktop: flyout panel positioned left or right -->
     <Transition
       enter-active-class="transition duration-100 ease-out"
       enter-from-class="opacity-0 scale-95"
@@ -41,14 +42,56 @@
 </template>
 
 <script setup>
+/**
+ * UiDropdownSubmenu — Nested submenu for UiDropdown with responsive behavior.
+ *
+ * On desktop (≥640px), shows a flyout panel on hover to the left or right.
+ * On mobile (<640px), expands inline as an accordion with a left border accent.
+ * Automatically detects viewport width on mount and resize.
+ *
+ * @example Basic submenu
+ * <UiDropdownSubmenu icon="mdi:format-text" label="Text Style">
+ *   <UiDropdownItem icon="mdi:format-bold" label="Bold" @click="bold" />
+ *   <UiDropdownItem icon="mdi:format-italic" label="Italic" @click="italic" />
+ * </UiDropdownSubmenu>
+ *
+ * @example Left-aligned flyout
+ * <UiDropdownSubmenu icon="mdi:share" label="Share" align-left>
+ *   <UiDropdownItem icon="mdi:email" label="Email" @click="shareEmail" />
+ * </UiDropdownSubmenu>
+ */
 defineProps({
+  /**
+   * MDI icon name displayed at the start of the trigger row.
+   * @type {string}
+   * @required
+   */
   icon: { type: String, required: true },
+
+  /**
+   * Text label for the submenu trigger.
+   * @type {string}
+   * @required
+   */
   label: { type: String, required: true },
+
+  /**
+   * Disabled state — prevents opening the submenu.
+   * @type {boolean}
+   * @default false
+   */
   disabled: { type: Boolean, default: false },
+
+  /**
+   * Align the desktop flyout to the left (right-to-left) instead of the default right.
+   * @type {boolean}
+   * @default false
+   */
   alignLeft: { type: Boolean, default: false },
 })
 
 const showSub = ref(false)
+// Track viewport width to switch between mobile accordion and desktop flyout
 const isMobile = ref(false)
 
 const checkMobile = () => { isMobile.value = window.innerWidth < 640 }
