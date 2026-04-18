@@ -107,6 +107,7 @@ import { injectInlineStyles } from '~/composables/useEditorStyles'
 
 const props = defineProps({
   content: { type: String, default: '' },
+  noteId: { type: String, default: null },
   placeholder: { type: String, default: 'Start typing... (e.g., 10 + 20)' },
   showResults: { type: Boolean, default: false },
   showInline: { type: Boolean, default: true },
@@ -444,11 +445,32 @@ const tickLiveTime = () => {
 }
 useIntervalFn(tickLiveTime, 1000)
 
+// --- Scroll position memory per note ---
+const scrollPositions = new Map()
+let scrollRestoreTimer = null
+
 watch(displayLines, () => {
   nextTick(() => {
     updateInlineDecorations()
     if (props.markdownMode !== 'off') updateMarkdownPreview()
   })
+})
+
+watch(() => props.noteId, (newId, oldId) => {
+  if (!editorView || newId === oldId) return
+  // Save current scroll position for the note we're leaving
+  if (oldId) {
+    scrollPositions.set(oldId, editorView.scrollDOM.scrollTop)
+  }
+  // Cancel any pending restore from a previous rapid switch
+  if (scrollRestoreTimer) clearTimeout(scrollRestoreTimer)
+  // Restore after everything settles: content change, decorations, debounced re-eval
+  scrollRestoreTimer = setTimeout(() => {
+    scrollRestoreTimer = null
+    if (editorView) {
+      editorView.scrollDOM.scrollTop = scrollPositions.get(newId) ?? 0
+    }
+  }, 200)
 })
 watch(() => props.showInline, () => updateInlineDecorations())
 watch(() => props.inlineAlign, () => updateInlineDecorations())

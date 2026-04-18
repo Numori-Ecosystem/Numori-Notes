@@ -105,6 +105,7 @@
         <NoteEditor
           v-if="currentNote" ref="editorRef"
           :content="currentNote.content"
+          :note-id="currentNote.id"
           :show-inline="showInlineResults !== 'off'"
           :inline-align="showInlineResults === 'off' ? 'left' : showInlineResults"
           :locale-preferences="localePrefs.preferences"
