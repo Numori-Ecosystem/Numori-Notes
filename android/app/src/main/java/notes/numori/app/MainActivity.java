@@ -28,6 +28,7 @@ public class MainActivity extends BridgeActivity {
 
     private View toolbarView;
     private boolean toolbarVisible = false;
+    private boolean codemirrorFocused = false;
 
     // Button IDs in order — matches iOS / web FormattingToolbar
     private static final String[][] UNDO_REDO = {
@@ -249,7 +250,23 @@ public class MainActivity extends BridgeActivity {
 
             // Keyboard is considered visible if it takes up > 15% of screen
             if (keyboardHeight > screenHeight * 0.15) {
-                showToolbar(keyboardHeight);
+                // Check if CodeMirror is focused via the global flag set by NoteEditor.vue
+                WebView wv = getBridge() != null ? getBridge().getWebView() : null;
+                if (wv != null) {
+                    wv.evaluateJavascript("window.__codemirrorFocused===true", value -> {
+                        boolean cmFocused = "true".equals(value);
+                        runOnUiThread(() -> {
+                            codemirrorFocused = cmFocused;
+                            if (cmFocused) {
+                                showToolbar(keyboardHeight);
+                            } else {
+                                hideToolbar();
+                            }
+                        });
+                    });
+                } else {
+                    hideToolbar();
+                }
             } else {
                 hideToolbar();
             }

@@ -2,7 +2,7 @@
   "name": "numori-notes",
   "type": "module",
   "private": true,
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.",
   "authors": [
     {
@@ -34,6 +34,10 @@
   ],
   "scripts": {
     "build": "nuxt build",
+    "build:app": "nuxt generate && npx cap sync",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios",
+    "open": "npx cap open android && npx cap open ios",
     "dev": "rm -f public/version.json public/sw.js && nuxt cleanup && nuxt dev",
     "dev:db": "docker compose -f docker-compose.dev.yml up -d",
     "dev:db:stop": "docker compose -f docker-compose.dev.yml down",

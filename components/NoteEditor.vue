@@ -325,6 +325,14 @@ const cmExtensions = computed(() => [
     }
   }),
   EditorView.domEventHandlers({
+    focus: () => {
+      window.__codemirrorFocused = true
+      window.dispatchEvent(new CustomEvent('codemirrorFocus', { detail: true }))
+    },
+    blur: () => {
+      window.__codemirrorFocused = false
+      window.dispatchEvent(new CustomEvent('codemirrorFocus', { detail: false }))
+    },
     click: (event, view) => {
       if (handleMdClick(event, view)) return true
       return handleResultClick(event, view)

@@ -3,6 +3,7 @@ import WebKit
 import Capacitor
 
 private var kToolbarKey: UInt8 = 0
+private var kToolbarEnabledKey: UInt8 = 0
 private var swizzled = false
 
 // App color palette (from tailwind.config.js) as dynamic UIColors
@@ -27,7 +28,7 @@ private let appDivider = UIColor { trait in
         : UIColor(red: 0xC1/255, green: 0xC0/255, blue: 0xC0/255, alpha: 0.6) // gray-300/60
 }
 
-class MyViewController: CAPBridgeViewController {
+class MyViewController: CAPBridgeViewController, WKScriptMessageHandler {
 
     private var toolbarView: UIView!
     private var allButtons: [ToolbarButton] = []
@@ -76,6 +77,7 @@ class MyViewController: CAPBridgeViewController {
         super.viewDidLoad()
         buildToolbar()
         swizzleInputAccessoryView()
+        setupCodemirrorFocusListener()
     }
 
     // MARK: - Render MDI SVG path into a template UIImage
@@ -294,7 +296,12 @@ class MyViewController: CAPBridgeViewController {
             var view = obj as? UIView
             while let v = view {
                 if let wk = v as? WKWebView {
-                    return objc_getAssociatedObject(wk, &kToolbarKey) as? UIView
+                    // Only show toolbar when CodeMirror is focused
+                    let enabled = (objc_getAssociatedObject(wk, &kToolbarEnabledKey) as? Bool) ?? false
+                    if enabled {
+                        return objc_getAssociatedObject(wk, &kToolbarKey) as? UIView
+                    }
+                    return nil
                 }
                 view = v.superview
             }
@@ -306,7 +313,53 @@ class MyViewController: CAPBridgeViewController {
 
         if let wv = self.webView {
             objc_setAssociatedObject(wv, &kToolbarKey, toolbarView, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(wv, &kToolbarEnabledKey, false, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
+    }
+
+    // MARK: - Listen for CodeMirror focus events from JS
+
+    private func setupCodemirrorFocusListener() {
+        guard let wv = self.webView else { return }
+
+        // Register the message handler (survives page loads)
+        wv.configuration.userContentController.add(self, name: "codemirrorFocus")
+
+        // Inject the bridge script once the page is interactive.
+        // Use a WKUserScript so it re-injects on every page load / SPA navigation.
+        let script = """
+        window.addEventListener('codemirrorFocus', function(e) {
+            window.webkit.messageHandlers.codemirrorFocus.postMessage(!!e.detail);
+        });
+        """
+        let userScript = WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        wv.configuration.userContentController.addUserScript(userScript)
+    }
+
+    // MARK: - WKScriptMessageHandler
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.name == "codemirrorFocus" else { return }
+        let focused = (message.body as? Bool) ?? false
+        guard let wv = self.webView else { return }
+
+        let wasEnabled = (objc_getAssociatedObject(wv, &kToolbarEnabledKey) as? Bool) ?? false
+        guard focused != wasEnabled else { return } // no change, skip
+
+        objc_setAssociatedObject(wv, &kToolbarEnabledKey, focused, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+
+        // Tell the system to re-read inputAccessoryView without disturbing focus
+        if let contentView = findWKContentView(in: wv) {
+            contentView.reloadInputViews()
+        }
+    }
+
+    private func findWKContentView(in view: UIView) -> UIView? {
+        if NSStringFromClass(type(of: view)) == "WKContentView" { return view }
+        for sub in view.subviews {
+            if let found = findWKContentView(in: sub) { return found }
+        }
+        return nil
     }
 }
 
