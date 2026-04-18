@@ -120,35 +120,43 @@ export const useAppLock = () => {
   /** Persist settings to IndexedDB only */
   const saveLocal = async () => {
     if (!import.meta.client) return
-    const { enabled, method, pin, password, timeout, biometricsFallback, selectedBiometrics } =
-      settings
-    await db.appState.put({
-      key: SETTINGS_KEY,
-      value: { enabled, method, pin, password, timeout, biometricsFallback, selectedBiometrics },
-    })
+    // toRaw/spread to strip Vue reactivity — IndexedDB structured clone can't handle Proxy
+    const value = {
+      enabled: settings.enabled,
+      method: settings.method,
+      pin: settings.pin,
+      password: settings.password,
+      timeout: settings.timeout,
+      biometricsFallback: settings.biometricsFallback,
+      selectedBiometrics: [...settings.selectedBiometrics],
+    }
+    await db.appState.put({ key: SETTINGS_KEY, value })
   }
 
   /** Persist settings to server (if logged in) */
   const saveToServer = async () => {
     if (!auth.isLoggedIn.value) return
-    try {
-      const { enabled, method, pin, password, timeout, biometricsFallback, selectedBiometrics } =
-        settings
-      await apiFetch('/api/auth/app-lock', {
-        method: 'PUT',
-        headers: auth.authHeaders.value,
-        body: { enabled, method, pin, password, timeout, biometricsFallback, selectedBiometrics },
-      })
-    } catch {
-      // non-critical — local settings still work
+    const body = {
+      enabled: settings.enabled,
+      method: settings.method,
+      pin: settings.pin,
+      password: settings.password,
+      timeout: settings.timeout,
+      biometricsFallback: settings.biometricsFallback,
+      selectedBiometrics: [...settings.selectedBiometrics],
     }
+    await apiFetch('/api/auth/app-lock', {
+      method: 'PUT',
+      headers: auth.authHeaders.value,
+      body,
+    })
   }
 
-  /** Update settings and persist locally + server */
+  /** Update settings and persist locally + server. Throws on failure. */
   const updateSettings = async (patch) => {
     Object.assign(settings, patch)
     await saveLocal()
-    saveToServer() // fire-and-forget
+    await saveToServer()
   }
 
   /** Lock the app */
@@ -282,6 +290,7 @@ export const useAppLock = () => {
   }
 
   /** Disable app lock entirely and reset */
+  /** Disable app lock entirely and reset. Throws on failure. */
   const disable = async () => {
     settings.enabled = false
     settings.pin = ''
@@ -292,7 +301,7 @@ export const useAppLock = () => {
     settings.selectedBiometrics = []
     isLocked.value = false
     await saveLocal()
-    saveToServer()
+    await saveToServer()
   }
 
   return {

@@ -1005,32 +1005,36 @@ watch(() => draft.method, (method) => {
 const saveAppLock = async () => {
   if (!canSaveAppLock.value) return
 
-  if (!draft.enabled) {
-    await disableAppLock()
-    showFeedback('App Lock disabled')
+  try {
+    if (!draft.enabled) {
+      await disableAppLock()
+      showFeedback('App Lock disabled')
+      resetDraft()
+      return
+    }
+
+    const patch = {
+      enabled: true,
+      method: draft.method,
+      timeout: draft.timeout,
+      biometricsFallback: draft.biometricsFallback,
+      selectedBiometrics: [...draft.selectedBiometrics],
+    }
+
+    // Only update PIN/password if user entered a new one
+    if (draftShowPin.value && draft.pin.length === 4 && draft.pin === draft.pinConfirm) {
+      patch.pin = draft.pin
+    }
+    if (draftShowPassword.value && draft.password.length >= 1 && draft.password === draft.passwordConfirm) {
+      patch.password = draft.password
+    }
+
+    await commitAppLock(patch)
+    showFeedback('App Lock settings saved')
     resetDraft()
-    return
+  } catch (err) {
+    showFeedback(err?.data?.statusMessage || err?.message || 'Failed to save App Lock settings', 'error')
   }
-
-  const patch = {
-    enabled: true,
-    method: draft.method,
-    timeout: draft.timeout,
-    biometricsFallback: draft.biometricsFallback,
-    selectedBiometrics: [...draft.selectedBiometrics],
-  }
-
-  // Only update PIN/password if user entered a new one
-  if (draftShowPin.value && draft.pin.length === 4 && draft.pin === draft.pinConfirm) {
-    patch.pin = draft.pin
-  }
-  if (draftShowPassword.value && draft.password.length >= 1 && draft.password === draft.passwordConfirm) {
-    patch.password = draft.password
-  }
-
-  await commitAppLock(patch)
-  showFeedback('App Lock settings saved')
-  resetDraft()
 }
 
 // Detect biometrics on mount and poll while on security section
