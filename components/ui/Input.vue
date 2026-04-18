@@ -90,6 +90,7 @@
         tabindex="-1"
         class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         :aria-label="passwordVisible ? 'Hide password' : 'Show password'"
+        @mousedown.prevent
         @click="passwordVisible = !passwordVisible"
       >
         <Icon :name="passwordVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="w-4 h-4" />
