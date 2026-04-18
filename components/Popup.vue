@@ -1,9 +1,6 @@
 <template>
   <div>
-    <!-- Backdrop -->
-    <div v-if="show" class="fixed inset-0" :class="backdropClass" @click="$emit('close')" />
-
-    <!-- Panel -->
+    <div v-if="show" class="fixed inset-0" :class="backdropZ" @click="$emit('close')" />
     <Transition
       enter-active-class="transition duration-100 ease-out"
       enter-from-class="opacity-0 scale-95"
@@ -12,12 +9,10 @@
       leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-95"
     >
-      <div
-        v-if="show"
+      <div v-if="show" ref="panelRef"
         class="absolute bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1"
-        :class="[widthClass, panelZClass]"
-        :style="positionStyle"
-      >
+        :class="[width, panelZ]"
+        :style="positionStyle">
         <slot />
       </div>
     </Transition>
@@ -26,30 +21,62 @@
 
 <script setup>
 const props = defineProps({
-  /** Whether the popup is visible */
   show: { type: Boolean, default: false },
-  /** X position in px (relative to positioned parent) */
   x: { type: Number, default: 0 },
-  /** Y position in px (relative to positioned parent) */
   y: { type: Number, default: 0 },
-  /** Y offset added to y (e.g. to push below the click point) */
   offsetY: { type: Number, default: 0 },
-  /** Panel width class */
   width: { type: String, default: 'w-56' },
-  /** Panel z-index class */
   panelZ: { type: String, default: 'z-50' },
-  /** Backdrop z-index class */
   backdropZ: { type: String, default: 'z-40' },
 })
 
 defineEmits(['close'])
 
-const widthClass = computed(() => props.width)
-const panelZClass = computed(() => props.panelZ)
-const backdropClass = computed(() => props.backdropZ)
+const panelRef = ref(null)
+const clampedPos = ref({ left: 0, top: 0 })
 
 const positionStyle = computed(() => ({
-  left: `${props.x}px`,
-  top: `${props.y + props.offsetY}px`,
+  left: clampedPos.value.left + 'px',
+  top: clampedPos.value.top + 'px',
 }))
+
+const updatePosition = () => {
+  let left = props.x
+  let top = props.y + props.offsetY
+
+  nextTick(() => {
+    const el = panelRef.value
+    if (!el) return
+
+    const parent = el.offsetParent || document.body
+    const parentRect = parent.getBoundingClientRect()
+    const panelW = el.offsetWidth
+    const panelH = el.offsetHeight
+    const viewW = window.innerWidth
+    const viewH = window.innerHeight
+
+    // Convert to viewport coords, clamp, convert back
+    let absLeft = parentRect.left + left
+    let absTop = parentRect.top + top
+
+    const margin = 8
+    if (absLeft + panelW > viewW - margin) absLeft = viewW - panelW - margin
+    if (absLeft < margin) absLeft = margin
+    if (absTop + panelH > viewH - margin) absTop = viewH - panelH - margin
+    if (absTop < margin) absTop = margin
+
+    clampedPos.value = {
+      left: absLeft - parentRect.left,
+      top: absTop - parentRect.top,
+    }
+  })
+}
+
+watch(() => [props.show, props.x, props.y, props.offsetY], () => {
+  if (props.show) {
+    // Set initial position immediately so the panel renders near the right spot
+    clampedPos.value = { left: props.x, top: props.y + props.offsetY }
+    updatePosition()
+  }
+}, { immediate: true })
 </script>

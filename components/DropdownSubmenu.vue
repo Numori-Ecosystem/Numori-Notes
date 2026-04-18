@@ -1,10 +1,8 @@
 <template>
-  <div class="relative" ref="submenuRef"
+  <div class="relative"
     @mouseenter="!isMobile && (showSub = true)"
     @mouseleave="!isMobile && (showSub = false)">
-    <Button @click="showSub = !showSub" variant="menu-item"
-      :class="disabled ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : ''"
-      :disabled="disabled">
+    <Button variant="menu-item" :disabled="disabled" @click="showSub = !showSub">
       <Icon :name="icon" class="w-4 h-4 block flex-shrink-0" />
       <span class="flex-1 text-left">{{ label }}</span>
       <Icon :name="isMobile ? (showSub ? 'mdi:chevron-up' : 'mdi:chevron-down') : 'mdi:chevron-right'"
@@ -51,12 +49,9 @@ defineProps({
 })
 
 const showSub = ref(false)
-const submenuRef = ref(null)
 const isMobile = ref(false)
 
-const checkMobile = () => {
-  isMobile.value = window.innerWidth < 640
-}
+const checkMobile = () => { isMobile.value = window.innerWidth < 640 }
 
 onMounted(() => {
   checkMobile()
