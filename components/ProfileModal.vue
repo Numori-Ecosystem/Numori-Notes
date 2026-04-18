@@ -43,12 +43,12 @@
       <div v-if="activeSection === 'main'" class="space-y-5">
         <!-- Profile card -->
         <div
-          class="relative rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-900/20 dark:to-primary-800/10 border border-primary-100 dark:border-primary-900/30 px-4 py-5"
+          class="relative rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700/50 px-4 py-5"
         >
           <div class="flex items-center gap-4">
-            <UiButton
-              variant="ghost"
-              class="relative group flex-shrink-0"
+            <button
+              type="button"
+              class="relative group flex-shrink-0 rounded-full"
               title="Change avatar"
               @click="activeSection = 'avatar'"
             >
@@ -58,11 +58,12 @@
               >
                 <Icon name="mdi:camera" class="w-4 h-4 text-white" />
               </div>
-            </UiButton>
+            </button>
             <div class="flex-1 min-w-0">
               <UiButton
                 variant="ghost"
-                class="flex items-center gap-1.5 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30"
+                size="xs"
+                class="flex items-center gap-1 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30"
                 title="Edit profile"
                 @click="activeSection = 'edit'"
               >
@@ -76,7 +77,8 @@
               </UiButton>
               <UiButton
                 variant="ghost"
-                class="flex items-center gap-1.5 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30 mt-0.5"
+                size="xs"
+                class="flex items-center gap-1 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30"
                 title="Edit profile"
                 @click="activeSection = 'edit'"
               >
@@ -86,7 +88,7 @@
                   class="w-3 h-3 text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                 />
               </UiButton>
-              <p class="text-[10px] text-gray-400 dark:text-gray-600 mt-1">
+              <p class="text-[10px] text-gray-400 dark:text-gray-600 mt-0.5 px-1">
                 Member since
                 {{ user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—' }}
               </p>
