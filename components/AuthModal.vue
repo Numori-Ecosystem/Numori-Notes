@@ -48,13 +48,7 @@
           </UiFormField>
 
           <UiFormField label="Email">
-            <UiInput
-              v-model="email"
-              type="email"
-              required
-              autocomplete="email"
-              placeholder="you@example.com"
-            />
+            <UiInput v-model="email" type="email" required autocomplete="email" placeholder="you@example.com" />
           </UiFormField>
 
           <div>
@@ -87,9 +81,7 @@
                 :validate="false"
               />
             </UiFormField>
-            <p v-if="passwordMismatch" class="text-xs text-red-600 dark:text-red-400 mt-1">
-              Passwords do not match
-            </p>
+            <p v-if="passwordMismatch" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
           </div>
 
           <UiButton native-type="submit" :loading="loading" block>
@@ -98,13 +90,8 @@
         </form>
 
         <!-- Forgot password link (login only) -->
-        <p
-          v-if="mode === 'login'"
-          class="text-center text-xs text-gray-500 dark:text-gray-500 mt-3"
-        >
-          <UiButton variant="link" color="primary" @click="startRecovery"
-            >Forgot password?</UiButton
-          >
+        <p v-if="mode === 'login'" class="text-center text-xs text-gray-500 dark:text-gray-500 mt-3">
+          <UiButton variant="link" color="primary" @click="startRecovery">Forgot password?</UiButton>
         </p>
       </template>
 
@@ -113,14 +100,13 @@
         <UiAlert color="red" icon="mdi:database-remove-outline" bordered class="mb-4">
           <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">
             Password recovery will
-            <span class="font-semibold">permanently delete all your encrypted notes</span>. They
-            cannot be decrypted without the original password.
+            <span class="font-semibold">permanently delete all your encrypted notes</span>. They cannot be decrypted
+            without the original password.
           </p>
         </UiAlert>
 
         <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
-          Enter your email address. If password recovery is enabled on your account, you'll receive
-          a code.
+          Enter your email address. If password recovery is enabled on your account, you'll receive a code.
         </p>
 
         <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
@@ -168,20 +154,13 @@
               placeholder="000000"
             />
           </UiFormField>
-          <UiButton
-            native-type="submit"
-            :disabled="loading || otpCode.length !== 6"
-            :loading="loading"
-            block
-          >
+          <UiButton native-type="submit" :disabled="loading || otpCode.length !== 6" :loading="loading" block>
             Verify Code
           </UiButton>
         </form>
 
         <p class="text-center text-xs text-gray-500 dark:text-gray-500 mt-3">
-          <UiButton variant="link" color="primary" @click="step = 'recovery-email'"
-            >Use a different email</UiButton
-          >
+          <UiButton variant="link" color="primary" @click="step = 'recovery-email'">Use a different email</UiButton>
         </p>
       </template>
 
@@ -189,14 +168,10 @@
       <template v-else-if="step === 'recovery-newpass'">
         <!-- Prominent destruction warning -->
         <UiAlert color="red" icon="mdi:database-remove-outline" bordered size="md" class="mb-4">
-          <p class="text-xs font-semibold text-red-800 dark:text-red-200">
-            All your notes will be permanently deleted
-          </p>
+          <p class="text-xs font-semibold text-red-800 dark:text-red-200">All your notes will be permanently deleted</p>
           <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">
-            Your notes are encrypted with your current password. Resetting it means the encryption
-            key is lost —
-            <span class="font-semibold">every note will be irreversibly destroyed</span>. This
-            cannot be undone.
+            Your notes are encrypted with your current password. Resetting it means the encryption key is lost —
+            <span class="font-semibold">every note will be irreversibly destroyed</span>. This cannot be undone.
           </p>
         </UiAlert>
 
@@ -234,12 +209,7 @@
           <UiButton
             native-type="submit"
             color="red"
-            :disabled="
-              loading ||
-              !newPassword ||
-              newPassword.length < 8 ||
-              newPassword !== confirmNewPassword
-            "
+            :disabled="loading || !newPassword || newPassword.length < 8 || newPassword !== confirmNewPassword"
             :loading="loading"
             block
           >
@@ -258,14 +228,7 @@ const props = defineProps({
   error: { type: String, default: null },
 })
 
-const emit = defineEmits([
-  'close',
-  'login',
-  'register',
-  'forgot-password',
-  'verify-recovery',
-  'reset-password',
-])
+const emit = defineEmits(['close', 'login', 'register', 'forgot-password', 'verify-recovery', 'reset-password'])
 
 const step = ref('auth') // 'auth' | 'recovery-email' | 'recovery-otp' | 'recovery-newpass'
 const mode = ref('login')
@@ -282,9 +245,7 @@ const newPassword = ref('')
 const confirmNewPassword = ref('')
 
 const passwordMismatch = computed(() => {
-  return (
-    mode.value === 'register' && confirmPassword.value && password.value !== confirmPassword.value
-  )
+  return mode.value === 'register' && confirmPassword.value && password.value !== confirmPassword.value
 })
 
 const headerTitle = computed(() => {

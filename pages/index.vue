@@ -137,11 +137,7 @@
           leave-from-class="opacity-100"
           leave-to-class="opacity-0"
         >
-          <div
-            v-if="showSidebar"
-            class="fixed inset-0 bg-black/50 z-20 lg:hidden"
-            @click="showSidebar = false"
-          />
+          <div v-if="showSidebar" class="fixed inset-0 bg-black/50 z-20 lg:hidden" @click="showSidebar = false" />
         </Transition>
         <Transition
           enter-active-class="transition-transform duration-300 ease-out"
@@ -259,17 +255,12 @@
             <div
               class="mx-auto w-16 h-16 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center"
             >
-              <Icon
-                name="mdi:file-document-outline"
-                class="w-8 h-8 text-primary-500 dark:text-primary-400"
-              />
+              <Icon name="mdi:file-document-outline" class="w-8 h-8 text-primary-500 dark:text-primary-400" />
             </div>
 
             <!-- Heading + subtext -->
             <div class="space-y-2">
-              <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                No note selected
-              </h2>
+              <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">No note selected</h2>
               <p class="text-sm text-gray-500 dark:text-gray-400">
                 Pick an existing note from the sidebar or start fresh with a new one.
               </p>
@@ -281,13 +272,7 @@
                 <Icon name="mdi:plus" class="w-5 h-5" />
                 Create new note
               </UiButton>
-              <UiButton
-                variant="outline"
-                color="white"
-                size="lg"
-                class="w-full sm:w-auto"
-                @click="showSidebar = true"
-              >
+              <UiButton variant="outline" color="white" size="lg" class="w-full sm:w-auto" @click="showSidebar = true">
                 <Icon name="mdi:menu" class="w-5 h-5" />
                 Browse notes
               </UiButton>
@@ -352,16 +337,8 @@
     />
 
     <HelpModal :is-open="showHelp" :mod-label="modLabel" @close="showHelp = false" />
-    <AboutModal
-      :is-open="showAbout"
-      :check-for-update="sw.checkForUpdate"
-      @close="showAbout = false"
-    />
-    <TemplatesModal
-      :is-open="showTemplates"
-      @close="showTemplates = false"
-      @insert="insertTemplate"
-    />
+    <AboutModal :is-open="showAbout" :check-for-update="sw.checkForUpdate" @close="showAbout = false" />
+    <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
     <SettingsModal
       :is-open="showLocaleSettings"
@@ -489,9 +466,7 @@
     <AddToGroupModal
       :is-open="showAddToGroupModal"
       :groups="groups"
-      :current-group-id="
-        addToGroupNoteId ? notes.find((n) => n.id === addToGroupNoteId)?.groupId || null : null
-      "
+      :current-group-id="addToGroupNoteId ? notes.find((n) => n.id === addToGroupNoteId)?.groupId || null : null"
       @close="
         showAddToGroupModal = false
         bulkGroupNoteIds = null
@@ -657,13 +632,7 @@ _onSessionRevoked = async () => {
   // Then clean up IndexedDB (async)
   await db.notes.clear()
   await db.groups.clear()
-  await db.appState.bulkDelete([
-    'auth_token',
-    'enc_key',
-    'deleted_note_ids',
-    'deleted_group_ids',
-    'last_synced_at',
-  ])
+  await db.appState.bulkDelete(['auth_token', 'enc_key', 'deleted_note_ids', 'deleted_group_ids', 'last_synced_at'])
 }
 const sw = useServiceWorker()
 

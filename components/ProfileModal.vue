@@ -1,11 +1,5 @@
 <template>
-  <UiModal
-    :show="isOpen"
-    max-width="md"
-    padding="p-2 sm:p-4"
-    panel-class="max-h-[85vh]"
-    @close="$emit('close')"
-  >
+  <UiModal :show="isOpen" max-width="md" padding="p-2 sm:p-4" panel-class="max-h-[85vh]" @close="$emit('close')">
     <!-- Header -->
     <div
       class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0"
@@ -26,13 +20,7 @@
           {{ activeSection === 'main' ? 'Profile' : sectionTitle }}
         </h2>
       </div>
-      <UiButton
-        variant="ghost"
-        color="gray"
-        icon-only
-        class="flex-shrink-0"
-        @click="$emit('close')"
-      >
+      <UiButton variant="ghost" color="gray" icon-only class="flex-shrink-0" @click="$emit('close')">
         <Icon name="mdi:close" class="block w-5 h-5" />
       </UiButton>
     </div>
@@ -121,9 +109,7 @@
             <p class="text-lg font-semibold text-gray-900 dark:text-gray-200 leading-none">
               {{ user?.stats?.notesCount ?? '—' }}
             </p>
-            <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">
-              Notes
-            </p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Notes</p>
           </UiButton>
           <UiButton
             variant="ghost"
@@ -138,9 +124,7 @@
             <p class="text-lg font-semibold text-gray-900 dark:text-gray-200 leading-none">
               {{ user?.stats?.sharedCount ?? '—' }}
             </p>
-            <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">
-              Shared
-            </p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Shared</p>
           </UiButton>
           <UiButton
             variant="ghost"
@@ -152,14 +136,10 @@
               name="mdi:cloud-sync-outline"
               class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors"
             />
-            <p
-              class="text-sm font-semibold text-gray-900 dark:text-gray-200 leading-snug break-words capitalize"
-            >
+            <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 leading-snug break-words capitalize">
               {{ lastSyncedAt ? formatDate(lastSyncedAt) : '—' }}
             </p>
-            <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">
-              Synced
-            </p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Synced</p>
           </UiButton>
         </div>
 
@@ -179,9 +159,7 @@
           <UiButtonsListItem icon="mdi:shield-lock-outline" @click="activeSection = 'security'"
             >Security</UiButtonsListItem
           >
-          <UiButtonsListItem icon="mdi:devices" @click="openSessionsSection"
-            >Active Sessions</UiButtonsListItem
-          >
+          <UiButtonsListItem icon="mdi:devices" @click="openSessionsSection">Active Sessions</UiButtonsListItem>
           <!-- Privacy toggle inline -->
           <UiButtonsListItem
             icon="mdi:shield-account-outline"
@@ -192,20 +170,11 @@
             <div class="flex-1 min-w-0">
               <span>Privacy protection</span>
               <p class="text-[11px] text-gray-400 dark:text-gray-500 leading-tight mt-0.5">
-                {{
-                  privacyNoTracking
-                    ? 'Identity hidden on shared notes'
-                    : 'Sharers can see your name & device'
-                }}
+                {{ privacyNoTracking ? 'Identity hidden on shared notes' : 'Sharers can see your name & device' }}
               </p>
             </div>
             <template #suffix>
-              <UiToggle
-                :model-value="privacyNoTracking"
-                :disabled="savingPrivacy"
-                size="sm"
-                readonly
-              />
+              <UiToggle :model-value="privacyNoTracking" :disabled="savingPrivacy" size="sm" readonly />
             </template>
           </UiButtonsListItem>
         </UiButtonsList>
@@ -236,9 +205,7 @@
       <!-- ═══ Avatar Editor ═══ -->
       <div v-else-if="activeSection === 'avatar'" class="space-y-4">
         <div v-if="!avatarImageSrc" class="text-center space-y-3">
-          <div
-            class="w-24 h-24 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
-          >
+          <div class="w-24 h-24 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
             <Icon name="mdi:image-plus" class="w-10 h-10 text-gray-400" />
           </div>
           <p class="text-sm text-gray-600 dark:text-gray-400">Choose an image for your avatar</p>
@@ -263,22 +230,12 @@
         </div>
 
         <div v-else class="space-y-3">
-          <AvatarEditor
-            :image-source="avatarImageSrc"
-            :canvas-size="editorCanvasSize"
-            @update="onAvatarCropped"
-          />
+          <AvatarEditor :image-source="avatarImageSrc" :canvas-size="editorCanvasSize" @update="onAvatarCropped" />
           <div class="flex gap-2">
             <UiButton variant="solid" color="gray" class="flex-1" @click="avatarImageSrc = null">
               Choose Different
             </UiButton>
-            <UiButton
-              variant="solid"
-              color="primary"
-              :loading="saving"
-              class="flex-1"
-              @click="saveAvatar"
-            >
+            <UiButton variant="solid" color="primary" :loading="saving" class="flex-1" @click="saveAvatar">
               Save Avatar
             </UiButton>
           </div>
@@ -293,9 +250,7 @@
         <UiFormField label="Email">
           <UiInput v-model="editEmail" type="email" placeholder="you@example.com" />
         </UiFormField>
-        <UiButton variant="solid" color="primary" block :loading="saving" @click="saveProfile">
-          Save Changes
-        </UiButton>
+        <UiButton variant="solid" color="primary" block :loading="saving" @click="saveProfile"> Save Changes </UiButton>
       </div>
 
       <!-- ═══ Change Password ═══ -->
@@ -334,12 +289,7 @@
           color="primary"
           block
           :loading="saving"
-          :disabled="
-            !currentPassword ||
-            !newPassword ||
-            newPassword !== confirmNewPassword ||
-            newPassword.length < 8
-          "
+          :disabled="!currentPassword || !newPassword || newPassword !== confirmNewPassword || newPassword.length < 8"
           @click="savePassword"
         >
           Update Password
@@ -348,9 +298,7 @@
 
       <!-- ═══ Security ═══ -->
       <div v-else-if="activeSection === 'security'" class="space-y-4">
-        <p class="text-xs text-gray-500 dark:text-gray-500">
-          Manage security settings for your account.
-        </p>
+        <p class="text-xs text-gray-500 dark:text-gray-500">Manage security settings for your account.</p>
 
         <!-- Password recovery toggle -->
         <div class="px-3 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 space-y-2">
@@ -363,16 +311,9 @@
           >
             <div class="flex items-center gap-2 min-w-0">
               <Icon name="mdi:email-lock-outline" class="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span class="text-sm text-gray-700 dark:text-gray-300 truncate"
-                >Password recovery by email</span
-              >
+              <span class="text-sm text-gray-700 dark:text-gray-300 truncate">Password recovery by email</span>
             </div>
-            <UiToggle
-              :model-value="passwordRecoveryEnabled"
-              :disabled="savingSecurity"
-              size="sm"
-              readonly
-            />
+            <UiToggle :model-value="passwordRecoveryEnabled" :disabled="savingSecurity" size="sm" readonly />
           </UiButton>
           <p class="text-xs text-gray-500 dark:text-gray-500">
             {{
@@ -388,9 +329,7 @@
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
               <Icon name="mdi:timer-outline" class="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span class="text-sm text-gray-700 dark:text-gray-300 truncate"
-                >Session duration</span
-              >
+              <span class="text-sm text-gray-700 dark:text-gray-300 truncate">Session duration</span>
             </div>
             <UiSelect
               :model-value="sessionDuration"
@@ -411,8 +350,7 @@
             />
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-500">
-            How long you stay logged in. Shorter sessions are more secure. Changes apply on next
-            login.
+            How long you stay logged in. Shorter sessions are more secure. Changes apply on next login.
           </p>
         </div>
 
@@ -422,30 +360,25 @@
           <UiAlert color="amber" icon="mdi:shield-alert-outline" bordered size="md">
             <p class="font-semibold text-amber-800 dark:text-amber-200">Account access risk</p>
             <p class="text-amber-700 dark:text-amber-300 leading-relaxed">
-              Anyone with access to your email inbox can trigger a password reset and take over your
-              account. If your email is compromised, your Numori account is too.
+              Anyone with access to your email inbox can trigger a password reset and take over your account. If your
+              email is compromised, your Numori account is too.
             </p>
           </UiAlert>
 
           <!-- Data destruction warning -->
           <UiAlert color="red" icon="mdi:database-remove-outline" bordered size="md">
-            <p class="font-semibold text-red-800 dark:text-red-200">
-              All notes destroyed on recovery
-            </p>
+            <p class="font-semibold text-red-800 dark:text-red-200">All notes destroyed on recovery</p>
             <p class="text-red-700 dark:text-red-300 leading-relaxed">
-              Your notes are end-to-end encrypted with your password. A password reset means the
-              encryption key is lost forever —
-              <span class="font-semibold"
-                >all notes will be permanently and irreversibly deleted</span
-              >.
+              Your notes are end-to-end encrypted with your password. A password reset means the encryption key is lost
+              forever —
+              <span class="font-semibold">all notes will be permanently and irreversibly deleted</span>.
             </p>
           </UiAlert>
 
           <!-- Recommendation -->
           <p class="text-xs text-gray-500 dark:text-gray-500 px-1 leading-relaxed">
             <Icon name="mdi:information-outline" class="w-3 h-3 inline -mt-0.5 mr-0.5" />
-            For maximum security, keep password recovery disabled and store your password in a
-            password manager.
+            For maximum security, keep password recovery disabled and store your password in a password manager.
           </p>
         </div>
       </div>
@@ -471,34 +404,24 @@
         >
           <div class="flex gap-2.5">
             <Icon
-              :name="
-                confirmingAction === 'data'
-                  ? 'mdi:database-remove-outline'
-                  : 'mdi:account-remove-outline'
-              "
+              :name="confirmingAction === 'data' ? 'mdi:database-remove-outline' : 'mdi:account-remove-outline'"
               class="w-5 h-5 flex-shrink-0 mt-0.5"
               :class="
-                confirmingAction === 'data'
-                  ? 'text-amber-600 dark:text-amber-400'
-                  : 'text-red-600 dark:text-red-400'
+                confirmingAction === 'data' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
               "
             />
             <div class="text-xs space-y-1.5">
               <p
                 class="font-semibold"
                 :class="
-                  confirmingAction === 'data'
-                    ? 'text-amber-800 dark:text-amber-200'
-                    : 'text-red-800 dark:text-red-200'
+                  confirmingAction === 'data' ? 'text-amber-800 dark:text-amber-200' : 'text-red-800 dark:text-red-200'
                 "
               >
                 {{ confirmingAction === 'data' ? 'Reset account data?' : 'Delete your account?' }}
               </p>
               <p
                 :class="
-                  confirmingAction === 'data'
-                    ? 'text-amber-700 dark:text-amber-300'
-                    : 'text-red-700 dark:text-red-300'
+                  confirmingAction === 'data' ? 'text-amber-700 dark:text-amber-300' : 'text-red-700 dark:text-red-300'
                 "
                 class="leading-relaxed"
               >
@@ -511,14 +434,7 @@
             </div>
           </div>
           <div class="flex gap-2">
-            <UiButton
-              variant="outline"
-              color="gray"
-              class="flex-1"
-              @click="confirmingAction = null"
-            >
-              Cancel
-            </UiButton>
+            <UiButton variant="outline" color="gray" class="flex-1" @click="confirmingAction = null"> Cancel </UiButton>
             <UiButton
               variant="solid"
               :color="confirmingAction === 'data' ? 'amber' : 'red'"
@@ -544,8 +460,8 @@
             Delete All Data
           </UiButton>
           <p class="text-xs text-gray-500 dark:text-gray-500">
-            Resets your account as if newly created. All notes, shared notes, and related data are
-            permanently deleted with no possibility of recovery.
+            Resets your account as if newly created. All notes, shared notes, and related data are permanently deleted
+            with no possibility of recovery.
           </p>
           <UiButton
             variant="solid"
@@ -599,17 +515,11 @@
                   <Icon
                     :name="getDeviceIcon(s.deviceName)"
                     class="w-4 h-4 flex-shrink-0"
-                    :class="
-                      s.isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400'
-                    "
+                    :class="s.isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400'"
                   />
                   <p
                     class="text-sm font-medium truncate"
-                    :class="
-                      s.isCurrent
-                        ? 'text-primary-700 dark:text-primary-300'
-                        : 'text-gray-900 dark:text-gray-200'
-                    "
+                    :class="s.isCurrent ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-200'"
                   >
                     {{ s.deviceName || 'Unknown device' }}
                   </p>
@@ -621,10 +531,7 @@
                   </span>
                 </div>
                 <div class="mt-1 space-y-0.5">
-                  <p
-                    v-if="s.location || s.ipAddress"
-                    class="text-xs text-gray-500 dark:text-gray-500 truncate"
-                  >
+                  <p v-if="s.location || s.ipAddress" class="text-xs text-gray-500 dark:text-gray-500 truncate">
                     {{ s.location || s.ipAddress }}
                   </p>
                   <p class="text-xs text-gray-400 dark:text-gray-600">
@@ -653,10 +560,7 @@
           </div>
 
           <div v-if="!sessions.length" class="text-center py-8">
-            <Icon
-              name="mdi:devices"
-              class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"
-            />
+            <Icon name="mdi:devices" class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
             <p class="text-sm text-gray-500 dark:text-gray-500">No active sessions</p>
           </div>
         </template>
@@ -717,10 +621,7 @@
                 title="Copy link"
                 @click="copySharedLink(sn.hash)"
               >
-                <Icon
-                  :name="copiedHash === sn.hash ? 'mdi:check' : 'mdi:content-copy'"
-                  class="w-4 h-4"
-                />
+                <Icon :name="copiedHash === sn.hash ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" />
               </UiButton>
               <UiButton
                 variant="ghost"
@@ -748,10 +649,7 @@
           </div>
         </template>
         <div v-else class="text-center py-8">
-          <Icon
-            name="mdi:share-variant-outline"
-            class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"
-          />
+          <Icon name="mdi:share-variant-outline" class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
           <p class="text-sm text-gray-500 dark:text-gray-500">No shared notes</p>
         </div>
       </div>
@@ -1057,8 +955,7 @@ const handleUnshare = async (hash) => {
 }
 
 const handlePurge = async (hash) => {
-  if (!confirm('Permanently delete this shared note and all its analytics? This cannot be undone.'))
-    return
+  if (!confirm('Permanently delete this shared note and all its analytics? This cannot be undone.')) return
   try {
     await apiFetch(`/api/share/${hash}?purge=true`, {
       method: 'DELETE',

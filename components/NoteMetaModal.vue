@@ -2,9 +2,7 @@
   <UiModal :show="isOpen" max-width="md" @close="$emit('close')">
     <div class="p-4">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">
-          Note Details
-        </h2>
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">Note Details</h2>
         <UiButton variant="ghost" color="gray" icon-only @click="$emit('close')">
           <Icon name="mdi:close" class="block w-5 h-5" />
         </UiButton>
@@ -36,9 +34,7 @@
         </UiFormField>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
-            Tags
-          </label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1"> Tags </label>
           <div v-if="localTags.length" class="flex flex-wrap gap-1.5 mb-2">
             <UiBadge v-for="(tag, i) in localTags" :key="i">
               {{ tag }}
@@ -54,9 +50,7 @@
               placeholder="e.g. work, ideas, urgent"
               :validate="false"
               @keydown.enter.prevent="addTags"
-              @keydown.backspace="
-                tagInput === '' && localTags.length && removeTag(localTags.length - 1)
-              "
+              @keydown.backspace="tagInput === '' && localTags.length && removeTag(localTags.length - 1)"
               @update:model-value="onTagInput"
             />
             <div
@@ -98,27 +92,15 @@
             />
             <span
               class="text-sm"
-              :class="
-                props.shared
-                  ? 'text-primary-700 dark:text-primary-300'
-                  : 'text-gray-600 dark:text-gray-400'
-              "
+              :class="props.shared ? 'text-primary-700 dark:text-primary-300' : 'text-gray-600 dark:text-gray-400'"
             >
               {{ props.shared ? 'This note is shared' : 'Not shared' }}
             </span>
           </div>
-          <UiButton
-            v-if="props.shared"
-            variant="ghost"
-            color="red"
-            size="xs"
-            @click="emit('unshare', props.noteId)"
-          >
+          <UiButton v-if="props.shared" variant="ghost" color="red" size="xs" @click="emit('unshare', props.noteId)">
             Stop sharing
           </UiButton>
-          <UiButton v-else variant="ghost" size="xs" @click="emit('share', props.noteId)">
-            Share
-          </UiButton>
+          <UiButton v-else variant="ghost" size="xs" @click="emit('share', props.noteId)"> Share </UiButton>
         </div>
         <div v-if="props.shared && props.shareHash" class="flex items-center gap-2 mt-2">
           <UiInput :model-value="shareUrl" readonly :validate="false" />
@@ -139,9 +121,7 @@
       </div>
 
       <div class="flex justify-between gap-2 mt-6">
-        <UiButton v-if="noteId" variant="ghost" color="red" @click="handleDelete">
-          Delete
-        </UiButton>
+        <UiButton v-if="noteId" variant="ghost" color="red" @click="handleDelete"> Delete </UiButton>
         <div class="flex-1" />
         <UiButton variant="ghost" color="gray" @click="$emit('close')"> Cancel </UiButton>
         <UiButton @click="save"> Save </UiButton>
@@ -186,13 +166,7 @@ const copiedLink = ref(false)
 // If the user edits the title, always regenerate (back to step 1).
 watch(localTitle, (val) => {
   internalNameManuallyEdited.value = false
-  localInternalName.value = uniqueInternalName(
-    val,
-    [],
-    'untitled_note',
-    props.noteId,
-    props.allNotes,
-  )
+  localInternalName.value = uniqueInternalName(val, [], 'untitled_note', props.noteId, props.allNotes)
 })
 
 const shareUrl = computed(() => {
@@ -214,8 +188,7 @@ watch(
     if (open) {
       localTitle.value = props.title
       localInternalName.value =
-        props.internalName ||
-        uniqueInternalName(props.title, [], 'untitled_note', props.noteId, props.allNotes)
+        props.internalName || uniqueInternalName(props.title, [], 'untitled_note', props.noteId, props.allNotes)
       internalNameManuallyEdited.value = false
       localDescription.value = props.description
       localTags.value = [...props.tags]
@@ -261,13 +234,7 @@ const save = () => {
   const rawName = internalNameManuallyEdited.value
     ? normaliseName(localInternalName.value)
     : normaliseName(localTitle.value)
-  const finalInternalName = uniqueInternalName(
-    rawName,
-    [],
-    'untitled_note',
-    props.noteId,
-    props.allNotes,
-  )
+  const finalInternalName = uniqueInternalName(rawName, [], 'untitled_note', props.noteId, props.allNotes)
   emit('save', {
     title: localTitle.value,
     internalName: finalInternalName,

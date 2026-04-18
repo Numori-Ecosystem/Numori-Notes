@@ -36,6 +36,9 @@ export default withNuxt(
       ],
       'no-unused-vars': 'off', // defer to the TS rule above
 
+      // ── Template safety (catch Prettier-broken templates) ─────────
+      'vue/no-parsing-error': 'error',
+
       // ── Formatting (let Prettier handle these) ────────────────────
       'vue/first-attribute-linebreak': 'off',
       'vue/max-attributes-per-line': 'off',
