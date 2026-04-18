@@ -667,35 +667,35 @@
                   <div class="space-y-2">
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">New Note</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">{{ modLabel }}+⇧+N</kbd>
+                      <UiKbd>{{ modLabel }}+⇧+N</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Open File</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">{{ modLabel }}+O</kbd>
+                      <UiKbd>{{ modLabel }}+O</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Save (auto-saved)</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">{{ modLabel }}+S</kbd>
+                      <UiKbd>{{ modLabel }}+S</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Duplicate Note</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">{{ modLabel }}+D</kbd>
+                      <UiKbd>{{ modLabel }}+D</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Export as Text</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">{{ modLabel }}+E</kbd>
+                      <UiKbd>{{ modLabel }}+E</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Print</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">{{ modLabel }}+P</kbd>
+                      <UiKbd>{{ modLabel }}+P</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Show Help</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">{{ modLabel }}+H</kbd>
+                      <UiKbd>{{ modLabel }}+H</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Export All Notes</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">{{ modLabel }}+⇧+S</kbd>
+                      <UiKbd>{{ modLabel }}+⇧+S</UiKbd>
                     </div>
                   </div>
                 </div>
@@ -704,15 +704,15 @@
                   <div class="space-y-2">
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">{{ $t('shortcuts.newLine') }}</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">Enter</kbd>
+                      <UiKbd>Enter</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">{{ $t('shortcuts.moveUp') }}</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">↑</kbd>
+                      <UiKbd>↑</UiKbd>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">{{ $t('shortcuts.moveDown') }}</span>
-                      <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">↓</kbd>
+                      <UiKbd>↓</UiKbd>
                     </div>
                   </div>
                 </div>
@@ -723,42 +723,42 @@
                       <span class="text-sm text-gray-700 dark:text-gray-400">Square root</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">sqrt(16)</kbd>
+                        <UiKbd>sqrt(16)</UiKbd>
                       </div>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Power/Exponent</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">2^8</kbd>
+                        <UiKbd>2^8</UiKbd>
                       </div>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Percentage</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">20% of 100</kbd>
+                        <UiKbd>20% of 100</UiKbd>
                       </div>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Previous result</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">prev</kbd>
+                        <UiKbd>prev</UiKbd>
                       </div>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Sum all above</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">sum</kbd>
+                        <UiKbd>sum</UiKbd>
                       </div>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Subtract from first</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">sub</kbd>
+                        <UiKbd>sub</UiKbd>
                       </div>
                     </div>
                   </div>
@@ -770,28 +770,28 @@
                       <span class="text-sm text-gray-700 dark:text-gray-400">Currency conversion</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">$100 in EUR</kbd>
+                        <UiKbd>$100 in EUR</UiKbd>
                       </div>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Unit conversion</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">100 kg in lbs</kbd>
+                        <UiKbd>100 kg in lbs</UiKbd>
                       </div>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Date arithmetic</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">today + 2 weeks</kbd>
+                        <UiKbd>today + 2 weeks</UiKbd>
                       </div>
                     </div>
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
                       <span class="text-sm text-gray-700 dark:text-gray-400">Number format</span>
                       <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500 dark:text-gray-400-muted">Type:</span>
-                        <kbd class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-gray-900 dark:text-gray-400">255 in hex</kbd>
+                        <UiKbd>255 in hex</UiKbd>
                       </div>
                     </div>
                   </div>

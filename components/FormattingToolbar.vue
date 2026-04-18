@@ -18,7 +18,7 @@
         title="Redo">
         <Icon name="mdi:redo" class="w-5 h-5 block" />
       </UiButton>
-      <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-1"></div>
+      <UiDivider direction="vertical" />
     </div>
 
     <!-- Scrollable format buttons (middle) -->
@@ -37,7 +37,7 @@
         <Icon :name="btn.icon" class="w-5 h-5 block" />
       </UiButton>
       <!-- Separator -->
-      <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-1 flex-shrink-0"></div>
+      <UiDivider direction="vertical" class="flex-shrink-0" />
       <!-- Indent / Outdent -->
       <UiButton @mousedown.prevent @click="$emit('indent')"
         variant="ghost" color="gray" icon-only class="flex-shrink-0"
@@ -53,7 +53,7 @@
 
     <!-- Dismiss keyboard (pinned right, optional) -->
     <div v-if="showDismiss" class="flex items-center flex-shrink-0">
-      <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-1"></div>
+      <UiDivider direction="vertical" />
       <UiButton @mousedown.prevent @click="$emit('dismiss-keyboard')"
         variant="ghost" color="gray" icon-only
         title="Dismiss keyboard">

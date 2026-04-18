@@ -12,21 +12,16 @@
         Enter the 6-digit code sent to your email address.
       </p>
 
-      <div v-if="error" class="mb-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
-        {{ error }}
-      </div>
+      <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
-      <div v-if="success" class="mb-3 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-xs">
-        {{ success }}
-      </div>
+      <UiAlert v-if="success" color="green" class="mb-3">{{ success }}</UiAlert>
 
       <form @submit.prevent="handleVerify" class="space-y-3">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Verification Code</label>
+        <UiFormField label="Verification Code">
           <UiInput v-model="code" type="text" required :maxlength="6" pattern="[0-9]{6}"
             validation-pattern="^[0-9]{6}$" validation-message="Enter a 6-digit code"
             placeholder="000000" />
-        </div>
+        </UiFormField>
         <UiButton native-type="submit" block :loading="loading" :disabled="loading || code.length !== 6">
           Verify
         </UiButton>

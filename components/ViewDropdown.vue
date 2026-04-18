@@ -28,7 +28,7 @@
       </UiButton>
     </div>
 
-    <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+    <UiDivider />
 
     <div class="px-3 pt-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Markdown</div>
 
@@ -41,7 +41,7 @@
       <span>{{ opt.label }}</span>
     </UiButton>
 
-    <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+    <UiDivider />
 
     <!-- Theme toggle -->
     <UiButton @click="toggleTheme" variant="menu-item">
@@ -54,13 +54,13 @@
       </span>
     </UiButton>
 
-    <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+    <UiDivider />
 
     <UiDropdownItem icon="mdi:file-document-outline" label="Templates" @click="action('templates')" />
     <UiDropdownItem icon="mdi:help-circle-outline" label="Help" @click="action('help')" />
     <UiDropdownItem icon="mdi:information-outline" label="About" @click="action('about')" />
 
-    <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+    <UiDivider />
 
     <UiButton @click="handleCheckUpdate" :disabled="updateChecking" variant="menu-item"
       class="disabled:opacity-50">

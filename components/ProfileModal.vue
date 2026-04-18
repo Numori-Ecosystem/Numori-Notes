@@ -24,12 +24,9 @@
 
               <!-- Feedback message -->
               <Transition enter-active-class="transition duration-200" enter-from-class="opacity-0 -translate-y-1" leave-active-class="transition duration-150" leave-to-class="opacity-0">
-                <div v-if="feedback" class="mb-3 px-3 py-2 rounded-lg text-xs"
-                  :class="feedbackType === 'error'
-                    ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                    : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'">
+                <UiAlert v-if="feedback" :color="feedbackType === 'error' ? 'red' : 'green'" class="mb-3">
                   {{ feedback }}
-                </div>
+                </UiAlert>
               </Transition>
 
               <!-- ═══ Main section ═══ -->
@@ -154,14 +151,12 @@
 
               <!-- ═══ Edit Profile ═══ -->
               <div v-else-if="activeSection === 'edit'" class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Name</label>
+                <UiFormField label="Name">
                   <UiInput v-model="editName" type="text" placeholder="Your name" :validate="false" />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Email</label>
+                </UiFormField>
+                <UiFormField label="Email">
                   <UiInput v-model="editEmail" type="email" placeholder="you@example.com" />
-                </div>
+                </UiFormField>
                 <UiButton variant="solid" color="primary" block :loading="saving" @click="saveProfile">
                   Save Changes
                 </UiButton>
@@ -172,18 +167,16 @@
                 <p class="text-xs text-gray-500 dark:text-gray-500">
                   Changing your password will re-encrypt all your notes. This may take a moment.
                 </p>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Current Password</label>
+                <UiFormField label="Current Password">
                   <UiInput v-model="currentPassword" type="password" :validate="false" />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">New Password</label>
+                </UiFormField>
+                <UiFormField label="New Password" hint="At least 8 characters">
                   <UiInput v-model="newPassword" type="password" :minlength="8" :validate="false" />
-                  <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">At least 8 characters</p>
-                </div>
+                </UiFormField>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Confirm New Password</label>
-                  <UiInput v-model="confirmNewPassword" type="password" :validate="false" />
+                  <UiFormField label="Confirm New Password">
+                    <UiInput v-model="confirmNewPassword" type="password" :validate="false" />
+                  </UiFormField>
                   <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
                 </div>
 
@@ -245,26 +238,16 @@
                 <!-- Warning about recovery -->
                 <div class="space-y-2">
                   <!-- Account access risk -->
-                  <div class="px-3 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                    <div class="flex gap-2.5">
-                      <Icon name="mdi:shield-alert-outline" class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                      <div class="text-xs space-y-1.5">
-                        <p class="font-semibold text-amber-800 dark:text-amber-200">Account access risk</p>
-                        <p class="text-amber-700 dark:text-amber-300 leading-relaxed">Anyone with access to your email inbox can trigger a password reset and take over your account. If your email is compromised, your Numori account is too.</p>
-                      </div>
-                    </div>
-                  </div>
+                  <UiAlert color="amber" icon="mdi:shield-alert-outline" bordered size="md">
+                    <p class="font-semibold text-amber-800 dark:text-amber-200">Account access risk</p>
+                    <p class="text-amber-700 dark:text-amber-300 leading-relaxed">Anyone with access to your email inbox can trigger a password reset and take over your account. If your email is compromised, your Numori account is too.</p>
+                  </UiAlert>
 
                   <!-- Data destruction warning -->
-                  <div class="px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800">
-                    <div class="flex gap-2.5">
-                      <Icon name="mdi:database-remove-outline" class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                      <div class="text-xs space-y-1.5">
-                        <p class="font-semibold text-red-800 dark:text-red-200">All notes destroyed on recovery</p>
-                        <p class="text-red-700 dark:text-red-300 leading-relaxed">Your notes are end-to-end encrypted with your password. A password reset means the encryption key is lost forever — <span class="font-semibold">all notes will be permanently and irreversibly deleted</span>.</p>
-                      </div>
-                    </div>
-                  </div>
+                  <UiAlert color="red" icon="mdi:database-remove-outline" bordered size="md">
+                    <p class="font-semibold text-red-800 dark:text-red-200">All notes destroyed on recovery</p>
+                    <p class="text-red-700 dark:text-red-300 leading-relaxed">Your notes are end-to-end encrypted with your password. A password reset means the encryption key is lost forever — <span class="font-semibold">all notes will be permanently and irreversibly deleted</span>.</p>
+                  </UiAlert>
 
                   <!-- Recommendation -->
                   <p class="text-xs text-gray-500 dark:text-gray-500 px-1 leading-relaxed">
@@ -279,10 +262,9 @@
                 <p class="text-xs text-gray-500 dark:text-gray-500">
                   These actions are irreversible. Your password is required to confirm.
                 </p>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Confirm Password</label>
+                <UiFormField label="Confirm Password">
                   <UiInput v-model="dangerPassword" type="password" :validate="false" />
-                </div>
+                </UiFormField>
 
                 <!-- Confirmation prompt -->
                 <div v-if="confirmingAction" class="rounded-lg border p-4 space-y-3"

@@ -64,7 +64,6 @@
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">Region, language, and format preferences</p>
                     <div class="space-y-5 pl-1">
-                      <!-- Preset -->
                       <div>
                         <label :class="labelClass">Preset</label>
                         <div class="grid grid-cols-3 gap-2">
@@ -80,15 +79,13 @@
                         <p v-if="activePreset === 'Custom'" class="mt-1 text-xs text-gray-500 dark:text-gray-400-muted">Custom settings — doesn't match any preset</p>
                       </div>
                       <!-- Language -->
-                      <div>
-                        <label :class="labelClass">Language</label>
+                      <UiFormField label="Language">
                         <UiSelect :model-value="currentLocaleCode" searchable
                           @update:model-value="changeLocale($event)"
                           :options="availableLocales.map(l => ({ value: l.code, label: getLanguageEmoji(l.code) + ' ' + l.name }))" />
-                      </div>
+                      </UiFormField>
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label :class="labelClass">Volume</label>
+                        <UiFormField label="Volume">
                           <UiSelect :model-value="preferences.volume"
                             @update:model-value="preferences.volume = $event; onSettingChange()"
                             :options="[
@@ -96,9 +93,8 @@
                               { value: 'us_gallon', label: 'US Gallons' },
                               { value: 'uk_gallon', label: 'UK Gallons (Imperial)' },
                             ]" />
-                        </div>
-                        <div>
-                          <label :class="labelClass">Fuel Economy</label>
+                        </UiFormField>
+                        <UiFormField label="Fuel Economy">
                           <UiSelect :model-value="preferences.fuelEconomy"
                             @update:model-value="preferences.fuelEconomy = $event; onSettingChange()"
                             :options="[
@@ -109,18 +105,16 @@
                               { value: 'mpl', label: 'Miles per litre' },
                               { value: 'kpg', label: 'Km per gallon (US)' },
                             ]" />
-                        </div>
-                        <div>
-                          <label :class="labelClass">Distance</label>
+                        </UiFormField>
+                        <UiFormField label="Distance">
                           <UiSelect :model-value="preferences.distance"
                             @update:model-value="preferences.distance = $event; onSettingChange()"
                             :options="[
                               { value: 'km', label: 'Kilometres' },
                               { value: 'miles', label: 'Miles' },
                             ]" />
-                        </div>
-                        <div>
-                          <label :class="labelClass">Temperature</label>
+                        </UiFormField>
+                        <UiFormField label="Temperature">
                           <UiSelect :model-value="preferences.temperature"
                             @update:model-value="preferences.temperature = $event; onSettingChange()"
                             :options="[
@@ -128,11 +122,10 @@
                               { value: 'fahrenheit', label: 'Fahrenheit (°F)' },
                               { value: 'kelvin', label: 'Kelvin (K)' },
                             ]" />
-                        </div>
+                        </UiFormField>
                       </div>
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label :class="labelClass">Date Format</label>
+                        <UiFormField label="Date Format">
                           <UiSelect :model-value="preferences.dateFormat"
                             @update:model-value="preferences.dateFormat = $event; onSettingChange()"
                             :options="[
@@ -142,18 +135,16 @@
                               { value: 'DD.MM.YYYY', label: 'DD.MM.YYYY (31.12.2025)' },
                               { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (2025-12-31)' },
                             ]" />
-                        </div>
-                        <div>
-                          <label :class="labelClass">Time Format</label>
+                        </UiFormField>
+                        <UiFormField label="Time Format">
                           <UiSelect :model-value="preferences.timeFormat"
                             @update:model-value="preferences.timeFormat = $event; onSettingChange()"
                             :options="[
                               { value: '12h', label: '12-hour (3:30 PM)' },
                               { value: '24h', label: '24-hour (15:30)' },
                             ]" />
-                        </div>
-                        <div>
-                          <label :class="labelClass">Number Format</label>
+                        </UiFormField>
+                        <UiFormField label="Number Format">
                           <UiSelect :model-value="preferences.numberFormat"
                             @update:model-value="preferences.numberFormat = $event; onSettingChange()"
                             :options="[
@@ -161,7 +152,7 @@
                               { value: 'dot_comma', label: '1.000,00 (DE/ES)' },
                               { value: 'space_comma', label: '1 000,00 (FR)' },
                             ]" />
-                        </div>
+                        </UiFormField>
                       </div>
                     </div>
                   </section>
@@ -175,8 +166,7 @@
                     <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">Font, size, and text rendering</p>
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label :class="labelClass">Font Family</label>
+                        <UiFormField label="Font Family" hint="Custom fonts must be installed on your system">
                           <UiSelect :model-value="preferences.editorFontFamily"
                             @update:model-value="preferences.editorFontFamily = $event; onSettingChange()"
                             :options="[
@@ -187,18 +177,15 @@
                               { value: 'cascadia-code', label: 'Cascadia Code' },
                               { value: 'ibm-plex-mono', label: 'IBM Plex Mono' },
                             ]" />
-                          <p :class="hintClass">Custom fonts must be installed on your system</p>
-                        </div>
-                        <div>
-                          <label :class="labelClass">Font Size: {{ preferences.editorFontSize }}px</label>
+                        </UiFormField>
+                        <UiFormField :label="`Font Size: ${preferences.editorFontSize}px`">
                           <UiSlider min="10" max="28" step="1" v-model="preferences.editorFontSize" @input="onSettingChange" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>10px</span><span>28px</span></div>
-                        </div>
-                        <div>
-                          <label :class="labelClass">Line Height: {{ preferences.editorLineHeight }}px</label>
+                        </UiFormField>
+                        <UiFormField :label="`Line Height: ${preferences.editorLineHeight}px`">
                           <UiSlider min="14" max="36" step="1" v-model="preferences.editorLineHeight" @input="onSettingChange" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>14px</span><span>36px</span></div>
-                        </div>
+                        </UiFormField>
                       </div>
                       <div class="flex items-center justify-between">
                         <div>
@@ -219,8 +206,7 @@
                     <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">Editor chrome, gutters, and visual aids</p>
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label :class="labelClass">Line Numbers</label>
+                        <UiFormField label="Line Numbers">
                           <UiSelect :model-value="preferences.editorLineNumbers"
                             @update:model-value="preferences.editorLineNumbers = $event; onSettingChange()"
                             :options="[
@@ -229,9 +215,8 @@
                               { value: 'interval', label: 'Interval (every 10)' },
                               { value: 'off', label: 'Off' },
                             ]" />
-                        </div>
-                        <div>
-                          <label :class="labelClass">Line Highlight</label>
+                        </UiFormField>
+                        <UiFormField label="Line Highlight">
                           <UiSelect :model-value="preferences.editorRenderLineHighlight"
                             @update:model-value="preferences.editorRenderLineHighlight = $event; onSettingChange()"
                             :options="[
@@ -239,7 +224,7 @@
                               { value: 'line', label: 'Line' },
                               { value: 'all', label: 'Gutter + Line' },
                             ]" />
-                        </div>
+                        </UiFormField>
                       </div>
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
@@ -269,15 +254,14 @@
                     <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">Cursor appearance and scroll behaviour</p>
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label :class="labelClass">Cursor Style</label>
+                        <UiFormField label="Cursor Style">
                           <UiSelect :model-value="preferences.editorCursorStyle"
                             @update:model-value="preferences.editorCursorStyle = $event; onSettingChange()"
                             :options="[
                               { value: 'line', label: 'Line' },
                               { value: 'line-thin', label: 'Line (thin)' },
                             ]" />
-                        </div>
+                        </UiFormField>
                       </div>
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
@@ -300,20 +284,18 @@
                     <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">Auto-close, indentation, and bracket matching</p>
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label :class="labelClass">Auto-close Brackets</label>
+                        <UiFormField label="Auto-close Brackets">
                           <UiSelect :model-value="preferences.editorAutoClosingBrackets"
                             @update:model-value="preferences.editorAutoClosingBrackets = $event; onSettingChange()"
                             :options="[
                               { value: 'always', label: 'Always' },
                               { value: 'never', label: 'Never' },
                             ]" />
-                        </div>
-                        <div>
-                          <label :class="labelClass">Tab Size: {{ preferences.editorTabSize }} spaces</label>
+                        </UiFormField>
+                        <UiFormField :label="`Tab Size: ${preferences.editorTabSize} spaces`">
                           <UiSlider min="1" max="8" step="1" v-model="preferences.editorTabSize" @input="onSettingChange" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>1</span><span>8</span></div>
-                        </div>
+                        </UiFormField>
                       </div>
                     </div>
                   </section>
@@ -327,8 +309,7 @@
                     <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">Precision, formatting, and inline result behaviour</p>
                     <div class="space-y-5 pl-1">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label :class="labelClass">Precision Mode</label>
+                        <UiFormField label="Precision Mode">
                           <UiSelect :model-value="preferences.precisionMode"
                             @update:model-value="preferences.precisionMode = $event; onSettingChange()"
                             :options="[
@@ -336,26 +317,23 @@
                               { value: 'decimals', label: 'Fixed decimal places' },
                               { value: 'significant', label: 'Significant figures' },
                             ]" />
-                        </div>
-                        <div v-if="preferences.precisionMode !== 'auto'">
-                          <label :class="labelClass">Rounding Mode</label>
+                        </UiFormField>
+                        <UiFormField v-if="preferences.precisionMode !== 'auto'" label="Rounding Mode">
                           <UiSelect :model-value="preferences.roundingMode"
                             @update:model-value="preferences.roundingMode = $event; onSettingChange()"
                             :options="[
                               { value: 'round', label: 'Round' },
                               { value: 'truncate', label: 'Truncate' },
                             ]" />
-                        </div>
-                        <div v-if="preferences.precisionMode === 'decimals'">
-                          <label :class="labelClass">Decimal Places: {{ preferences.decimalPlaces }}</label>
+                        </UiFormField>
+                        <UiFormField v-if="preferences.precisionMode === 'decimals'" :label="`Decimal Places: ${preferences.decimalPlaces}`">
                           <UiSlider min="0" max="15" step="1" v-model="preferences.decimalPlaces" @input="onSettingChange" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>15</span></div>
-                        </div>
-                        <div v-if="preferences.precisionMode === 'significant'">
-                          <label :class="labelClass">Significant Figures: {{ preferences.significantFigures }}</label>
+                        </UiFormField>
+                        <UiFormField v-if="preferences.precisionMode === 'significant'" :label="`Significant Figures: ${preferences.significantFigures}`">
                           <UiSlider min="1" max="15" step="1" v-model="preferences.significantFigures" @input="onSettingChange" />
                           <div class="flex justify-between text-xs text-gray-400 mt-1"><span>1</span><span>15</span></div>
-                        </div>
+                        </UiFormField>
                       </div>
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
@@ -372,8 +350,7 @@
                           </div>
                           <UiToggle v-model="preferences.showResultsInCodeBlocks" @update:model-value="onSettingChange()" />
                         </div>
-                        <div v-if="preferences.autoCopyResult">
-                          <label :class="labelClass">Copy Animation</label>
+                        <UiFormField v-if="preferences.autoCopyResult" label="Copy Animation" hint="Animation style for the &quot;Copied&quot; feedback toast">
                           <UiSelect :model-value="preferences.copyAnimationStyle"
                             @update:model-value="preferences.copyAnimationStyle = $event; onSettingChange()"
                             :options="[
@@ -385,8 +362,7 @@
                               { value: 'glow', label: 'Glow pulse' },
                               { value: 'none', label: 'None' },
                             ]" />
-                          <p :class="hintClass">Animation style for the "Copied" feedback toast</p>
-                        </div>
+                        </UiFormField>
                       </div>
                     </div>
                   </section>
@@ -408,8 +384,7 @@
                           Relaunch
                         </UiButton>
                       </div>
-                      <div>
-                        <label :class="labelClass">Update check interval</label>
+                      <UiFormField label="Update check interval" hint="How often to check for new versions in the background">
                         <UiSelect :model-value="preferences.updateCheckInterval"
                           @update:model-value="preferences.updateCheckInterval = $event; onSettingChange()"
                           :options="[
@@ -420,8 +395,7 @@
                             { value: 360, label: 'Every 6 hours' },
                             { value: 0, label: 'Manual only' },
                           ]" />
-                        <p :class="hintClass">How often to check for new versions in the background</p>
-                      </div>
+                      </UiFormField>
                     </div>
                   </section>
 

@@ -11,17 +11,14 @@
       </div>
 
       <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Name</label>
+        <UiFormField label="Name">
           <UiInput v-model="localName" type="text" ref="nameInput" placeholder="Group name" :validate="false"
             @keydown.enter="save" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Internal Name</label>
+        </UiFormField>
+        <UiFormField label="Internal Name" hint="Auto-generated from name. Edit to customise.">
           <UiInput v-model="localInternalName" type="text" placeholder="group_name" :validate="false"
             @update:model-value="internalNameManuallyEdited = true" />
-          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Auto-generated from name. Edit to customise.</p>
-        </div>
+        </UiFormField>
       </div>
 
       <div class="flex justify-end gap-2 mt-6">

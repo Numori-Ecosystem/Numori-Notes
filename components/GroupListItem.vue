@@ -41,7 +41,7 @@
               <Icon name="mdi:pencil-outline" class="w-4 h-4" />
               Edit Group
             </UiButton>
-            <div class="my-1 border-t border-gray-200 dark:border-gray-700" />
+            <UiDivider color="medium" />
             <UiButton @click.stop="handleAction('delete')" variant="menu-item" color="red">
               <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
               Delete Group

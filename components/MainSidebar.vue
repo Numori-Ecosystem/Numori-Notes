@@ -331,7 +331,7 @@
             Change Language
           </UiButton>
           <template v-if="isLoggedIn">
-            <div class="border-t border-gray-300 dark:border-gray-600 my-1" />
+            <UiDivider color="dark" />
             <UiButton @click="accountAction('logout')" variant="menu-item" color="red" class="px-4">
               <Icon name="mdi:logout" class="w-4 h-4" />
               Sign Out

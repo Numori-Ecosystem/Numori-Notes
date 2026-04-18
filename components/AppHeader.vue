@@ -67,7 +67,7 @@
             ]"
           />
 
-          <div class="w-px h-5 bg-gray-300/60 dark:bg-gray-700 mx-0.5"></div>
+          <UiDivider direction="vertical" class="mx-0.5" />
 
           <!-- Focus mode -->
           <UiButton @click="$emit('toggle-focus')" variant="ghost" color="gray" icon-only

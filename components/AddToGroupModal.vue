@@ -15,7 +15,9 @@
           Create new group
         </UiButton>
 
-        <div v-if="groups.length" class="my-2 border-t border-gray-200 dark:border-gray-700" />
+        <div v-if="groups.length">
+          <UiDivider color="medium" class="my-2" />
+        </div>
 
         <!-- Existing groups -->
         <UiButton v-for="group in groups" :key="group.id"
@@ -32,7 +34,7 @@
 
         <!-- Remove from group option -->
         <template v-if="currentGroupId">
-          <div class="my-2 border-t border-gray-200 dark:border-gray-700" />
+          <UiDivider color="medium" class="my-2" />
           <UiButton variant="ghost" color="gray" block @click="$emit('select', null)">
             <Icon name="mdi:folder-remove-outline" class="w-4.5 h-4.5 flex-shrink-0" />
             Remove from group

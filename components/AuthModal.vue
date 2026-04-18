@@ -27,35 +27,32 @@
           {{ mode === 'login' ? 'Sign in to sync your notes across devices.' : 'Signing up is optional. It enables cloud sync across devices.' }}
         </p>
 
-        <!-- Error -->
-        <div v-if="error" class="mb-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
-          {{ error }}
-        </div>
+        <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
         <form @submit.prevent="handleSubmit" class="space-y-3">
           <!-- Name (register only) -->
-          <div v-if="mode === 'register'">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Name</label>
+          <UiFormField v-if="mode === 'register'" label="Name">
             <UiInput v-model="name" type="text" autocomplete="name" placeholder="Your name (optional)" :validate="false" />
-          </div>
+          </UiFormField>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Email</label>
+          <UiFormField label="Email">
             <UiInput v-model="email" type="email" required autocomplete="email" placeholder="you@example.com" />
-          </div>
+          </UiFormField>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Password</label>
-            <UiInput v-model="password" type="password" required autocomplete="current-password"
-              :minlength="mode === 'register' ? 8 : undefined" placeholder="••••••••" :validate="false" />
+            <UiFormField label="Password">
+              <UiInput v-model="password" type="password" required autocomplete="current-password"
+                :minlength="mode === 'register' ? 8 : undefined" placeholder="••••••••" :validate="false" />
+            </UiFormField>
             <p v-if="mode === 'register'" class="text-xs text-gray-500 dark:text-gray-500 mt-1">At least 8 characters</p>
           </div>
 
           <!-- Confirm password (register only) -->
           <div v-if="mode === 'register'">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Confirm Password</label>
-            <UiInput v-model="confirmPassword" type="password" required autocomplete="new-password"
-              :minlength="8" placeholder="••••••••" :validate="false" />
+            <UiFormField label="Confirm Password">
+              <UiInput v-model="confirmPassword" type="password" required autocomplete="new-password"
+                :minlength="8" placeholder="••••••••" :validate="false" />
+            </UiFormField>
             <p v-if="passwordMismatch" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
           </div>
 
@@ -72,26 +69,20 @@
 
       <!-- ═══ Password Recovery: Enter Email ═══ -->
       <template v-else-if="step === 'recovery-email'">
-        <div class="mb-4 px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800">
-          <div class="flex gap-2">
-            <Icon name="mdi:database-remove-outline" class="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-            <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">Password recovery will <span class="font-semibold">permanently delete all your encrypted notes</span>. They cannot be decrypted without the original password.</p>
-          </div>
-        </div>
+        <UiAlert color="red" icon="mdi:database-remove-outline" bordered class="mb-4">
+          <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">Password recovery will <span class="font-semibold">permanently delete all your encrypted notes</span>. They cannot be decrypted without the original password.</p>
+        </UiAlert>
 
         <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
           Enter your email address. If password recovery is enabled on your account, you'll receive a code.
         </p>
 
-        <div v-if="error" class="mb-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
-          {{ error }}
-        </div>
+        <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
         <form @submit.prevent="handleForgotPassword" class="space-y-3">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Email</label>
+          <UiFormField label="Email">
             <UiInput v-model="recoveryEmail" type="email" required placeholder="you@example.com" />
-          </div>
+          </UiFormField>
           <UiButton native-type="submit" :loading="loading" block>
             Send Recovery Code
           </UiButton>
@@ -108,17 +99,14 @@
           If your account has recovery enabled, a 6-digit code was sent to <span class="font-medium text-gray-700 dark:text-gray-300">{{ recoveryEmail }}</span>.
         </p>
 
-        <div v-if="error" class="mb-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
-          {{ error }}
-        </div>
+        <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
         <form @submit.prevent="handleVerifyRecovery" class="space-y-3">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Verification Code</label>
+          <UiFormField label="Verification Code">
             <UiInput v-model="otpCode" type="text" required :maxlength="6" pattern="[0-9]{6}"
               validation-pattern="^[0-9]{6}$" validation-message="Enter a 6-digit code"
               placeholder="000000" />
-          </div>
+          </UiFormField>
           <UiButton native-type="submit" :disabled="loading || otpCode.length !== 6" :loading="loading" block>
             Verify Code
           </UiButton>
@@ -132,29 +120,21 @@
       <!-- ═══ Password Recovery: Set New Password ═══ -->
       <template v-else-if="step === 'recovery-newpass'">
         <!-- Prominent destruction warning -->
-        <div class="mb-4 px-3 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800">
-          <div class="flex gap-2.5">
-            <Icon name="mdi:database-remove-outline" class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-            <div class="space-y-1.5">
-              <p class="text-xs font-semibold text-red-800 dark:text-red-200">All your notes will be permanently deleted</p>
-              <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">Your notes are encrypted with your current password. Resetting it means the encryption key is lost — <span class="font-semibold">every note will be irreversibly destroyed</span>. This cannot be undone.</p>
-            </div>
-          </div>
-        </div>
+        <UiAlert color="red" icon="mdi:database-remove-outline" bordered size="md" class="mb-4">
+          <p class="text-xs font-semibold text-red-800 dark:text-red-200">All your notes will be permanently deleted</p>
+          <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">Your notes are encrypted with your current password. Resetting it means the encryption key is lost — <span class="font-semibold">every note will be irreversibly destroyed</span>. This cannot be undone.</p>
+        </UiAlert>
 
-        <div v-if="error" class="mb-3 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
-          {{ error }}
-        </div>
+        <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
         <form @submit.prevent="handleResetPassword" class="space-y-3">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">New Password</label>
+          <UiFormField label="New Password" hint="At least 8 characters">
             <UiInput v-model="newPassword" type="password" required :minlength="8" placeholder="••••••••" :validate="false" />
-            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">At least 8 characters</p>
-          </div>
+          </UiFormField>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Confirm New Password</label>
-            <UiInput v-model="confirmNewPassword" type="password" required :minlength="8" placeholder="••••••••" :validate="false" />
+            <UiFormField label="Confirm New Password">
+              <UiInput v-model="confirmNewPassword" type="password" required :minlength="8" placeholder="••••••••" :validate="false" />
+            </UiFormField>
             <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
           </div>
           <UiButton native-type="submit" color="red" :disabled="loading || !newPassword || newPassword.length < 8 || newPassword !== confirmNewPassword" :loading="loading" block>

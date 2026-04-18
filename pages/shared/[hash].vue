@@ -40,9 +40,7 @@
           <Icon name="mdi:lightbulb-outline" class="w-3.5 h-3.5 inline" />
           Hint: {{ passwordHint }}
         </p>
-        <div v-if="decryptError" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
-          {{ decryptError }}
-        </div>
+        <UiAlert v-if="decryptError" color="red">{{ decryptError }}</UiAlert>
         <UiInput v-model="passwordInput" type="password" placeholder="Share password"
           :validate="false" @keyup.enter="decryptWithPassword" />
         <UiButton @click="decryptWithPassword" :disabled="!passwordInput" :loading="decrypting"

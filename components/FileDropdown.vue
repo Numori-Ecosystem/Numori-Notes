@@ -13,7 +13,7 @@
     <UiDropdownItem icon="mdi:folder-open-outline" label="Open File…" :shortcut="`${modLabel}+O`" @click="action('open-file')" />
     <UiDropdownItem icon="mdi:content-duplicate" label="Duplicate Note" :shortcut="`${modLabel}+D`" :disabled="!hasNote" @click="action('duplicate')" />
 
-    <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+    <UiDivider />
 
     <!-- Export sub-menu -->
     <UiDropdownSubmenu icon="mdi:export" :label="selectionCount > 0 ? `Export Selection (${selectionCount})` : 'Export'" :disabled="!hasNote && selectionCount === 0">
@@ -25,7 +25,7 @@
     <UiDropdownItem icon="mdi:content-copy" label="Copy to Clipboard" :disabled="!hasNote" @click="action('copy')" />
     <UiDropdownItem icon="mdi:printer" label="Print" :shortcut="`${modLabel}+P`" :disabled="!hasNote" @click="action('print')" />
 
-    <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+    <UiDivider />
 
     <!-- Backup & restore -->
     <UiDropdownItem icon="mdi:code-json" :label="selectionCount > 0 ? `Export Selection as JSON (${selectionCount})` : 'Export as JSON'" :disabled="!hasNote && selectionCount === 0" @click="action('export-json')" />

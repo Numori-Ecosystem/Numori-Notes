@@ -2,12 +2,8 @@
   <UiModal :show="isOpen" max-width="lg" z="z-[60]" persistent>
 
             <!-- Progress dots -->
-            <div class="flex justify-center gap-2 pt-5 pb-2">
-              <UiButton v-for="i in totalSteps" :key="i"
-                @click="step = i"
-                variant="ghost" size="xs"
-                class="p-0 w-2 h-2 rounded-full transition-all duration-200"
-                :class="i === step ? 'bg-primary-500 w-6' : i < step ? 'bg-primary-300 dark:bg-primary-700' : 'bg-gray-300 dark:bg-gray-700'" />
+            <div class="pt-5 pb-2">
+              <UiStepper v-model="step" :steps="totalSteps" />
             </div>
 
             <!-- Step content -->

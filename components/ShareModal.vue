@@ -49,9 +49,7 @@
               </p>
 
               <!-- Error -->
-              <div v-if="error" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs">
-                {{ error }}
-              </div>
+              <UiAlert v-if="error" color="red">{{ error }}</UiAlert>
 
               <!-- Anonymous toggle -->
               <label class="flex items-center gap-2 cursor-pointer">
@@ -61,14 +59,12 @@
 
               <!-- Sharer details (if not logged in and not anonymous) -->
               <template v-if="!isLoggedIn && !anonymous">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Your name</label>
+                <UiFormField label="Your name">
                   <UiInput v-model="sharerName" type="text" placeholder="Optional" :validate="false" />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Your email</label>
+                </UiFormField>
+                <UiFormField label="Your email">
                   <UiInput v-model="sharerEmail" type="email" placeholder="Optional" />
-                </div>
+                </UiFormField>
               </template>
 
               <!-- Logged in but not anonymous: show who it'll be shared as -->
@@ -108,20 +104,17 @@
 
               <!-- Custom password input -->
               <div v-if="sharePasswordMode === 'custom'" class="space-y-2">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Share password</label>
+                <UiFormField label="Share password">
                   <UiInput v-model="sharePassword" type="password" placeholder="Enter a password for this share" :validate="false" />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Password hint <span class="font-normal text-gray-400 dark:text-gray-600">(optional)</span></label>
+                </UiFormField>
+                <UiFormField label="Password hint" optional>
                   <UiInput v-model="passwordHint" type="text" :maxlength="255" :validate="false"
                     placeholder="A hint to help the recipient remember the password" />
-                </div>
+                </UiFormField>
               </div>
 
               <!-- Expiration -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Expires after</label>
+              <UiFormField label="Expires after">
                 <UiSelect v-model="expiresInDays"
                   :options="[
                     { value: 1, label: '1 day' },
@@ -129,7 +122,7 @@
                     { value: 14, label: '14 days' },
                     { value: 30, label: '30 days' },
                   ]" />
-              </div>
+              </UiFormField>
 
               <!-- Analytics toggle with tooltip -->
               <div class="relative">

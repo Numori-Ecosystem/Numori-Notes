@@ -35,7 +35,7 @@
         <span>{{ copied ? 'Copied' : 'Copy' }}</span>
       </UiButton>
 
-      <div class="w-px h-4 bg-gray-300/60 dark:bg-gray-700"></div>
+      <UiDivider direction="vertical" class="h-4 mx-0" />
 
       <UiDropdown ref="exportDropdownRef" width="w-52" align="right" :drop="dropUp ? 'up' : 'down'">
         <template #trigger="{ toggle }">
@@ -58,7 +58,7 @@
           <Icon name="mdi:file-pdf-box" class="w-4 h-4 block flex-shrink-0" />
           <span>PDF</span>
         </UiButton>
-        <div class="border-t border-gray-100 dark:border-gray-700 my-1" />
+        <UiDivider />
         <UiButton @click="emitExport('json')" variant="menu-item">
           <Icon name="mdi:code-json" class="w-4 h-4 block flex-shrink-0" />
           <span>Export as JSON</span>
@@ -71,7 +71,7 @@
         <span>Print</span>
       </UiButton>
 
-      <div class="w-px h-4 bg-gray-300/60 dark:bg-gray-700"></div>
+      <UiDivider direction="vertical" class="h-4 mx-0" />
 
       <UiButton @click="$emit('import')" variant="ghost" color="primary" size="sm"
         title="Import to my notes">

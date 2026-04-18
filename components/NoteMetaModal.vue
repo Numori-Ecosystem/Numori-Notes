@@ -11,30 +11,18 @@
           </div>
 
           <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
-                Title
-              </label>
+            <UiFormField label="Title">
               <UiInput v-model="localTitle" type="text" placeholder="Untitled Note" :validate="false" />
-            </div>
+            </UiFormField>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
-                Internal Name
-              </label>
+            <UiFormField label="Internal Name" hint="Auto-generated from title. Edit to customise.">
               <UiInput v-model="localInternalName" type="text" placeholder="untitled_note" :validate="false"
                 @update:model-value="internalNameManuallyEdited = true" />
-              <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Auto-generated from title. Edit to customise.
-              </p>
-            </div>
+            </UiFormField>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
-                Description
-              </label>
+            <UiFormField label="Description">
               <UiInput v-model="localDescription" type="textarea" :rows="3" placeholder="Add a description..." :validate="false" />
-            </div>
+            </UiFormField>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">

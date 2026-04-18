@@ -79,7 +79,7 @@
           <UiButton @click.stop="handleAction('print')" variant="menu-item">
             <Icon name="mdi:printer-outline" class="w-4 h-4" /> Print
           </UiButton>
-          <div class="my-1 border-t border-gray-200 dark:border-gray-700" />
+          <UiDivider color="medium" />
           <UiButton @click.stop="handleAction('share')" variant="menu-item">
             <Icon name="mdi:share-variant-outline" class="w-4 h-4" /> {{ shared ? 'Sharing details' : 'Share' }}
           </UiButton>
@@ -92,7 +92,7 @@
           <UiButton v-if="analyticsHash" @click.stop="handleAction('analytics')" variant="menu-item">
             <Icon name="mdi:chart-bar" class="w-4 h-4" /> View analytics
           </UiButton>
-          <div class="my-1 border-t border-gray-200 dark:border-gray-700" />
+          <UiDivider color="medium" />
           <UiButton v-if="note.archived" @click.stop="handleAction('unarchive')" variant="menu-item">
             <Icon name="mdi:package-up" class="w-4 h-4" /> Unarchive
           </UiButton>
@@ -105,7 +105,7 @@
           <UiButton @click.stop="handleAction('add-to-group')" variant="menu-item">
             <Icon name="mdi:folder-plus-outline" class="w-4 h-4" /> Add to group
           </UiButton>
-          <div class="my-1 border-t border-gray-200 dark:border-gray-700" />
+          <UiDivider color="medium" />
           <UiButton @click.stop="handleAction('delete')" variant="menu-item" color="red">
             <Icon name="mdi:trash-can-outline" class="w-4 h-4" /> Delete
           </UiButton>
