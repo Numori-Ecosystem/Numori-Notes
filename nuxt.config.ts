@@ -10,7 +10,8 @@ export default defineNuxtConfig({
     'nitro:config'(nitroConfig) {
       if (nitroConfig.imports?.imports) {
         nitroConfig.imports.imports = nitroConfig.imports.imports.filter(
-          (i: { name?: string; from?: string }) => !(i?.name === 'useAppConfig' && String(i?.from || '').includes('nitro-server'))
+          (i: { name?: string; from?: string }) =>
+            !(i?.name === 'useAppConfig' && String(i?.from || '').includes('nitro-server')),
         )
       }
     },
@@ -21,38 +22,54 @@ export default defineNuxtConfig({
       title: 'Numori — notes that calculate',
       htmlAttrs: { lang: 'en' },
       meta: [
-        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover' },
-        { name: 'description', content: 'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.' },
+        {
+          name: 'viewport',
+          content:
+            'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
+        },
+        {
+          name: 'description',
+          content:
+            'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.',
+        },
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
         { name: 'apple-mobile-web-app-title', content: 'Numori' },
         { name: 'application-name', content: 'Numori' },
         { name: 'theme-color', content: '#ffffff' },
         { name: 'og:title', content: 'Numori — notes that calculate' },
-        { name: 'og:description', content: 'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.' },
+        {
+          name: 'og:description',
+          content:
+            'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.',
+        },
         { name: 'og:type', content: 'website' },
         { name: 'twitter:card', content: 'summary' },
         { name: 'twitter:title', content: 'Numori — notes that calculate' },
-        { name: 'twitter:description', content: 'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.' }
+        {
+          name: 'twitter:description',
+          content:
+            'Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.',
+        },
       ],
       link: [
         { rel: 'manifest', href: '/manifest.webmanifest' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-        { rel: 'apple-touch-icon', href: '/favicon.ico' }
-      ]
-    }
+        { rel: 'apple-touch-icon', href: '/favicon.ico' },
+      ],
+    },
   },
   modules: [
     '@vueuse/nuxt',
     '@nuxt/icon',
     '@nuxt/fonts',
     '@nuxt/eslint',
-    'nuxt-i18n-micro',
+    '@nuxtjs/i18n',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     'nuxt-codemirror',
-    '~/modules/version'
+    '~/modules/version',
   ],
   icon: {
     clientBundle: {
@@ -64,53 +81,59 @@ export default defineNuxtConfig({
   colorMode: {
     classSuffix: '',
     preference: 'system',
-    fallback: 'light'
+    fallback: 'light',
   },
   i18n: {
-    translationDir: 'locales',
     defaultLocale: 'en-GB',
-    meta: true,
     strategy: 'no_prefix',
-    autoDetectLanguage: true,
-    redirects: false,
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root',
+    },
     locales: [
       {
         code: 'en-GB',
-        iso: 'en-GB',
+        language: 'en-GB',
         name: 'English (UK)',
-        dir: 'ltr'
+        dir: 'ltr',
+        file: 'en-GB.json',
       },
       {
         code: 'es-ES',
-        iso: 'es-ES',
+        language: 'es-ES',
         name: 'Español',
-        dir: 'ltr'
+        dir: 'ltr',
+        file: 'es-ES.json',
       },
-    ]
+    ],
   },
   nitro: {
     prerender: {
-      routes: ['/']
+      routes: ['/'],
     },
     routeRules: {
       '/.well-known/apple-app-site-association': {
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       },
       '/version.json': {
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'no-store'
-        }
-      }
-    }
+          'Cache-Control': 'no-store',
+        },
+      },
+    },
   },
   runtimeConfig: {
     appVersion: process.env.npm_package_version || '0.0.0',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '',
-      storeAndroid: process.env.NUXT_PUBLIC_STORE_ANDROID || 'https://play.google.com/store/apps/details?id=app.numori.app',
-      storeIos: process.env.NUXT_PUBLIC_STORE_IOS || 'https://apps.apple.com/app/numori/id0000000000'
-    }
+      storeAndroid:
+        process.env.NUXT_PUBLIC_STORE_ANDROID ||
+        'https://play.google.com/store/apps/details?id=app.numori.app',
+      storeIos:
+        process.env.NUXT_PUBLIC_STORE_IOS || 'https://apps.apple.com/app/numori/id0000000000',
+    },
   },
   vite: {
     define: {
@@ -134,10 +157,10 @@ export default defineNuxtConfig({
             if (id.includes('@capacitor')) {
               return 'capacitor'
             }
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   },
-  ssr: false // Pure client-side SPA
+  ssr: false, // Pure client-side SPA
 })

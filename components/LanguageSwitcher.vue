@@ -95,16 +95,15 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-const { $getLocale, $getLocales, $switchLocale } = useI18n()
+const { locale: currentLocaleCode, locales, setLocale } = useI18n()
 
-const availableLocales = computed(() => $getLocales())
+const availableLocales = computed(() => locales.value)
 const currentLocale = computed(() => {
-  const currentCode = $getLocale()
-  return availableLocales.value.find((l) => l.code === currentCode) || availableLocales.value[0]
+  return availableLocales.value.find((l) => l.code === currentLocaleCode.value) || availableLocales.value[0]
 })
 
 const changeLocale = (code) => {
-  $switchLocale(code)
+  setLocale(code)
   closeModal()
 }
 
