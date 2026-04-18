@@ -445,9 +445,75 @@ const tickLiveTime = () => {
 }
 useIntervalFn(tickLiveTime, 1000)
 
-// --- Scroll position memory per note ---
+// --- Scroll position memory per note (persisted via Dexie) ---
 const scrollPositions = new Map()
 let scrollRestoreTimer = null
+let scrollSaveTimer = null
+let isRestoringScroll = false
+const SCROLL_DB_KEY = 'scroll_positions'
+
+// Load persisted scroll positions on mount
+const loadScrollPositions = async () => {
+  try {
+    const { default: db } = await import('~/db.js')
+    const row = await db.appState.get(SCROLL_DB_KEY)
+    if (row?.value) {
+      const entries = JSON.parse(row.value)
+      for (const [k, v] of entries) scrollPositions.set(k, v)
+    }
+  } catch { /* ignore */ }
+}
+const scrollDbReady = loadScrollPositions()
+
+const persistScrollPositions = () => {
+  if (scrollSaveTimer) clearTimeout(scrollSaveTimer)
+  scrollSaveTimer = setTimeout(async () => {
+    scrollSaveTimer = null
+    try {
+      const { default: db } = await import('~/db.js')
+      await db.appState.put({ key: SCROLL_DB_KEY, value: JSON.stringify([...scrollPositions]) })
+    } catch { /* ignore */ }
+  }, 1000)
+}
+
+const persistScrollPositionsNow = () => {
+  if (editorView && props.noteId) {
+    scrollPositions.set(props.noteId, editorView.scrollDOM.scrollTop)
+  }
+  if (scrollSaveTimer) clearTimeout(scrollSaveTimer)
+  scrollSaveTimer = null
+  import('~/db.js').then(({ default: db }) => {
+    db.appState.put({ key: SCROLL_DB_KEY, value: JSON.stringify([...scrollPositions]) }).catch(() => {})
+  }).catch(() => {})
+}
+
+// Save scroll position continuously on scroll events
+const onEditorScroll = () => {
+  if (!props.noteId || isRestoringScroll) return
+  scrollPositions.set(props.noteId, editorView.scrollDOM.scrollTop)
+  persistScrollPositions()
+}
+
+// Attach scroll listener once editor is ready
+watch(editorReady, (ready) => {
+  if (ready && editorView) {
+    editorView.scrollDOM.addEventListener('scroll', onEditorScroll, { passive: true })
+  }
+})
+
+onMounted(() => {
+  window.addEventListener('beforeunload', persistScrollPositionsNow)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') persistScrollPositionsNow()
+  })
+})
+onBeforeUnmount(() => {
+  if (editorView) {
+    editorView.scrollDOM.removeEventListener('scroll', onEditorScroll)
+  }
+  window.removeEventListener('beforeunload', persistScrollPositionsNow)
+  persistScrollPositionsNow()
+})
 
 watch(displayLines, () => {
   nextTick(() => {
@@ -456,20 +522,32 @@ watch(displayLines, () => {
   })
 })
 
+// Restore scroll for the initial note once editor + DB are both ready
+watch(editorReady, async (ready) => {
+  if (!ready || !props.noteId) return
+  await scrollDbReady
+  isRestoringScroll = true
+  setTimeout(() => {
+    if (editorView) {
+      editorView.scrollDOM.scrollTop = scrollPositions.get(props.noteId) ?? 0
+    }
+    setTimeout(() => { isRestoringScroll = false }, 200)
+  }, 200)
+})
+
 watch(() => props.noteId, (newId, oldId) => {
   if (!editorView || newId === oldId) return
-  // Save current scroll position for the note we're leaving
-  if (oldId) {
-    scrollPositions.set(oldId, editorView.scrollDOM.scrollTop)
-  }
   // Cancel any pending restore from a previous rapid switch
   if (scrollRestoreTimer) clearTimeout(scrollRestoreTimer)
-  // Restore after everything settles: content change, decorations, debounced re-eval
+  // The scroll position for oldId is already saved by the scroll event listener.
+  // Restore after everything settles.
+  isRestoringScroll = true
   scrollRestoreTimer = setTimeout(() => {
     scrollRestoreTimer = null
     if (editorView) {
       editorView.scrollDOM.scrollTop = scrollPositions.get(newId) ?? 0
     }
+    setTimeout(() => { isRestoringScroll = false }, 200)
   }, 200)
 })
 watch(() => props.showInline, () => updateInlineDecorations())
