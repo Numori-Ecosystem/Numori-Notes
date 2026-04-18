@@ -1,7 +1,7 @@
 <template>
   <UiDropdown ref="dropdownRef" width="w-48 sm:w-56">
     <template #trigger="{ toggle }">
-      <UiButton @click="toggle" variant="ghost" color="gray" size="sm" title="View menu">
+      <UiButton variant="ghost" color="gray" size="sm" title="View menu" @click="toggle">
         <Icon name="mdi:eye-outline" class="w-4.5 h-4.5 block" />
         <span class="hidden sm:inline text-sm">View</span>
         <Icon name="mdi:chevron-down" class="w-3 h-3 block transition-transform" :class="{ 'rotate-180': dropdownRef?.isOpen }" />
@@ -10,20 +10,23 @@
 
     <!-- Zoom controls -->
     <div class="flex items-center gap-1 px-3 py-1.5">
-      <UiButton @click="$emit('zoom-out')" :disabled="zoomPercent <= MIN_ZOOM" variant="ghost" color="gray" icon-only size="xs"
-        :class="zoomPercent <= MIN_ZOOM ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : ''"
-        title="Zoom out">
+      <UiButton
+:disabled="zoomPercent <= MIN_ZOOM" variant="ghost" color="gray" icon-only size="xs" :class="zoomPercent <= MIN_ZOOM ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : ''"
+        title="Zoom out"
+        @click="$emit('zoom-out')">
         <Icon name="mdi:magnify-minus-outline" class="w-4.5 h-4.5 block" />
       </UiButton>
-      <UiButton @click="$emit('zoom-reset')" :title="zoomPercent === 100 ? 'Zoom at 100%' : 'Reset zoom to 100%'"
-        class="flex-1 text-center text-sm rounded px-1 py-0.5 min-w-0"
+      <UiButton
+:title="zoomPercent === 100 ? 'Zoom at 100%' : 'Reset zoom to 100%'" class="flex-1 text-center text-sm rounded px-1 py-0.5 min-w-0"
         :class="zoomPercent === 100 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-default' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer'"
-        variant="ghost" color="gray" size="xs">
+        variant="ghost"
+        color="gray" size="xs" @click="$emit('zoom-reset')">
         {{ zoomPercent }}%
       </UiButton>
-      <UiButton @click="$emit('zoom-in')" :disabled="zoomPercent >= MAX_ZOOM" variant="ghost" color="gray" icon-only size="xs"
-        :class="zoomPercent >= MAX_ZOOM ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : ''"
-        title="Zoom in">
+      <UiButton
+:disabled="zoomPercent >= MAX_ZOOM" variant="ghost" color="gray" icon-only size="xs" :class="zoomPercent >= MAX_ZOOM ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : ''"
+        title="Zoom in"
+        @click="$emit('zoom-in')">
         <Icon name="mdi:magnify-plus-outline" class="w-4.5 h-4.5 block" />
       </UiButton>
     </div>
@@ -32,11 +35,12 @@
 
     <div class="px-3 pt-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Markdown</div>
 
-    <UiButton v-for="opt in mdOptions" :key="opt.value"
-      @click="setMarkdownMode(opt.value)" variant="menu-item"
-      :class="markdownMode === opt.value
+    <UiButton
+v-for="opt in mdOptions" :key="opt.value"
+      variant="menu-item" :class="markdownMode === opt.value
         ? 'text-gray-900 dark:text-gray-100'
-        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'">
+        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+      @click="setMarkdownMode(opt.value)">
       <Icon :key="opt.value + '-' + markdownMode" :name="markdownMode === opt.value ? 'mdi:radiobox-marked' : 'mdi:radiobox-blank'" class="w-4 h-4 block flex-shrink-0" />
       <span>{{ opt.label }}</span>
     </UiButton>
@@ -44,10 +48,11 @@
     <UiDivider />
 
     <!-- Theme toggle -->
-    <UiButton @click="toggleTheme" variant="menu-item">
+    <UiButton variant="menu-item" @click="toggleTheme">
       <Icon name="mdi:theme-light-dark" class="w-4 h-4 block flex-shrink-0" />
       <span class="flex-1 text-left">Theme</span>
-      <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full"
+      <span
+class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full"
         :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-amber-100 text-amber-700'">
         <Icon :name="isDark ? 'mdi:weather-night' : 'mdi:white-balance-sunny'" class="w-3 h-3" />
         {{ isDark ? 'Dark' : 'Light' }}
@@ -62,8 +67,9 @@
 
     <UiDivider />
 
-    <UiButton @click="handleCheckUpdate" :disabled="updateChecking" variant="menu-item"
-      class="disabled:opacity-50">
+    <UiButton
+:disabled="updateChecking" variant="menu-item" class="disabled:opacity-50"
+      @click="handleCheckUpdate">
       <Icon :name="updateChecking ? 'mdi:loading' : updateResultIcon" class="w-4 h-4 block flex-shrink-0" :class="{ 'animate-spin': updateChecking, [updateResultColor]: !updateChecking && updateResult }" />
       <span>{{ updateLabel }}</span>
     </UiButton>

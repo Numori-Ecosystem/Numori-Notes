@@ -6,8 +6,7 @@
  * - Granular overrides for individual settings
  * - Settings categories: volume, fuel economy, date format, number format, temperature, distance
  */
-import { describe, it, expect, beforeEach } from 'vitest'
-import { vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 // In-memory store for the Dexie mock
 let prefStore = {}

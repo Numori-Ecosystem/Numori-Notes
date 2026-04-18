@@ -1,5 +1,5 @@
 <template>
-  <UiModal :show="isOpen" max-width="md" @close="$emit('close')" padding="p-2 sm:p-4" panel-class="max-h-[80vh]">
+  <UiModal :show="isOpen" max-width="md" padding="p-2 sm:p-4" panel-class="max-h-[80vh]" @close="$emit('close')">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
@@ -17,13 +17,14 @@
                 <p class="text-lg font-semibold text-gray-900 dark:text-gray-200">Numori</p>
                 <p class="text-xs text-gray-500 dark:text-gray-500">v{{ appVersion }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-500">Made with ❤️ and code from Manchester, England</p>
-                <a href="https://github.com/Erik-Bjerke/Numori" target="_blank" rel="noopener noreferrer"
+                <a
+href="https://github.com/Erik-Bjerke/Numori" target="_blank" rel="noopener noreferrer"
                   class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline">
                   <Icon name="mdi:github" class="w-3.5 h-3.5 block" />
                   GitHub
                 </a>
                 <div class="pt-1">
-                  <UiButton variant="outline" color="gray" size="sm" @click="handleCheckUpdate" :disabled="checking" :loading="checking">
+                  <UiButton variant="outline" color="gray" size="sm" :disabled="checking" :loading="checking" @click="handleCheckUpdate">
                     <Icon v-if="!checking" name="mdi:update" class="w-3.5 h-3.5 block" />
                     {{ checking ? 'Checking...' : 'Check for updates' }}
                   </UiButton>
@@ -35,16 +36,20 @@
               <div class="space-y-1">
                 <p class="font-semibold text-gray-900 dark:text-gray-300">Author</p>
                 <p>Erik Bjerke — TheProcedural Software Ltd</p>
-                <a href="https://erikbjerke.com" target="_blank" rel="noopener noreferrer"
+                <a
+href="https://erikbjerke.com" target="_blank" rel="noopener noreferrer"
                   class="text-primary-600 dark:text-primary-400 hover:underline text-xs">erikbjerke.com</a>
                 <span class="text-xs text-gray-400 dark:text-gray-600 mx-1">·</span>
-                <a href="https://theprocedural.com" target="_blank" rel="noopener noreferrer"
+                <a
+href="https://theprocedural.com" target="_blank" rel="noopener noreferrer"
                   class="text-primary-600 dark:text-primary-400 hover:underline text-xs">theprocedural.com</a>
                 <br>
-                <a href="mailto:contact@erikbjerke.com"
+                <a
+href="mailto:contact@erikbjerke.com"
                   class="text-primary-600 dark:text-primary-400 hover:underline text-xs">contact@erikbjerke.com</a>
                 <span class="text-xs text-gray-400 dark:text-gray-600 mx-1">·</span>
-                <a href="mailto:contact@theprocedural.com"
+                <a
+href="mailto:contact@theprocedural.com"
                   class="text-primary-600 dark:text-primary-400 hover:underline text-xs">contact@theprocedural.com</a>
               </div>
 

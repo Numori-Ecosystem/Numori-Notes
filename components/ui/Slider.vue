@@ -9,7 +9,7 @@
     class="accent-primary-500"
     :class="widthClass"
     @input="onInput"
-  />
+  >
 </template>
 
 <script setup>

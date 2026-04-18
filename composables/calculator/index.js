@@ -1,7 +1,7 @@
 // Core calculator composable — orchestrates all modules
 import { variables, previousResult, previousResultCurrency, exchangeRates, ratesFetched, currencyMap, unitConversions } from './constants'
 import { evaluateMath, handleFunctions, formatResult } from './math'
-import { handleUnitExpression, findUnitCategory, convertFuelEconomy } from './units'
+import { handleUnitExpression, findUnitCategory } from './units'
 import { handleCurrencyExpression, fetchExchangeRates } from './currency'
 import { handleTimezoneExpression, handleDateExpression } from './datetime'
 import { calculateSum, calculateAverage, detectSumCurrency, calculateSumWithCurrency, calculateSub, calculateSubWithCurrency } from './aggregation'
@@ -64,7 +64,7 @@ const computeDimensionalDivision = (leftVar, rightVar) => {
 }
 
 // Dimensional multiplication — placeholder for future compound unit math
-const computeDimensionalMultiplication = (leftVar, rightVar) => {
+const computeDimensionalMultiplication = (_leftVar, _rightVar) => {
   // fuel_economy * distance doesn't make physical sense for fuel consumption
   // but we can handle rate * time = distance, etc. in the future
   return null
@@ -83,7 +83,7 @@ export const useCalculator = () => {
       const line = { input: input.trim(), result: null, error: null, type: 'calculation' }
       if (skipCodeBlocks) {
         const trimmed = line.input
-        if (!inCodeBlock && /^```[\w+#.\-]*$/.test(trimmed)) {
+        if (!inCodeBlock && /^```[\w+#.-]*$/.test(trimmed)) {
           inCodeBlock = true
           line.type = 'comment'
           results.push(line)
@@ -121,7 +121,7 @@ export const useCalculator = () => {
         if (result.liveTime) { line.liveTime = true; line.iana = result.iana || null }
         previousResult.value = result.value
         previousResultCurrency.value = result.currency || null
-      } catch (error) { /* silent */ }
+      } catch (_error) { /* silent */ }
       return
     }
 
@@ -135,7 +135,7 @@ export const useCalculator = () => {
       if (result.liveTime) { line.liveTime = true; line.iana = result.iana || null }
       previousResult.value = result.value
       previousResultCurrency.value = result.currency || null
-    } catch (error) {
+    } catch (_error) {
       // Fallback 1: strip leading text label and retry expression evaluation
       // e.g. "Arwen 900 eur + 20 eur" → evaluate "900 eur + 20 eur" = 920 EUR
       const exprMatch = input.match(/^[a-zA-Z\s]+?(?=\d)(.+)$/)
@@ -153,7 +153,7 @@ export const useCalculator = () => {
               previousResultCurrency.value = result.currency || null
               return
             }
-          } catch (e) { /* fall through to extractTrailingNumber */ }
+          } catch (_e) { /* fall through to extractTrailingNumber */ }
         }
       }
 
@@ -377,7 +377,7 @@ export const useCalculator = () => {
       const targetFormat = formatConvMatch[2].toLowerCase()
       try {
         let value
-        try { value = evaluateMath(sourceExpr) } catch (e) {
+        try { value = evaluateMath(sourceExpr) } catch (_e) {
           const unitResult = handleUnitExpression(sourceExpr)
           if (unitResult.hasUnit || unitResult.isConverted) value = unitResult.value
           else {
@@ -394,7 +394,7 @@ export const useCalculator = () => {
           return { value, display: `0o${intValue.toString(8)}` }
         if (targetFormat === 'sci' || targetFormat === 'scientific')
           return { value, display: value.toExponential() }
-      } catch (e) { /* fall through */ }
+      } catch (_e) { /* fall through */ }
     }
 
     // Unit conversion (try before currency since some overlap)

@@ -1,6 +1,7 @@
 <template>
-  <UiButton @click="toggleTheme" variant="ghost" color="gray" icon-only
-    :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+  <UiButton
+variant="ghost" color="gray" icon-only :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    @click="toggleTheme">
     <Icon v-if="isDark" name="mdi:weather-sunny" class="w-5 h-5 block" />
     <Icon v-else name="mdi:weather-night" class="w-5 h-5 block" />
   </UiButton>

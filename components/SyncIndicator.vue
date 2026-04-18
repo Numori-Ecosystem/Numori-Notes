@@ -6,7 +6,8 @@
     leave-active-class="transition-opacity duration-200"
     leave-from-class="opacity-100"
     leave-to-class="opacity-0">
-    <div v-if="syncing"
+    <div
+v-if="syncing"
       class="fixed bottom-4 right-4 z-50 p-2 rounded-full bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700"
       title="Syncing..."
       role="status"

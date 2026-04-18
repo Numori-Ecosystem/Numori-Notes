@@ -2,13 +2,13 @@
   <div>
     <!-- Group header -->
     <div
-      @click="$emit('toggle-collapse', group.id)"
       class="relative flex items-center gap-2 px-4 py-2.5 cursor-pointer border-b border-gray-200 dark:border-gray-800 bg-gray-100/60 dark:bg-gray-850/60 hover:bg-gray-200/60 dark:hover:bg-gray-800/60 transition-colors"
       :class="{
         'border-t-2 border-t-primary-500': dropIndicator === 'before',
         'border-b-2 border-b-primary-500': dropIndicator === 'after',
         'ring-2 ring-inset ring-primary-400 bg-primary-50/50 dark:bg-primary-900/20': dropIndicator === 'inside'
-      }">
+      }"
+      @click="$emit('toggle-collapse', group.id)">
       <Icon
         :name="group.collapsed ? 'mdi:chevron-right' : 'mdi:chevron-down'"
         class="w-4 h-4 flex-shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-150" />
@@ -22,9 +22,10 @@
         {{ noteCount }}
       </span>
       <!-- Three-dots menu -->
-      <div class="relative flex-shrink-0" ref="menuRef" tabindex="-1" @focusout="onFocusOut">
-        <UiButton @click.stop="toggleMenu" variant="ghost" color="gray" icon-only class="-m-1"
-          title="Group actions">
+      <div ref="menuRef" class="relative flex-shrink-0" tabindex="-1" @focusout="onFocusOut">
+        <UiButton
+variant="ghost" color="gray" icon-only class="-m-1" title="Group actions"
+          @click.stop="toggleMenu">
           <Icon name="mdi:dots-vertical" class="w-4 h-4" />
         </UiButton>
         <Transition
@@ -34,15 +35,16 @@
           leave-active-class="transition-all duration-100 ease-in"
           leave-from-class="opacity-100 scale-100"
           leave-to-class="opacity-0 scale-95">
-          <div v-show="menuOpen"
+          <div
+v-show="menuOpen"
             class="absolute right-0 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1"
             :class="dropUp ? 'bottom-full mb-1' : 'top-full mt-1'">
-            <UiButton @click.stop="handleAction('edit')" variant="menu-item">
+            <UiButton variant="menu-item" @click.stop="handleAction('edit')">
               <Icon name="mdi:pencil-outline" class="w-4 h-4" />
               Edit Group
             </UiButton>
             <UiDivider color="medium" />
-            <UiButton @click.stop="handleAction('delete')" variant="menu-item" color="red">
+            <UiButton variant="menu-item" color="red" @click.stop="handleAction('delete')">
               <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
               Delete Group
             </UiButton>

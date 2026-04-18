@@ -1,7 +1,8 @@
 <template>
   <div class="h-screen bg-white dark:bg-gray-925 flex flex-col overflow-hidden">
     <!-- Fixed top area: header -->
-    <header class="flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-3"
+    <header
+class="flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-3"
       :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
       <div class="max-w-5xl mx-auto flex items-center justify-between relative">
         <a href="/" class="text-sm text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
@@ -23,7 +24,8 @@
       <div class="text-center space-y-3">
         <Icon name="mdi:alert-circle-outline" class="w-12 h-12 text-gray-400 mx-auto" />
         <p class="text-gray-700 dark:text-gray-400">{{ error }}</p>
-        <a href="/"
+        <a
+href="/"
           class="inline-block px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg transition-colors">
           Go to Numori
         </a>
@@ -41,10 +43,12 @@
           Hint: {{ passwordHint }}
         </p>
         <UiAlert v-if="decryptError" color="red">{{ decryptError }}</UiAlert>
-        <UiInput v-model="passwordInput" type="password" placeholder="Share password"
+        <UiInput
+v-model="passwordInput" type="password" placeholder="Share password"
           :validate="false" @keyup.enter="decryptWithPassword" />
-        <UiButton @click="decryptWithPassword" :disabled="!passwordInput" :loading="decrypting"
-          variant="solid" color="primary" block>
+        <UiButton
+:disabled="!passwordInput" :loading="decrypting" variant="solid"
+          color="primary" block @click="decryptWithPassword">
           <Icon name="mdi:lock-open-outline" class="w-4 h-4" />
           Decrypt
         </UiButton>
@@ -54,7 +58,8 @@
     <!-- Shared note content -->
     <template v-else-if="note">
       <!-- Fixed top: note info + toolbar -->
-      <div class="flex-shrink-0 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-700"
+      <div
+class="flex-shrink-0 bg-gray-50 dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-700"
         :style="{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
         <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <!-- Note meta -->
@@ -90,7 +95,8 @@
       </div>
 
       <!-- Editor fills remaining height, only CM scrolls -->
-      <div class="flex-1 overflow-hidden shared-gutter-pattern"
+      <div
+class="flex-1 overflow-hidden shared-gutter-pattern"
         :style="{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }">
         <main class="h-full flex flex-col max-w-5xl mx-auto w-full bg-white dark:bg-gray-925 relative z-0 shared-editor-shadow">
           <NoteEditor
@@ -105,7 +111,8 @@
         </main>
       </div>
 
-      <ExportOptionsModal :is-open="showExportOptionsModal"
+      <ExportOptionsModal
+:is-open="showExportOptionsModal"
         @close="showExportOptionsModal = false"
         @confirm="handleExportConfirm" />
     </template>
@@ -130,7 +137,6 @@ const passwordInput = ref('')
 const passwordHint = ref(null)
 const decryptError = ref(null)
 const decrypting = ref(false)
-const showPasswordInput = ref(false)
 
 // View options
 const renderMarkdown = ref(true)

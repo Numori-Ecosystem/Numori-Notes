@@ -16,9 +16,10 @@
 
       <UiAlert v-if="success" color="green" class="mb-3">{{ success }}</UiAlert>
 
-      <form @submit.prevent="handleVerify" class="space-y-3">
+      <form class="space-y-3" @submit.prevent="handleVerify">
         <UiFormField label="Verification Code">
-          <UiInput v-model="code" type="text" required :maxlength="6" pattern="[0-9]{6}"
+          <UiInput
+v-model="code" type="text" required :maxlength="6" pattern="[0-9]{6}"
             validation-pattern="^[0-9]{6}$" validation-message="Enter a 6-digit code"
             placeholder="000000" />
         </UiFormField>
@@ -29,7 +30,7 @@
 
       <p class="text-center text-xs text-gray-500 dark:text-gray-500 mt-3">
         Didn't receive a code?
-        <UiButton variant="link" color="primary" @click="handleResend" :disabled="loading || resendCooldown > 0">
+        <UiButton variant="link" color="primary" :disabled="loading || resendCooldown > 0" @click="handleResend">
           {{ resendCooldown > 0 ? `Resend (${resendCooldown}s)` : 'Resend code' }}
         </UiButton>
       </p>

@@ -11,7 +11,8 @@
       leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-95"
     >
-      <div v-if="show" ref="panelRef"
+      <div
+v-if="show" ref="panelRef"
         class="absolute bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1"
         :class="[width, panelZ]"
         :style="positionStyle">
@@ -107,8 +108,8 @@ const positionStyle = computed(() => ({
 
 // Clamp the panel position so it stays within the viewport (8px margin)
 const updatePosition = () => {
-  let left = props.x
-  let top = props.y + props.offsetY
+  const left = props.x
+  const top = props.y + props.offsetY
 
   nextTick(() => {
     const el = panelRef.value

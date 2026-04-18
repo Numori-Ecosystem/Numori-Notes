@@ -45,9 +45,9 @@ export async function sendEmail({ to, subject, html }) {
   const transporter = getTransporter()
 
   if (!transporter) {
-    console.log(`[email] SMTP not configured. Would send to ${to}:`)
-    console.log(`  Subject: ${subject}`)
-    console.log(`  Body: ${html}`)
+    console.warn(`[email] SMTP not configured. Would send to ${to}:`)
+    console.warn(`  Subject: ${subject}`)
+    console.warn(`  Body: ${html}`)
     return { accepted: [to], preview: true }
   }
 

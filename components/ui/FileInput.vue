@@ -13,7 +13,7 @@
       :multiple="multiple"
       :disabled="disabled"
       @change="onChange"
-    />
+    >
   </label>
 </template>
 

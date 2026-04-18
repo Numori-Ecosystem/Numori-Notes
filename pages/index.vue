@@ -9,9 +9,11 @@
       @click="showEmailVerificationModal = true" />
 
     <!-- Mobile-friendly Toolbar -->
-    <div class="transition-all duration-300 ease-in-out flex-shrink-0 relative z-30"
+    <div
+class="transition-all duration-300 ease-in-out flex-shrink-0 relative z-30"
       :class="focusMode ? 'max-h-0 overflow-hidden opacity-0' : 'max-h-40 opacity-100'">
-      <AppHeader :current-note="currentNote" :inline-mode="showInlineResults" :markdown-mode="markdownMode"
+      <AppHeader
+:current-note="currentNote" :inline-mode="showInlineResults" :markdown-mode="markdownMode"
       :mod-label="modLabel"
       :selection-count="selectedNoteIds.length"
       :is-logged-in="auth.isLoggedIn.value"
@@ -48,7 +50,8 @@
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Sidebar - Notes List (desktop) -->
-      <aside class="flex-shrink-0 hidden lg:block transition-all duration-300 ease-in-out relative z-20"
+      <aside
+class="flex-shrink-0 hidden lg:block transition-all duration-300 ease-in-out relative z-20"
         :class="!focusMode && showSidebar ? 'w-80 opacity-100' : 'w-0 opacity-0 overflow-hidden'">
         <div class="w-80 h-full relative shadow-[4px_0_12px_-4px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_12px_-4px_rgba(0,0,0,0.5)]">
           <Transition
@@ -60,7 +63,8 @@
             leave-to-class="opacity-0">
             <div v-if="sidebarGlow" class="absolute inset-0 z-10 pointer-events-none bg-primary-500/25 dark:bg-primary-400/20" />
           </Transition>
-          <MainSidebar :notes="notes" :groups="groups" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" :pending-note-ids="pendingNoteIds" @new-note="createNote" @select-note="selectNote"
+          <MainSidebar
+:notes="notes" :groups="groups" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" :pending-note-ids="pendingNoteIds" @new-note="createNote" @select-note="selectNote"
             @delete-note="confirmDelete" @edit-note="openEditModal"
             @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
             @show-help="showHelp = true"
@@ -99,7 +103,7 @@
           leave-active-class="transition-opacity duration-200 ease-in"
           leave-from-class="opacity-100"
           leave-to-class="opacity-0">
-          <div v-if="showSidebar" @click="showSidebar = false" class="fixed inset-0 bg-black/50 z-20 lg:hidden" />
+          <div v-if="showSidebar" class="fixed inset-0 bg-black/50 z-20 lg:hidden" @click="showSidebar = false" />
         </Transition>
         <Transition
           enter-active-class="transition-transform duration-300 ease-out"
@@ -108,7 +112,8 @@
           leave-active-class="transition-transform duration-200 ease-in"
           leave-from-class="translate-x-0"
           leave-to-class="-translate-x-full">
-          <aside v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
+          <aside
+v-if="showSidebar" class="fixed inset-y-0 left-0 z-30 w-80 shadow-xl lg:hidden"
             :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)' }">
             <div class="h-full relative">
               <Transition
@@ -120,7 +125,8 @@
                 leave-to-class="opacity-0">
                 <div v-if="sidebarGlow" class="absolute inset-0 z-10 pointer-events-none bg-primary-500/25 dark:bg-primary-400/20" />
               </Transition>
-              <MainSidebar :notes="notes" :groups="groups" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" :pending-note-ids="pendingNoteIds" @new-note="createNote" @select-note="selectNote"
+              <MainSidebar
+:notes="notes" :groups="groups" :current-note-id="currentNoteId" :all-tags="allTags" :is-logged-in="auth.isLoggedIn.value" :user="auth.user.value" :shared-note-ids="sharedNoteIds" :shared-notes-map="sharedNotesMap" :analytics-notes-map="analyticsNotesMap" :pending-note-ids="pendingNoteIds" @new-note="createNote" @select-note="selectNote"
               @delete-note="confirmDelete" @edit-note="openEditModal"
               @bulk-delete="confirmBulkDelete" @selection-change="onSelectionChange"
               @show-help="showHelp = true"
@@ -153,17 +159,19 @@
       </Teleport>
 
       <!-- Editor Area -->
-      <main class="flex-1 overflow-hidden flex flex-col isolate transition-[padding] duration-300 relative"
+      <main
+class="flex-1 overflow-hidden flex flex-col isolate transition-[padding] duration-300 relative"
         :style="focusMode ? { paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' } : {}">
         <!-- Header shadow overlay -->
-        <div class="absolute top-0 left-0 right-0 h-3 z-10 pointer-events-none bg-gradient-to-b from-black/[0.06] to-transparent dark:from-black/[0.25]"></div>
-        <NoteEditor v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-inline="showInlineResults !== 'off'"
+        <div class="absolute top-0 left-0 right-0 h-3 z-10 pointer-events-none bg-gradient-to-b from-black/[0.06] to-transparent dark:from-black/[0.25]"/>
+        <NoteEditor
+v-if="currentNote" ref="editorRef" :content="currentNote.content" :show-inline="showInlineResults !== 'off'"
           :inline-align="showInlineResults === 'off' ? 'left' : showInlineResults"
           :locale-preferences="localePrefs.preferences"
           :markdown-mode="markdownMode"
           :shortcut-handlers="shortcutHandlers"
-          @update:content="updateContent"
-          :placeholder="'Start typing... Try: 10 + 20, or use # for headers, // for comments'" />
+          :placeholder="'Start typing... Try: 10 + 20, or use # for headers, // for comments'"
+          @update:content="updateContent" />
         <div v-else class="flex items-center justify-center h-full px-6">
           <div class="text-center max-w-sm space-y-6">
             <!-- Icon -->
@@ -179,11 +187,11 @@
 
             <!-- Action buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <UiButton @click="createNote" size="lg" class="w-full sm:w-auto">
+              <UiButton size="lg" class="w-full sm:w-auto" @click="createNote">
                 <Icon name="mdi:plus" class="w-5 h-5" />
                 Create new note
               </UiButton>
-              <UiButton @click="showSidebar = true" variant="outline" color="white" size="lg" class="w-full sm:w-auto">
+              <UiButton variant="outline" color="white" size="lg" class="w-full sm:w-auto" @click="showSidebar = true">
                 <Icon name="mdi:menu" class="w-5 h-5" />
                 Browse notes
               </UiButton>
@@ -199,11 +207,14 @@
     </div>
 
     <!-- Mobile: formatting toolbar (hidden on native apps where native keyboard toolbar is used) -->
-    <div v-if="currentNote && !isNativeApp" class="lg:hidden fixed left-0 right-0 z-10 transition-[bottom] duration-150 ease-out px-1.5 pb-1.5"
+    <div
+v-if="currentNote && !isNativeApp" class="lg:hidden fixed left-0 right-0 z-10 transition-[bottom] duration-150 ease-out px-1.5 pb-1.5"
       :style="{ bottom: mobileKeyboardOffset + 'px' }">
-      <div class="overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-xl"
+      <div
+class="overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-xl"
         :style="{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
-        <FormattingToolbar container-class="px-2 py-1.5"
+        <FormattingToolbar
+container-class="px-2 py-1.5"
           :show-dismiss="hasVirtualKeyboard"
           :can-undo="editorRef?.canUndo ?? false"
           :can-redo="editorRef?.canRedo ?? false"
@@ -217,7 +228,8 @@
     </div>
 
     <!-- Modals -->
-    <NoteMetaModal :is-open="showMetaModal" :title="currentNote?.title || ''"
+    <NoteMetaModal
+:is-open="showMetaModal" :title="currentNote?.title || ''"
       :internal-name="currentNote?.internalName || ''"
       :description="currentNote?.description || ''"
       :tags="currentNote?.tags || []"
@@ -237,7 +249,8 @@
     <AboutModal :is-open="showAbout" :check-for-update="sw.checkForUpdate" @close="showAbout = false" />
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
-    <SettingsModal :is-open="showLocaleSettings"
+    <SettingsModal
+:is-open="showLocaleSettings"
       :preferences="localePrefs.preferences"
       :apply-preset="localePrefs.applyPreset"
       :set-preference="localePrefs.setPreference"
@@ -247,27 +260,32 @@
       @close="showLocaleSettings = false"
       @relaunch-wizard="showLocaleSettings = false; welcomeWizard.isOpen.value = true" />
 
-    <ExportOptionsModal :is-open="showExportOptions"
+    <ExportOptionsModal
+:is-open="showExportOptions"
       @close="showExportOptions = false"
       @confirm="handleExportConfirm" />
 
-    <ConfirmDeleteModal :is-open="showDeleteConfirm"
+    <ConfirmDeleteModal
+:is-open="showDeleteConfirm"
       @close="showDeleteConfirm = false"
       @confirm="handleDeleteConfirm" />
 
-    <ConfirmBulkDeleteModal :is-open="showBulkDeleteConfirm"
+    <ConfirmBulkDeleteModal
+:is-open="showBulkDeleteConfirm"
       :count="pendingBulkDeleteIds.length"
       @close="showBulkDeleteConfirm = false"
       @confirm="handleBulkDeleteConfirm" />
 
-    <WelcomeWizard :is-open="welcomeWizard.isOpen.value"
+    <WelcomeWizard
+:is-open="welcomeWizard.isOpen.value"
       :preferences="localePrefs.preferences"
       :apply-preset="localePrefs.applyPreset"
       :save-preferences="localePrefs.save"
       @complete="welcomeWizard.complete()" />
 
     <!-- Auth & Share modals -->
-    <AuthModal :is-open="showAuthModal"
+    <AuthModal
+:is-open="showAuthModal"
       :loading="auth.loading.value"
       :error="auth.error.value"
       @close="showAuthModal = false"
@@ -277,14 +295,16 @@
       @verify-recovery="handleVerifyRecovery"
       @reset-password="handleResetPassword" />
 
-    <EmailVerificationModal :is-open="showEmailVerificationModal"
+    <EmailVerificationModal
+:is-open="showEmailVerificationModal"
       :loading="auth.loading.value"
       :error="auth.error.value"
       @close="showEmailVerificationModal = false"
       @verify="handleVerifyEmail"
       @resend="handleResendVerification" />
 
-    <ShareModal :is-open="showShareModal"
+    <ShareModal
+:is-open="showShareModal"
       :note="currentNote"
       :is-logged-in="auth.isLoggedIn.value"
       :user-name="auth.user.value?.name || ''"
@@ -295,12 +315,14 @@
       @unshare="handleShareModalUnshare"
       @open-analytics="handleOpenAnalytics" />
 
-    <ShareAnalyticsModal :is-open="showAnalyticsModal"
+    <ShareAnalyticsModal
+:is-open="showAnalyticsModal"
       :hash="analyticsHash"
       :auth-headers="auth.authHeaders.value"
       @close="showAnalyticsModal = false" />
 
-    <ProfileModal :is-open="showProfileModal"
+    <ProfileModal
+:is-open="showProfileModal"
       :user="auth.user.value"
       :last-synced-at="lastSyncedAt"
       :auth-headers="auth.authHeaders.value"
@@ -318,7 +340,8 @@
     <SyncIndicator :syncing="syncing" />
 
     <!-- Group modals -->
-    <GroupModal :is-open="showGroupModal"
+    <GroupModal
+:is-open="showGroupModal"
       :editing-group-id="editingGroupId"
       :initial-name="editingGroupName"
       :initial-internal-name="editingGroupInternalName"
@@ -326,14 +349,16 @@
       @close="showGroupModal = false"
       @save="handleGroupModalSave" />
 
-    <DeleteGroupModal :is-open="showDeleteGroupModal"
+    <DeleteGroupModal
+:is-open="showDeleteGroupModal"
       :group-name="pendingDeleteGroup?.name || ''"
       :note-count="pendingDeleteGroupNoteCount"
       :other-groups="otherGroupsForDelete"
       @close="showDeleteGroupModal = false"
       @confirm="handleDeleteGroupConfirm" />
 
-    <AddToGroupModal :is-open="showAddToGroupModal"
+    <AddToGroupModal
+:is-open="showAddToGroupModal"
       :groups="groups"
       :current-group-id="addToGroupNoteId ? (notes.find(n => n.id === addToGroupNoteId)?.groupId || null) : null"
       @close="showAddToGroupModal = false; bulkGroupNoteIds = null; addToGroupNoteId = null"
@@ -349,11 +374,12 @@
     <ToastNotification :toasts="toast.toasts.value" />
 
     <!-- Focus mode exit button -->
-    <UiButton v-if="focusMode" @click="focusMode = false"
-      variant="ghost" color="gray" icon-only
-      class="fixed z-50 pl-2.5 pb-2.5 rounded-bl-xl focus-exit-enter"
+    <UiButton
+v-if="focusMode" variant="ghost"
+      color="gray" icon-only class="fixed z-50 pl-2.5 pb-2.5 rounded-bl-xl focus-exit-enter"
       :style="{ top: 'env(safe-area-inset-top, 0px)', right: 'env(safe-area-inset-right, 0px)', paddingRight: '4px', paddingTop: '4px' }"
-      title="Exit focus mode">
+      title="Exit focus mode"
+      @click="focusMode = false">
       <Icon name="mdi:fullscreen-exit" class="w-4 h-4 block" />
     </UiButton>
   </div>
@@ -374,7 +400,7 @@ const toast = useToast()
 
 let _onDataWipe = null
 let _onSessionRevoked = null
-const { syncing, lastSyncedAt, syncError, pendingNoteIds, isOnline, sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds, () => _onDataWipe?.(), () => _onSessionRevoked?.(), removeWelcomeNoteIfNeeded, groups, saveGroups, deletedGroupIds, clearDeletedGroupIds)
+const { syncing, lastSyncedAt, syncError: _syncError, pendingNoteIds, isOnline: _isOnline, sync: _sync, syncNow, debouncedSync } = useSync(auth, notes, saveNotes, deletedIds, clearDeletedIds, () => _onDataWipe?.(), () => _onSessionRevoked?.(), removeWelcomeNoteIfNeeded, groups, saveGroups, deletedGroupIds, clearDeletedGroupIds)
 
 // If restore() found a stale token from a revoked session, clear in-memory notes
 // (IndexedDB was already cleared by restore, but loadNotes ran first)
@@ -480,7 +506,7 @@ const handleReorderAll = (orders) => {
   syncNow()
 }
 
-const handleReorderWithinGroup = ({ groupId, orderedNoteIds }) => {
+const handleReorderWithinGroup = ({ groupId: _groupId, orderedNoteIds }) => {
   const now = new Date().toISOString()
   orderedNoteIds.forEach((id, index) => {
     const note = notes.value.find(n => n.id === id)
@@ -495,7 +521,7 @@ const handleReorderWithinGroup = ({ groupId, orderedNoteIds }) => {
 }
 
 // Keyboard shortcuts — must be declared before refs so handlers can reference them
-const { isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShortcuts({
+const { isMac: _isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShortcuts({
   save: () => {
     // Notes auto-save, but we still intercept to prevent browser save dialog
   },
@@ -547,7 +573,7 @@ const showShareModal = ref(false)
 const showEmailVerificationModal = ref(false)
 
 // On native apps (iOS / Android), hide the HTML toolbar — native keyboard toolbar is used instead
-const { platform, isNative: isNativePlatform } = usePlatform()
+const { platform, isNative: _isNativePlatform } = usePlatform()
 const isNativeApp = platform === 'ios' || platform === 'android'
 const { hasVirtualKeyboard } = useHasVirtualKeyboard()
 
@@ -1131,7 +1157,7 @@ const handleExportById = (id) => {
 const handleCopyById = async (id) => {
   const note = findNote(id)
   if (!note) return
-  try { await copyToClipboard(note) } catch {}
+  try { await copyToClipboard(note) } catch { /* ignore */ }
 }
 
 const handlePrintById = (id) => {

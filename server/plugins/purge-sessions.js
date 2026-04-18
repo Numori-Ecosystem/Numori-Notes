@@ -23,7 +23,7 @@ export default defineNitroPlugin(async () => {
         $$DELETE FROM sessions WHERE expires_at IS NOT NULL AND expires_at < NOW()$$
       )
     `)
-    console.log('[purge-sessions] Using pg_cron (database-level scheduler)')
+    console.warn('[purge-sessions] Using pg_cron (database-level scheduler)')
     return
   } catch {
     // pg_cron not available — fall through to in-process scheduler
@@ -39,7 +39,7 @@ export default defineNitroPlugin(async () => {
     const timer = setTimeout(async () => {
       try {
         const count = await purgeExpiredSessions()
-        console.log(`[purge-sessions] Removed ${count} expired session(s)`)
+        console.warn(`[purge-sessions] Removed ${count} expired session(s)`)
       } catch (err) {
         console.error('[purge-sessions] Failed:', err.message)
       }
@@ -49,5 +49,5 @@ export default defineNitroPlugin(async () => {
   }
 
   scheduleNext()
-  console.log('[purge-sessions] Using in-process scheduler (nightly at 23:59)')
+  console.warn('[purge-sessions] Using in-process scheduler (nightly at 23:59)')
 })

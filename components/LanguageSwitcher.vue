@@ -17,16 +17,18 @@
 
               <!-- Language Options -->
               <div class="p-4 space-y-2">
-                <UiButton v-for="locale in availableLocales" :key="locale.code" @click="changeLocale(locale.code)"
-                  variant="ghost" color="gray" block
-                  class="p-4 rounded-xl h-auto" :class="[
+                <UiButton
+v-for="locale in availableLocales" :key="locale.code" variant="ghost"
+                  color="gray" block class="p-4 rounded-xl h-auto"
+                  :class="[
                     currentLocale.code === locale.code
                       ? 'bg-primary-50 dark:bg-gray-800 border-2 border-primary-500 dark:border-primary-400 shadow-sm'
                       : 'bg-gray-50 dark:bg-gray-925 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm'
-                  ]">
+                  ]" @click="changeLocale(locale.code)">
                   <div class="flex items-center gap-4">
                     <!-- Flag/Icon -->
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold" :class="[
+                    <div
+class="w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold" :class="[
                       currentLocale.code === locale.code
                         ? 'bg-primary-100 dark:bg-gray-850 text-primary-600 dark:text-primary-400'
                         : 'bg-gray-200 dark:bg-gray-850 text-gray-600 dark:text-gray-400-muted'
@@ -36,7 +38,8 @@
 
                     <!-- Language Info -->
                     <div class="text-left">
-                      <div class="font-semibold text-lg" :class="[
+                      <div
+class="font-semibold text-lg" :class="[
                         currentLocale.code === locale.code
                           ? 'text-primary-700 dark:text-primary-400'
                           : 'text-gray-900 dark:text-gray-400'

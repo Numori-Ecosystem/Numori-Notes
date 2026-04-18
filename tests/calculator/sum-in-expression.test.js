@@ -6,7 +6,7 @@
  * Empty lines act as group separators.
  */
 import { describe, it, expect } from 'vitest'
-import { calcLines, calcLinesLastNum, useCalculator } from './helpers'
+import { calcLines, useCalculator } from './helpers'
 
 describe('Sum inside expressions (not standalone)', () => {
   it('variable minus sum with empty line separator', () => {

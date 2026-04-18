@@ -31,7 +31,8 @@
         </UiButton>
 
         <div v-if="showMoveOptions" class="pl-8 space-y-1">
-          <UiButton v-for="g in otherGroups" :key="g.id" variant="ghost" color="gray" size="sm" block
+          <UiButton
+v-for="g in otherGroups" :key="g.id" variant="ghost" color="gray" size="sm" block
             @click="$emit('confirm', 'move', g.id)">
             <Icon name="mdi:folder-outline" class="w-4 h-4 text-primary-500 flex-shrink-0" />
             {{ g.name }}

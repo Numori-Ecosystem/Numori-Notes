@@ -1,5 +1,5 @@
 <template>
-  <div class="relative" ref="containerRef">
+  <div ref="containerRef" class="relative">
     <!-- Trigger button: shows selected value, placeholder, or loading spinner -->
     <button
       type="button"
@@ -18,7 +18,8 @@
           {{ selectedLabel || placeholder || 'Select...' }}
         </span>
       </template>
-      <Icon name="mdi:chevron-down" class="w-4 h-4 flex-shrink-0 text-gray-400 transition-transform"
+      <Icon
+name="mdi:chevron-down" class="w-4 h-4 flex-shrink-0 text-gray-400 transition-transform"
         :class="{ 'rotate-180': isOpen }" />
     </button>
 
@@ -31,7 +32,8 @@
       leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-95"
     >
-      <div v-show="isOpen"
+      <div
+v-show="isOpen"
         class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden"
         :class="dropUp ? 'bottom-full mb-1 mt-0' : ''">
         <!-- Search input for filtering options -->
@@ -44,11 +46,12 @@
             class="w-full px-2.5 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-300 outline-none focus:ring-1 focus:ring-primary-500 placeholder-gray-400"
             @keydown.escape="close"
             @keydown.enter.prevent="selectFirst"
-          />
+          >
         </div>
         <!-- Options list: ungrouped flat list or grouped sections -->
         <ul class="max-h-48 overflow-y-auto py-1">
-          <li v-if="filteredOptions.length === 0 && filteredGroups.length === 0"
+          <li
+v-if="filteredOptions.length === 0 && filteredGroups.length === 0"
             class="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">
             No results
           </li>
@@ -58,9 +61,9 @@
             <li
               v-for="opt in filteredOptions"
               :key="opt.value"
-              @click="select(opt.value)"
               class="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer transition-colors"
               :class="optionClass(opt.value)"
+              @click="select(opt.value)"
             >
               <Icon v-if="opt.icon" :name="opt.icon" class="w-4 h-4 flex-shrink-0" />
               <span class="truncate">{{ opt.label }}</span>
@@ -76,9 +79,9 @@
               <li
                 v-for="opt in group.options"
                 :key="opt.value"
-                @click="select(opt.value)"
                 class="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer transition-colors"
                 :class="optionClass(opt.value)"
+                @click="select(opt.value)"
               >
                 <Icon v-if="opt.icon" :name="opt.icon" class="w-4 h-4 flex-shrink-0" />
                 <span class="truncate">{{ opt.label }}</span>

@@ -2,7 +2,7 @@
   <header class="bg-gray-100 dark:bg-gray-900 flex-shrink-0" :style="{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }">
     <div class="flex flex-col px-3 py-1.5 gap-0.5">
       <!-- Top row: Centered title -->
-      <UiButton @click="$emit('show-meta')" variant="ghost" color="gray" class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md">
+      <UiButton variant="ghost" color="gray" class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md" @click="$emit('show-meta')">
         <h1 class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-400 truncate">
           {{ currentNote?.title || 'Numori' }}
         </h1>
@@ -12,11 +12,13 @@
       <div class="flex items-center gap-1">
         <!-- Left: Sidebar toggle + dropdowns -->
         <div class="flex items-center gap-0.5">
-          <UiButton @click="$emit('toggle-sidebar')" variant="ghost" color="gray" icon-only
-            title="Toggle notes list">
+          <UiButton
+variant="ghost" color="gray" icon-only title="Toggle notes list"
+            @click="$emit('toggle-sidebar')">
             <Icon name="mdi:menu" class="w-4.5 h-4.5 block" />
           </UiButton>
-          <FileDropdown :has-note="!!currentNote" :mod-label="modLabel" :selection-count="selectionCount"
+          <FileDropdown
+:has-note="!!currentNote" :mod-label="modLabel" :selection-count="selectionCount"
             @new-note="$emit('file-new')"
             @open-file="$emit('file-open')"
             @duplicate="$emit('file-duplicate')"
@@ -42,7 +44,8 @@
         </div>
 
         <!-- Center: Markdown formatting (desktop only) -->
-        <FormattingToolbar class="hidden lg:flex flex-1 justify-center"
+        <FormattingToolbar
+class="hidden lg:flex flex-1 justify-center"
           :can-undo="canUndo"
           :can-redo="canRedo"
           @apply-format="(before, after) => $emit('apply-format', before, after)"
@@ -52,26 +55,27 @@
           @redo="$emit('redo')" />
 
         <!-- Spacer on mobile -->
-        <div class="flex-1 lg:hidden"></div>
+        <div class="flex-1 lg:hidden"/>
 
         <!-- Right: Actions -->
         <div class="flex items-center gap-0.5">
           <!-- Inline results mode group -->
           <UiButtonsGroup
             :model-value="inlineMode"
-            @update:model-value="$emit('update:inline-mode', $event)"
             :options="[
               { value: 'left', icon: 'mdi:dock-left', title: 'Results on left' },
               { value: 'off', icon: 'mdi:eye-off-outline', title: 'Results off' },
               { value: 'right', icon: 'mdi:dock-right', title: 'Results on right' },
             ]"
+            @update:model-value="$emit('update:inline-mode', $event)"
           />
 
           <UiDivider direction="vertical" class="mx-0.5" />
 
           <!-- Focus mode -->
-          <UiButton @click="$emit('toggle-focus')" variant="ghost" color="gray" icon-only
-            title="Focus mode">
+          <UiButton
+variant="ghost" color="gray" icon-only title="Focus mode"
+            @click="$emit('toggle-focus')">
             <Icon name="mdi:fullscreen" class="w-5 h-5 block" />
           </UiButton>
         </div>

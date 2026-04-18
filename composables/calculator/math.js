@@ -85,7 +85,7 @@ export const handleFunctions = (expr) => {
         const mathFn = fn.toLowerCase() === 'round' ? Math.round : fn.toLowerCase() === 'ceil' ? Math.ceil : Math.floor
         return mathFn(unitResult.value).toString()
       }
-    } catch (e) { /* fall through */ }
+    } catch (_e) { /* fall through */ }
     return `${fn}(${inner})`
   })
 

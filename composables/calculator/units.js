@@ -1,6 +1,6 @@
 // Unit conversion logic
 import { unitConversions, variables } from './constants'
-import { SCALE_SUFFIX, SCALED_NUM_RE, applyScale } from './scales'
+import { SCALED_NUM_RE, applyScale } from './scales'
 import { evaluateMath } from './math'
 
 // Build a set of all known single-word unit keys for spaceless normalization.
@@ -8,7 +8,7 @@ import { evaluateMath } from './math'
 // can't appear glued to a number without a space.
 const _buildUnitSet = () => {
   const units = new Set()
-  for (const [category, map] of Object.entries(unitConversions)) {
+  for (const [_category, map] of Object.entries(unitConversions)) {
     for (const key of Object.keys(map)) {
       // Only single-word keys (no spaces, no slashes)
       if (/^[a-zA-Z_°]+$/.test(key)) {
@@ -231,7 +231,7 @@ export const parseUnitExpression = (expr, category) => {
 
   // Try extracting a unit from expressions with multiplication, division, or parentheses.
   // Handles cases like "(20 cm * 4 + 5%)", "20 cm * 4", "(10 kg * 3)"
-  if (/[*\/()]/.test(normalized) || (/[+-]/.test(normalized) && /[()]/.test(normalized))) {
+  if (/[*/()]/.test(normalized) || (/[+-]/.test(normalized) && /[()]/.test(normalized))) {
     const unitCandidatePattern = /\b([a-zA-Z][a-zA-Z\s]*[a-zA-Z]|[a-zA-Z])\b/g
     let unitMatch
     let foundUnit = null
@@ -256,7 +256,7 @@ export const parseUnitExpression = (expr, category) => {
       try {
         const value = evaluateMath(stripped)
         return value * foundInfo.factor
-      } catch (e) { /* fall through */ }
+      } catch (_e) { /* fall through */ }
     }
   }
 
@@ -285,7 +285,7 @@ export const parseUnitExpression = (expr, category) => {
           const val = evaluateMath(part.trim())
           if (total === null) total = val
           else total = op === '+' ? total + val : total - val
-        } catch (e) { return null }
+        } catch (_e) { return null }
       }
     }
     return total
@@ -294,7 +294,7 @@ export const parseUnitExpression = (expr, category) => {
   // Try evaluating as pure math  // Try evaluating as pure math
   try {
     return evaluateMath(expr)
-  } catch (e) { return null }
+  } catch (_e) { return null }
 }
 
 // Parse compound units like "1 meter 20 cm"
@@ -511,7 +511,7 @@ export const handleUnitExpression = (input) => {
       try {
         const value = evaluateMath(stripped)
         return { value, unit: bestUnit, category: bestInfo.category, hasUnit: true, isConverted: true }
-      } catch (e) { /* fall through */ }
+      } catch (_e) { /* fall through */ }
     }
   }
 

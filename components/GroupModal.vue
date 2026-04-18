@@ -12,11 +12,13 @@
 
       <div class="space-y-4">
         <UiFormField label="Name">
-          <UiInput v-model="localName" type="text" ref="nameInput" placeholder="Group name" :validate="false"
+          <UiInput
+ref="nameInput" v-model="localName" type="text" placeholder="Group name" :validate="false"
             @keydown.enter="save" />
         </UiFormField>
         <UiFormField label="Internal Name" hint="Auto-generated from name. Edit to customise.">
-          <UiInput v-model="localInternalName" type="text" placeholder="group_name" :validate="false"
+          <UiInput
+v-model="localInternalName" type="text" placeholder="group_name" :validate="false"
             @update:model-value="internalNameManuallyEdited = true" />
         </UiFormField>
       </div>
@@ -25,7 +27,7 @@
         <UiButton variant="ghost" color="gray" @click="$emit('close')">
           Cancel
         </UiButton>
-        <UiButton @click="save" :disabled="!localName.trim()">
+        <UiButton :disabled="!localName.trim()" @click="save">
           {{ editingGroupId ? 'Save' : 'Create' }}
         </UiButton>
       </div>

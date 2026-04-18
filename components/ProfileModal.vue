@@ -1,11 +1,12 @@
 <template>
-  <UiModal :show="isOpen" max-width="md" @close="$emit('close')" padding="p-2 sm:p-4" panel-class="max-h-[85vh]">
+  <UiModal :show="isOpen" max-width="md" padding="p-2 sm:p-4" panel-class="max-h-[85vh]" @close="$emit('close')">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
               <div class="flex items-center gap-2 min-w-0">
-                <UiButton v-if="activeSection !== 'main'" variant="ghost" color="primary" size="sm" @click="goBack"
-                  class="flex-shrink-0 -ml-2">
+                <UiButton
+v-if="activeSection !== 'main'" variant="ghost" color="primary" size="sm" class="flex-shrink-0 -ml-2"
+                  @click="goBack">
                   <Icon name="mdi:arrow-left" class="block w-4 h-4" />
                   <span class="hidden sm:inline">Back</span>
                 </UiButton>
@@ -13,8 +14,9 @@
                   {{ activeSection === 'main' ? 'Profile' : sectionTitle }}
                 </h2>
               </div>
-              <UiButton variant="ghost" color="gray" icon-only @click="$emit('close')"
-                class="flex-shrink-0">
+              <UiButton
+variant="ghost" color="gray" icon-only class="flex-shrink-0"
+                @click="$emit('close')">
                 <Icon name="mdi:close" class="block w-5 h-5" />
               </UiButton>
             </div>
@@ -35,18 +37,18 @@
                 <!-- Profile card -->
                 <div class="relative rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-900/20 dark:to-primary-800/10 border border-primary-100 dark:border-primary-900/30 px-4 py-5">
                   <div class="flex items-center gap-4">
-                    <UiButton variant="ghost" @click="activeSection = 'avatar'" class="relative group flex-shrink-0" title="Change avatar">
+                    <UiButton variant="ghost" class="relative group flex-shrink-0" title="Change avatar" @click="activeSection = 'avatar'">
                       <UiAvatar :src="user?.avatarUrl" size="xl" ring />
                       <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <Icon name="mdi:camera" class="w-4 h-4 text-white" />
                       </div>
                     </UiButton>
                     <div class="flex-1 min-w-0">
-                      <UiButton variant="ghost" @click="activeSection = 'edit'" class="flex items-center gap-1.5 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30" title="Edit profile">
+                      <UiButton variant="ghost" class="flex items-center gap-1.5 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30" title="Edit profile" @click="activeSection = 'edit'">
                         <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ user?.name || 'No name set' }}</p>
                         <Icon name="mdi:pencil-outline" class="w-3 h-3 text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                       </UiButton>
-                      <UiButton variant="ghost" @click="activeSection = 'edit'" class="flex items-center gap-1.5 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30 mt-0.5" title="Edit profile">
+                      <UiButton variant="ghost" class="flex items-center gap-1.5 group rounded px-1 -mx-1 hover:bg-primary-200/40 dark:hover:bg-primary-800/30 mt-0.5" title="Edit profile" @click="activeSection = 'edit'">
                         <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user?.email }}</p>
                         <Icon name="mdi:pencil-outline" class="w-3 h-3 text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                       </UiButton>
@@ -59,17 +61,17 @@
 
                 <!-- Quick stats -->
                 <div class="grid grid-cols-3 gap-2">
-                  <UiButton variant="ghost" color="gray" @click="$emit('show-notes')" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700">
+                  <UiButton variant="ghost" color="gray" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700" @click="$emit('show-notes')">
                     <Icon name="mdi:note-multiple-outline" class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
                     <p class="text-lg font-semibold text-gray-900 dark:text-gray-200 leading-none">{{ user?.stats?.notesCount ?? '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Notes</p>
                   </UiButton>
-                  <UiButton variant="ghost" color="gray" @click="openSharedSection" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700">
+                  <UiButton variant="ghost" color="gray" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700" @click="openSharedSection">
                     <Icon name="mdi:share-variant-outline" class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
                     <p class="text-lg font-semibold text-gray-900 dark:text-gray-200 leading-none">{{ user?.stats?.sharedCount ?? '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Shared</p>
                   </UiButton>
-                  <UiButton variant="ghost" color="gray" @click="$emit('sync-now')" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700">
+                  <UiButton variant="ghost" color="gray" class="group flex flex-col items-center gap-1 px-2 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-primary-300 dark:hover:border-primary-700" @click="$emit('sync-now')">
                     <Icon name="mdi:cloud-sync-outline" class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
                     <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 leading-snug break-words capitalize">{{ lastSyncedAt ? formatDate(lastSyncedAt) : '—' }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wide">Synced</p>
@@ -88,7 +90,8 @@
                   <UiButtonsListItem icon="mdi:shield-lock-outline" @click="activeSection = 'security'">Security</UiButtonsListItem>
                   <UiButtonsListItem icon="mdi:devices" @click="openSessionsSection">Active Sessions</UiButtonsListItem>
                     <!-- Privacy toggle inline -->
-                    <UiButtonsListItem icon="mdi:shield-account-outline" :chevron="false"
+                    <UiButtonsListItem
+icon="mdi:shield-account-outline" :chevron="false"
                       :disabled="savingPrivacy" @click="togglePrivacy">
                       <div class="flex-1 min-w-0">
                         <span>Privacy protection</span>
@@ -123,13 +126,15 @@
                     <Icon name="mdi:image-plus" class="w-10 h-10 text-gray-400" />
                   </div>
                   <p class="text-sm text-gray-600 dark:text-gray-400">Choose an image for your avatar</p>
-                  <UiFileInput accept="image/*" @select="onFileSelect"
-                    class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg">
+                  <UiFileInput
+accept="image/*" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg"
+                    @select="onFileSelect">
                     <Icon name="mdi:upload" class="w-4 h-4" />
                     Upload Image
                   </UiFileInput>
-                  <UiButton v-if="user?.avatarUrl" variant="ghost" color="red" size="xs" @click="removeAvatar"
-                    class="block mx-auto mt-2">
+                  <UiButton
+v-if="user?.avatarUrl" variant="ghost" color="red" size="xs" class="block mx-auto mt-2"
+                    @click="removeAvatar">
                     Remove current avatar
                   </UiButton>
                 </div>
@@ -137,12 +142,14 @@
                 <div v-else class="space-y-3">
                   <AvatarEditor :image-source="avatarImageSrc" :canvas-size="editorCanvasSize" @update="onAvatarCropped" />
                   <div class="flex gap-2">
-                    <UiButton variant="solid" color="gray" @click="avatarImageSrc = null"
-                      class="flex-1">
+                    <UiButton
+variant="solid" color="gray" class="flex-1"
+                      @click="avatarImageSrc = null">
                       Choose Different
                     </UiButton>
-                    <UiButton variant="solid" color="primary" :loading="saving" @click="saveAvatar"
-                      class="flex-1">
+                    <UiButton
+variant="solid" color="primary" :loading="saving" class="flex-1"
+                      @click="saveAvatar">
                       Save Avatar
                     </UiButton>
                   </div>
@@ -180,7 +187,8 @@
                   <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
                 </div>
 
-                <UiProgressBar v-if="reEncryptProgress" label="Re-encrypting notes…" show-value
+                <UiProgressBar
+v-if="reEncryptProgress" label="Re-encrypting notes…" show-value
                   :current="reEncryptProgress.current" :total="reEncryptProgress.total" />
 
                 <UiButton variant="solid" color="primary" block :loading="saving" :disabled="!currentPassword || !newPassword || newPassword !== confirmNewPassword || newPassword.length < 8" @click="savePassword">
@@ -196,7 +204,8 @@
 
                 <!-- Password recovery toggle -->
                 <div class="px-3 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 space-y-2">
-                  <UiButton variant="ghost" block :disabled="savingSecurity"
+                  <UiButton
+variant="ghost" block :disabled="savingSecurity"
                     class="px-0 py-0 justify-between"
                     @click="togglePasswordRecovery">
                     <div class="flex items-center gap-2 min-w-0">
@@ -219,16 +228,16 @@
                     </div>
                     <UiSelect
                       :model-value="sessionDuration"
-                      @update:model-value="sessionDuration = $event; saveSessionDuration()"
                       :disabled="savingSessionDuration"
-                      :block="false" size="sm"
-                      aria-label="Session duration"
+                      :block="false"
+                      size="sm" aria-label="Session duration"
                       :options="[
                         { value: 3600, label: '1 hour' },
                         { value: 86400, label: '1 day' },
                         { value: 604800, label: '7 days' },
                         { value: 2592000, label: '30 days' },
-                      ]" />
+                      ]"
+                      @update:model-value="sessionDuration = $event; saveSessionDuration()" />
                   </div>
                   <p class="text-xs text-gray-500 dark:text-gray-500">
                     How long you stay logged in. Shorter sessions are more secure. Changes apply on next login.
@@ -267,12 +276,14 @@
                 </UiFormField>
 
                 <!-- Confirmation prompt -->
-                <div v-if="confirmingAction" class="rounded-lg border p-4 space-y-3"
+                <div
+v-if="confirmingAction" class="rounded-lg border p-4 space-y-3"
                     :class="confirmingAction === 'data'
                       ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-800'
                       : 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800'">
                     <div class="flex gap-2.5">
-                      <Icon :name="confirmingAction === 'data' ? 'mdi:database-remove-outline' : 'mdi:account-remove-outline'"
+                      <Icon
+:name="confirmingAction === 'data' ? 'mdi:database-remove-outline' : 'mdi:account-remove-outline'"
                         class="w-5 h-5 flex-shrink-0 mt-0.5"
                         :class="confirmingAction === 'data' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'" />
                       <div class="text-xs space-y-1.5">
@@ -287,12 +298,14 @@
                       </div>
                     </div>
                     <div class="flex gap-2">
-                      <UiButton variant="outline" color="gray" @click="confirmingAction = null"
-                        class="flex-1">
+                      <UiButton
+variant="outline" color="gray" class="flex-1"
+                        @click="confirmingAction = null">
                         Cancel
                       </UiButton>
-                      <UiButton variant="solid" :color="confirmingAction === 'data' ? 'amber' : 'red'" :loading="saving" @click="executeConfirmedAction"
-                        class="flex-1">
+                      <UiButton
+variant="solid" :color="confirmingAction === 'data' ? 'amber' : 'red'" :loading="saving" class="flex-1"
+                        @click="executeConfirmedAction">
                         {{ confirmingAction === 'data' ? 'Delete All Data' : 'Delete Account' }}
                       </UiButton>
                     </div>
@@ -324,7 +337,8 @@
                     Close all other sessions
                   </UiButton>
 
-                  <div v-for="s in sessions" :key="s.id"
+                  <div
+v-for="s in sessions" :key="s.id"
                     class="px-3 py-2.5 rounded-lg border"
                     :class="s.isCurrent
                       ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'
@@ -332,13 +346,16 @@
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-1.5">
-                          <Icon :name="getDeviceIcon(s.deviceName)" class="w-4 h-4 flex-shrink-0"
+                          <Icon
+:name="getDeviceIcon(s.deviceName)" class="w-4 h-4 flex-shrink-0"
                             :class="s.isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400'" />
-                          <p class="text-sm font-medium truncate"
+                          <p
+class="text-sm font-medium truncate"
                             :class="s.isCurrent ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-200'">
                             {{ s.deviceName || 'Unknown device' }}
                           </p>
-                          <span v-if="s.isCurrent"
+                          <span
+v-if="s.isCurrent"
                             class="text-[10px] px-1.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex-shrink-0">
                             current
                           </span>
@@ -355,9 +372,10 @@
                           </p>
                         </div>
                       </div>
-                      <UiButton v-if="!s.isCurrent" variant="ghost" color="red" size="xs" icon-only :disabled="savingSessions" @click="closeSession(s.id)"
-                        class="flex-shrink-0"
-                        title="Close session">
+                      <UiButton
+v-if="!s.isCurrent" variant="ghost" color="red" size="xs" icon-only :disabled="savingSessions" class="flex-shrink-0"
+                        title="Close session"
+                        @click="closeSession(s.id)">
                         <Icon name="mdi:close" class="w-4 h-4" />
                       </UiButton>
                     </div>
@@ -376,7 +394,8 @@
                   <Icon name="mdi:loading" class="w-6 h-6 text-gray-400 animate-spin" />
                 </div>
                 <template v-else-if="sharedNotes.length">
-                  <div v-for="sn in sharedNotes" :key="sn.hash"
+                  <div
+v-for="sn in sharedNotes" :key="sn.hash"
                     class="flex items-center gap-2 px-3 py-2.5 rounded-lg border"
                     :class="sn.isActive
                       ? 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800'
@@ -396,21 +415,25 @@
                       </p>
                     </div>
                     <div class="flex items-center gap-0.5 flex-shrink-0">
-                      <UiButton v-if="sn.collectAnalytics" variant="ghost" color="primary" size="xs" icon-only @click="openAnalytics(sn.hash)"
-                        title="View analytics">
+                      <UiButton
+v-if="sn.collectAnalytics" variant="ghost" color="primary" size="xs" icon-only title="View analytics"
+                        @click="openAnalytics(sn.hash)">
                         <Icon name="mdi:chart-bar" class="w-4 h-4" />
                       </UiButton>
-                      <UiButton variant="ghost" color="primary" size="xs" icon-only @click="copySharedLink(sn.hash)"
-                        title="Copy link">
+                      <UiButton
+variant="ghost" color="primary" size="xs" icon-only title="Copy link"
+                        @click="copySharedLink(sn.hash)">
                         <Icon :name="copiedHash === sn.hash ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" />
                       </UiButton>
-                      <UiButton variant="ghost" color="red" size="xs" icon-only :disabled="!sn.isActive" @click="handleUnshare(sn.hash)"
-                        :class="!sn.isActive ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : ''"
-                        :title="sn.isActive ? 'Stop sharing' : 'Already unshared'">
+                      <UiButton
+variant="ghost" color="red" size="xs" icon-only :disabled="!sn.isActive" :class="!sn.isActive ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : ''"
+                        :title="sn.isActive ? 'Stop sharing' : 'Already unshared'"
+                        @click="handleUnshare(sn.hash)">
                         <Icon name="mdi:link-variant-off" class="w-4 h-4" />
                       </UiButton>
-                      <UiButton variant="ghost" color="red" size="xs" icon-only @click="handlePurge(sn.hash)"
-                        title="Delete permanently">
+                      <UiButton
+variant="ghost" color="red" size="xs" icon-only title="Delete permanently"
+                        @click="handlePurge(sn.hash)">
                         <Icon name="mdi:delete-outline" class="w-4 h-4" />
                       </UiButton>
                     </div>

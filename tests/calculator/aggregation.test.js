@@ -145,7 +145,7 @@ describe('Edge Cases', () => {
   it('whitespace-only line returns null', () => { expect(calc('   ')).toBeNull() })
   it('very large number', () => {
     const result = calcNum('999999999 * 999999999')
-    expect(result).toBeCloseTo(999999998000000001, -5)
+    expect(result).toBeCloseTo(999999998000000000, -5)
   })
   it('very small number', () => {
     const result = calcNum('0.000001 * 0.000001')

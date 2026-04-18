@@ -8,7 +8,8 @@
         leave-active-class="transition-all duration-200 ease-in"
         leave-from-class="opacity-100 translate-y-0 scale-100"
         leave-to-class="opacity-0 -translate-y-1 scale-95">
-        <div v-for="toast in toasts" :key="toast.id"
+        <div
+v-for="toast in toasts" :key="toast.id"
           class="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium backdrop-blur-sm"
           :class="toastClass(toast.type)">
           <Icon v-if="toast.icon" :name="toast.icon" class="w-4 h-4 flex-shrink-0" />

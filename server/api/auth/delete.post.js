@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs'
 import { requireAuth } from '../../utils/auth.js'
 import { query } from '../../utils/db.js'
 import { notifyDataWipe } from '../../utils/syncBroadcast.js'
-import { revokeAllSessions } from '../../utils/session.js'
 
 export default defineEventHandler(async (event) => {
   const auth = await requireAuth(event)

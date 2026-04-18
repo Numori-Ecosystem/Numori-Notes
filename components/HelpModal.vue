@@ -1,10 +1,11 @@
 <template>
-  <UiModal :show="isOpen" max-width="5xl" @close="close" padding="md:p-4" panel-class="h-screen md:h-[90vh] safe-area-modal rounded-none md:rounded-lg">
+  <UiModal :show="isOpen" max-width="5xl" padding="md:p-4" panel-class="h-screen md:h-[90vh] safe-area-modal rounded-none md:rounded-lg" @close="close">
       <!-- Header -->
       <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 gap-2">
         <div class="flex items-center gap-2 flex-shrink-0">
-          <UiButton variant="ghost" color="gray" icon-only @click="showIndex = !showIndex"
-            :title="showIndex ? 'Hide index' : 'Show index'">
+          <UiButton
+variant="ghost" color="gray" icon-only :title="showIndex ? 'Hide index' : 'Show index'"
+            @click="showIndex = !showIndex">
             <Icon name="mdi:table-of-contents" class="block w-5 h-5" />
           </UiButton>
           <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none hidden sm:block">{{ $t('help.title') }}</h2>
@@ -23,13 +24,13 @@
             <UiButton
               v-if="searchQuery"
               variant="ghost" color="gray" icon-only size="xs"
-              @click="searchQuery = ''"
               class="absolute right-1.5 top-1/2 -translate-y-1/2"
+              @click="searchQuery = ''"
             >
               <Icon name="mdi:close" class="block w-4 h-4" />
             </UiButton>
           </div>
-          <UiButton variant="ghost" color="gray" icon-only @click="close" class="flex-shrink-0">
+          <UiButton variant="ghost" color="gray" icon-only class="flex-shrink-0" @click="close">
             <Icon name="mdi:close" class="block w-5 h-5" />
           </UiButton>
         </div>
@@ -38,7 +39,7 @@
       <!-- Body: Index sidebar + Content -->
       <div class="flex flex-1 overflow-hidden relative">
         <!-- Mobile index overlay backdrop -->
-        <div v-if="showIndex" class="fixed inset-0 bg-black bg-opacity-25 z-10 md:hidden" @click="showIndex = false"></div>
+        <div v-if="showIndex" class="fixed inset-0 bg-black bg-opacity-25 z-10 md:hidden" @click="showIndex = false"/>
 
         <!-- Index sidebar -->
         <Transition
@@ -48,15 +49,17 @@
           leave-active-class="transition-all duration-150 ease-in"
           leave-from-class="max-md:translate-x-0 max-md:opacity-100 md:w-56 md:opacity-100"
           leave-to-class="max-md:-translate-x-full max-md:opacity-0 md:w-0 md:opacity-0">
-          <nav v-if="showIndex"
+          <nav
+v-if="showIndex"
             class="absolute md:relative z-20 w-64 md:w-56 flex-shrink-0 h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-y-auto">
             <ul class="py-3 px-3 space-y-0.5">
               <li v-for="section in filteredSections" :key="section.id">
-                <UiButton @click="scrollTo(section.id)" variant="ghost" block
-                  class="text-left px-3 py-2"
+                <UiButton
+variant="ghost" block class="text-left px-3 py-2"
                   :class="activeSection === section.id
                     ? 'bg-primary-50 dark:bg-gray-800 text-primary-700 dark:text-primary-400 font-medium'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 hover:text-gray-900 dark:hover:text-white'">
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 hover:text-gray-900 dark:hover:text-white'"
+                  @click="scrollTo(section.id)">
                   {{ section.label }}
                 </UiButton>
               </li>

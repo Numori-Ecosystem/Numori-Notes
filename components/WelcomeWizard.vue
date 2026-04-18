@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <UiModal :show="isOpen" max-width="lg" z="z-[60]" persistent>
 
@@ -46,21 +47,23 @@
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-5">Pick a theme that suits you.</p>
 
                 <div class="grid grid-cols-2 gap-3 w-full max-w-xs">
-                  <UiButton @click="setTheme('light')"
-                    variant="outline" color="gray"
-                    class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-150"
+                  <UiButton
+variant="outline"
+                    color="gray" class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-150"
                     :class="currentTheme === 'light'
                       ? 'border-primary-500 bg-primary-50 dark:bg-gray-800'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'">
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                    @click="setTheme('light')">
                     <Icon name="mdi:weather-sunny" class="w-8 h-8 text-amber-500" />
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Light</span>
                   </UiButton>
-                  <UiButton @click="setTheme('dark')"
-                    variant="outline" color="gray"
-                    class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-150"
+                  <UiButton
+variant="outline"
+                    color="gray" class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-150"
                     :class="currentTheme === 'dark'
                       ? 'border-primary-500 bg-primary-50 dark:bg-gray-800'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'">
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                    @click="setTheme('dark')">
                     <Icon name="mdi:weather-night" class="w-8 h-8 text-indigo-500" />
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Dark</span>
                   </UiButton>
@@ -80,13 +83,14 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Precision Mode</label>
                     <div class="grid grid-cols-3 gap-2">
-                      <UiButton v-for="(label, key) in precisionModeLabels" :key="key"
-                        @click="setPrecisionMode(key)"
-                        variant="outline" color="gray"
-                        class="border-2 transition-all duration-150"
+                      <UiButton
+v-for="(label, key) in precisionModeLabels" :key="key"
+                        variant="outline"
+                        color="gray" class="border-2 transition-all duration-150"
                         :class="preferences.precisionMode === key
                           ? 'bg-primary-50 dark:bg-gray-800 border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-400'
-                          : 'bg-gray-50 dark:bg-gray-925 border-transparent hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-400'">
+                          : 'bg-gray-50 dark:bg-gray-925 border-transparent hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-400'"
+                        @click="setPrecisionMode(key)">
                         {{ label }}
                       </UiButton>
                     </div>
@@ -95,12 +99,12 @@
                   <!-- Decimal places / sig figs slider -->
                   <div v-if="preferences.precisionMode === 'decimals'">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Decimal Places: {{ preferences.decimalPlaces }}</label>
-                    <UiSlider min="0" max="15" step="1" v-model="preferences.decimalPlaces" @input="onPrecisionChange" />
+                    <UiSlider v-model="preferences.decimalPlaces" min="0" max="15" step="1" @input="onPrecisionChange" />
                     <div class="flex justify-between text-xs text-gray-400 mt-1"><span>0</span><span>15</span></div>
                   </div>
                   <div v-if="preferences.precisionMode === 'significant'">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Significant Figures: {{ preferences.significantFigures }}</label>
-                    <UiSlider min="1" max="15" step="1" v-model="preferences.significantFigures" @input="onPrecisionChange" />
+                    <UiSlider v-model="preferences.significantFigures" min="1" max="15" step="1" @input="onPrecisionChange" />
                     <div class="flex justify-between text-xs text-gray-400 mt-1"><span>1</span><span>15</span></div>
                   </div>
 
@@ -108,13 +112,14 @@
                   <div v-if="preferences.precisionMode !== 'auto'">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Rounding</label>
                     <div class="grid grid-cols-2 gap-2">
-                      <UiButton v-for="(label, key) in roundingModeLabels" :key="key"
-                        @click="setRoundingMode(key)"
-                        variant="outline" color="gray"
-                        class="border-2 transition-all duration-150"
+                      <UiButton
+v-for="(label, key) in roundingModeLabels" :key="key"
+                        variant="outline"
+                        color="gray" class="border-2 transition-all duration-150"
                         :class="preferences.roundingMode === key
                           ? 'bg-primary-50 dark:bg-gray-800 border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-400'
-                          : 'bg-gray-50 dark:bg-gray-925 border-transparent hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-400'">
+                          : 'bg-gray-50 dark:bg-gray-925 border-transparent hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-400'"
+                        @click="setRoundingMode(key)">
                         {{ label }}
                       </UiButton>
                     </div>
@@ -144,13 +149,14 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Region Preset</label>
                     <div class="grid grid-cols-3 gap-2">
-                      <UiButton v-for="(label, key) in presetLabels" :key="key"
-                        @click="selectPreset(key)"
-                        variant="outline" color="gray"
-                        class="border-2 transition-all duration-150"
+                      <UiButton
+v-for="(label, key) in presetLabels" :key="key"
+                        variant="outline"
+                        color="gray" class="border-2 transition-all duration-150"
                         :class="selectedPreset === key
                           ? 'bg-primary-50 dark:bg-gray-800 border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-400'
-                          : 'bg-gray-50 dark:bg-gray-925 border-transparent hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-400'">
+                          : 'bg-gray-50 dark:bg-gray-925 border-transparent hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-400'"
+                        @click="selectPreset(key)">
                         {{ label }}
                       </UiButton>
                     </div>
@@ -159,9 +165,10 @@
                   <!-- Language -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Language</label>
-                    <UiSelect :model-value="currentLocaleCode" searchable
-                      @update:model-value="changeLocale($event)"
-                      :options="availableLocales.map(l => ({ value: l.code, label: getLanguageEmoji(l.code) + ' ' + l.name }))" />
+                    <UiSelect
+:model-value="currentLocaleCode" searchable
+                      :options="availableLocales.map(l => ({ value: l.code, label: getLanguageEmoji(l.code) + ' ' + l.name }))"
+                      @update:model-value="changeLocale($event)" />
                   </div>
                 </div>
               </div>
@@ -169,17 +176,20 @@
 
             <!-- Footer navigation -->
             <div class="px-6 pb-5 flex items-center" :class="step === 1 ? 'justify-end' : 'justify-between'">
-              <UiButton v-if="step > 1" @click="step--"
-                variant="ghost" color="gray">
+              <UiButton
+v-if="step > 1" variant="ghost"
+                color="gray" @click="step--">
                 Back
               </UiButton>
               <div class="flex items-center gap-3">
-                <UiButton v-if="step < totalSteps" @click="skip"
-                  variant="ghost" color="gray">
+                <UiButton
+v-if="step < totalSteps" variant="ghost"
+                  color="gray" @click="skip">
                   Skip
                 </UiButton>
-                <UiButton @click="next"
-                  variant="solid" color="primary">
+                <UiButton
+variant="solid"
+                  color="primary" @click="next">
                   {{ step === totalSteps ? 'Get Started' : 'Next' }}
                 </UiButton>
               </div>
@@ -246,12 +256,12 @@ const precisionModeLabels = { auto: 'Auto', decimals: 'Decimals', significant: '
 const roundingModeLabels = { round: 'Round', truncate: 'Truncate' }
 
 const setPrecisionMode = (mode) => {
-  props.preferences.precisionMode = mode
+  props.preferences.precisionMode = mode // eslint-disable-line vue/no-mutating-props
   props.savePreferences()
 }
 
 const setRoundingMode = (mode) => {
-  props.preferences.roundingMode = mode
+  props.preferences.roundingMode = mode // eslint-disable-line vue/no-mutating-props
   props.savePreferences()
 }
 

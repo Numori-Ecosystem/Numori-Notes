@@ -6,7 +6,7 @@
     class="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
     :class="sizeClass"
     @change="onChange"
-  />
+  >
 </template>
 
 <script setup>

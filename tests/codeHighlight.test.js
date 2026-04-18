@@ -165,7 +165,7 @@ describe('highlightCode — aliases', () => {
     ['docker', 'dockerfile'],
   ]
 
-  for (const [alias, expected] of aliasCases) {
+  for (const [alias, _expected] of aliasCases) {
     it(`alias "${alias}" produces highlighted output`, () => {
       // Use a snippet that any language would tokenize
       const code = alias === 'yml' || alias === 'yaml' || alias === 'toml' || alias === 'dotenv' || alias === 'env'

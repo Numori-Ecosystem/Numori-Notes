@@ -1,5 +1,5 @@
 <template>
-  <UiModal :show="isOpen" max-width="sm" @close="$emit('close')" panel-class="max-h-[85vh]">
+  <UiModal :show="isOpen" max-width="sm" panel-class="max-h-[85vh]" @close="$emit('close')">
     <div class="p-4 sm:p-5 overflow-y-auto overflow-x-hidden">
 
             <!-- Header -->
@@ -76,16 +76,18 @@
               <div class="space-y-2">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-400">Encryption</label>
                 <div class="flex gap-2">
-                  <UiButton variant="outline" size="xs" class="flex-1" @click="sharePasswordMode = 'none'"
-                    :class="sharePasswordMode === 'none'
+                  <UiButton
+variant="outline" size="xs" class="flex-1" :class="sharePasswordMode === 'none'
                       ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'">
+                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                    @click="sharePasswordMode = 'none'">
                     Link only
                   </UiButton>
-                  <UiButton variant="outline" size="xs" class="flex-1" @click="sharePasswordMode = 'custom'"
-                    :class="sharePasswordMode === 'custom'
+                  <UiButton
+variant="outline" size="xs" class="flex-1" :class="sharePasswordMode === 'custom'
                       ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'">
+                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                    @click="sharePasswordMode = 'custom'">
                     <Icon name="mdi:lock-outline" class="w-3 h-3 inline" /> Password
                   </UiButton>
                 </div>
@@ -108,14 +110,16 @@
                   <UiInput v-model="sharePassword" type="password" placeholder="Enter a password for this share" :validate="false" />
                 </UiFormField>
                 <UiFormField label="Password hint" optional>
-                  <UiInput v-model="passwordHint" type="text" :maxlength="255" :validate="false"
+                  <UiInput
+v-model="passwordHint" type="text" :maxlength="255" :validate="false"
                     placeholder="A hint to help the recipient remember the password" />
                 </UiFormField>
               </div>
 
               <!-- Expiration -->
               <UiFormField label="Expires after">
-                <UiSelect v-model="expiresInDays"
+                <UiSelect
+v-model="expiresInDays"
                   :options="[
                     { value: 1, label: '1 day' },
                     { value: 7, label: '7 days' },

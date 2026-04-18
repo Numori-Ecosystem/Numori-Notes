@@ -2,7 +2,7 @@
  * Exact reproduction of the user's Ismael budget scenario.
  */
 import { describe, it, expect } from 'vitest'
-import { calcLines, useCalculator } from './helpers'
+import { useCalculator } from './helpers'
 
 describe('Ismael budget scenario', () => {
   it('standalone sum after variable assignments', () => {

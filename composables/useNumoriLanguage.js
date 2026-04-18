@@ -21,8 +21,7 @@
 //   bracket        → ( )
 //   string         → scale words: k, M, thousand, million, billion, trillion
 
-import { StreamLanguage } from '@codemirror/language'
-import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+import { StreamLanguage, HighlightStyle, syntaxHighlighting  } from '@codemirror/language'
 import { tags as t } from '@lezer/highlight'
 import { EditorView } from '@codemirror/view'
 
@@ -31,7 +30,7 @@ export const numoriStreamParser = {
   token(stream, state) {
     // ── Fenced code block tracking ───────────────────────────────
     if (stream.sol()) {
-      if (!state.inCodeBlock && stream.match(/^```[\w+#.\-]*$/, false)) {
+      if (!state.inCodeBlock && stream.match(/^```[\w+#.-]*$/, false)) {
         state.inCodeBlock = true
         stream.skipToEnd()
         return 'comment'
@@ -122,7 +121,7 @@ export const numoriStreamParser = {
     if (stream.match(/\bM\b/)) return 'string'
 
     // ── Arithmetic operators ─────────────────────────────────────
-    if (stream.match(/[+\-*\/^%]/)) return 'operator'
+    if (stream.match(/[+\-*/^%]/)) return 'operator'
     if (stream.match(/[=<>!&|]/)) return 'operator'
     if (stream.match(/<<|>>/)) return 'operator'
 

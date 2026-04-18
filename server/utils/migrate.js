@@ -394,5 +394,5 @@ export async function migrate() {
     END $do$
   `)
 
-  console.log('[migrate] Database tables ready')
+  console.warn('[migrate] Database tables ready')
 }

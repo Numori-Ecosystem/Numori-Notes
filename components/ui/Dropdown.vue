@@ -1,5 +1,5 @@
 <template>
-  <div class="relative" ref="containerRef">
+  <div ref="containerRef" class="relative">
     <!-- Trigger slot: receives { open, toggle } for controlling the dropdown -->
     <slot name="trigger" :open="isOpen" :toggle="toggle" />
 

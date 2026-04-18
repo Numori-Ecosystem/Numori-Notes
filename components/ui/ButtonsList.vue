@@ -1,11 +1,13 @@
 <template>
   <div>
     <!-- Optional section label above the list -->
-    <p v-if="label" class="text-[10px] font-medium uppercase tracking-wider px-1 mb-1.5"
+    <p
+v-if="label" class="text-[10px] font-medium uppercase tracking-wider px-1 mb-1.5"
       :class="danger ? 'text-red-400 dark:text-red-600' : 'text-gray-400 dark:text-gray-600'">
       {{ label }}
     </p>
-    <div class="overflow-hidden divide-y"
+    <div
+class="overflow-hidden divide-y"
       :class="[
         shapeClass,
         danger

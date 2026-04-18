@@ -1,16 +1,17 @@
 <template>
-  <UiModal :show="isOpen" max-width="lg" @close="$emit('close')" panel-class="max-h-[85vh]">
+  <UiModal :show="isOpen" max-width="lg" panel-class="max-h-[85vh]" @close="$emit('close')">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">Share Analytics</h2>
               <div class="flex items-center gap-1">
-                <UiButton @click="refresh" :disabled="loading"
-                  variant="ghost" color="gray" icon-only
-                  title="Refresh">
+                <UiButton
+:disabled="loading" variant="ghost"
+                  color="gray" icon-only title="Refresh"
+                  @click="refresh">
                   <Icon name="mdi:refresh" class="block w-5 h-5" :class="{ 'animate-spin': loading }" />
                 </UiButton>
-                <UiButton @click="$emit('close')" variant="ghost" color="gray" icon-only>
+                <UiButton variant="ghost" color="gray" icon-only @click="$emit('close')">
                   <Icon name="mdi:close" class="block w-5 h-5" />
                 </UiButton>
               </div>
@@ -18,12 +19,13 @@
 
             <!-- Tabs -->
             <div class="flex border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-              <UiButton v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-                variant="ghost"
+              <UiButton
+v-for="tab in tabs" :key="tab.id" variant="ghost"
                 class="flex-1 relative"
                 :class="activeTab === tab.id
                   ? 'text-primary-600 dark:text-primary-400'
-                  : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'">
+                  : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                @click="activeTab = tab.id">
                 {{ tab.label }}
                 <div v-if="activeTab === tab.id" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
               </UiButton>
@@ -44,7 +46,8 @@
                 <!-- ═══ Summary Tab ═══ -->
                 <div v-if="activeTab === 'summary'" class="space-y-4">
                   <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                    <span
+class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
                       :class="data.isActive
                         ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'">
@@ -83,10 +86,12 @@
                   <div v-if="data.views.length">
                     <p class="text-xs font-medium text-gray-500 dark:text-gray-500 mb-2">Recent visitors</p>
                     <div class="space-y-1">
-                      <div v-for="v in recentUniqueViewers" :key="v.fingerprint || v.id"
+                      <div
+v-for="v in recentUniqueViewers" :key="v.fingerprint || v.id"
                         class="flex items-center justify-between text-xs py-1.5 px-2 rounded bg-gray-50 dark:bg-gray-900">
                         <div class="flex items-center gap-1.5 min-w-0">
-                          <Icon :name="v.eventType === 'import' ? 'mdi:download' : 'mdi:eye-outline'"
+                          <Icon
+:name="v.eventType === 'import' ? 'mdi:download' : 'mdi:eye-outline'"
                             class="w-3.5 h-3.5 flex-shrink-0"
                             :class="v.eventType === 'import' ? 'text-primary-500' : 'text-gray-400'" />
                           <span class="text-gray-700 dark:text-gray-300 truncate">{{ viewerLabel(v) }}</span>
@@ -113,12 +118,14 @@
                       <span class="text-xs text-gray-500 dark:text-gray-500">Show raw data</span>
                     </label>
                     <div class="flex items-center gap-2">
-                      <UiButton v-if="selectedIds.size > 0" @click="deleteSelected"
-                        variant="ghost" color="red" size="xs">
+                      <UiButton
+v-if="selectedIds.size > 0" variant="ghost"
+                        color="red" size="xs" @click="deleteSelected">
                         Delete selected ({{ selectedIds.size }})
                       </UiButton>
-                      <UiButton v-if="data.totalRecords > 0" @click="deleteAll"
-                        variant="ghost" color="red" size="xs">
+                      <UiButton
+v-if="data.totalRecords > 0" variant="ghost"
+                        color="red" size="xs" @click="deleteAll">
                         Delete all
                       </UiButton>
                     </div>
@@ -126,29 +133,35 @@
 
                   <!-- Select all on page -->
                   <label v-if="uniqueDetailViewers.length > 0" class="flex items-center gap-2 cursor-pointer px-1">
-                    <UiCheckbox :checked="allOnPageSelected" size="sm"
+                    <UiCheckbox
+:checked="allOnPageSelected" size="sm"
                       @change="toggleSelectAll" />
                     <span class="text-xs text-gray-500 dark:text-gray-500">Select all on this page</span>
                   </label>
 
                   <!-- Event list -->
                   <div v-if="uniqueDetailViewers.length" class="space-y-2">
-                    <div v-for="v in uniqueDetailViewers" :key="v.id"
+                    <div
+v-for="v in uniqueDetailViewers" :key="v.id"
                       class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                       <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-900">
-                        <UiCheckbox :checked="selectedIds.has(v.id)" size="sm"
+                        <UiCheckbox
+:checked="selectedIds.has(v.id)" size="sm"
                           @change="toggleSelect(v.id)" />
-                        <Icon :name="v.eventType === 'import' ? 'mdi:download' : 'mdi:eye-outline'"
+                        <Icon
+:name="v.eventType === 'import' ? 'mdi:download' : 'mdi:eye-outline'"
                           class="w-4 h-4 flex-shrink-0"
                           :class="v.eventType === 'import' ? 'text-primary-500' : 'text-gray-400'" />
                         <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
                           {{ viewerLabel(v) }}
                         </span>
-                        <span v-if="v.totalVisits > 1"
+                        <span
+v-if="v.totalVisits > 1"
                           class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0">
                           {{ v.totalVisits }} visits
                         </span>
-                        <span class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                        <span
+class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                           :class="v.eventType === 'import'
                             ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'">
@@ -212,20 +225,24 @@
                       Page {{ data.page }} of {{ data.totalPages }} ({{ data.totalRecords }} records)
                     </span>
                     <div class="flex items-center gap-1">
-                      <UiButton @click="goToPage(1)" :disabled="data.page <= 1"
-                        variant="ghost" color="gray" icon-only size="xs">
+                      <UiButton
+:disabled="data.page <= 1" variant="ghost"
+                        color="gray" icon-only size="xs" @click="goToPage(1)">
                         <Icon name="mdi:chevron-double-left" class="w-4 h-4" />
                       </UiButton>
-                      <UiButton @click="goToPage(data.page - 1)" :disabled="data.page <= 1"
-                        variant="ghost" color="gray" icon-only size="xs">
+                      <UiButton
+:disabled="data.page <= 1" variant="ghost"
+                        color="gray" icon-only size="xs" @click="goToPage(data.page - 1)">
                         <Icon name="mdi:chevron-left" class="w-4 h-4" />
                       </UiButton>
-                      <UiButton @click="goToPage(data.page + 1)" :disabled="data.page >= data.totalPages"
-                        variant="ghost" color="gray" icon-only size="xs">
+                      <UiButton
+:disabled="data.page >= data.totalPages" variant="ghost"
+                        color="gray" icon-only size="xs" @click="goToPage(data.page + 1)">
                         <Icon name="mdi:chevron-right" class="w-4 h-4" />
                       </UiButton>
-                      <UiButton @click="goToPage(data.totalPages)" :disabled="data.page >= data.totalPages"
-                        variant="ghost" color="gray" icon-only size="xs">
+                      <UiButton
+:disabled="data.page >= data.totalPages" variant="ghost"
+                        color="gray" icon-only size="xs" @click="goToPage(data.totalPages)">
                         <Icon name="mdi:chevron-double-right" class="w-4 h-4" />
                       </UiButton>
                     </div>
@@ -243,7 +260,7 @@ const props = defineProps({
   authHeaders: { type: Object, default: () => ({}) }
 })
 
-const emit = defineEmits(['close'])
+const _emit = defineEmits(['close'])
 const { apiFetch } = useApi()
 
 const tabs = [

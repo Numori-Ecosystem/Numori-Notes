@@ -4,7 +4,7 @@
  * Covers: key derivation, encrypt/decrypt round-trips, isEncrypted detection,
  * note-level helpers, shared note helpers, key independence, and edge cases.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import {
   deriveAuthKey,
   deriveEncKey,

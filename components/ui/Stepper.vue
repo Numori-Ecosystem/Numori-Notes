@@ -3,9 +3,9 @@
     <button
       v-for="i in steps"
       :key="i"
-      @click="$emit('update:modelValue', i)"
       class="rounded-full transition-all duration-200"
       :class="dotClasses(i)"
+      @click="$emit('update:modelValue', i)"
     />
   </div>
 </template>

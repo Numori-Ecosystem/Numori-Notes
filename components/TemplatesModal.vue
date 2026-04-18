@@ -1,8 +1,8 @@
 <template>
-  <UiModal :show="isOpen" max-width="5xl" @close="close" padding="p-2 sm:p-4" panel-class="h-[95vh] sm:h-screen md:h-[90vh]">
+  <UiModal :show="isOpen" max-width="5xl" padding="p-2 sm:p-4" panel-class="h-[95vh] sm:h-screen md:h-[90vh]" @close="close">
       <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">{{ $t('templates.title') }}</h2>
-        <UiButton @click="close" variant="ghost" color="gray" icon-only>
+        <UiButton variant="ghost" color="gray" icon-only @click="close">
           <Icon name="mdi:close" class="block w-5 h-5" />
         </UiButton>
       </div>
@@ -11,11 +11,13 @@
       <div class="px-3 sm:px-4 pt-3 pb-2 space-y-2 border-b border-gray-200 dark:border-gray-700 overflow-x-hidden">
         <div class="flex flex-col sm:flex-row gap-2">
           <div class="relative flex-1">
-            <Icon name="mdi:magnify"
+            <Icon
+name="mdi:magnify"
               class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-400-muted" />
             <UiInput v-model="searchQuery" type="text" :placeholder="$t('templates.search')" :validate="false" />
           </div>
-          <UiSelect v-model="activeComplexity" :block="false"
+          <UiSelect
+v-model="activeComplexity" :block="false"
             :options="[
               { value: '', label: 'All sizes' },
               { value: 'quick', label: 'Quick' },
@@ -28,12 +30,12 @@
           <UiButton
             v-for="filter in categoryFilters"
             :key="filter.id"
-            @click="toggleChip('category', filter.id)"
-            variant="outline" size="xs"
-            class="whitespace-nowrap shrink-0"
+            variant="outline"
+            size="xs" class="whitespace-nowrap shrink-0"
             :class="activeCategories.has(filter.id)
               ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-300 border-primary-200 dark:border-primary-800'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-transparent hover:bg-gray-200 dark:hover:bg-gray-750 hover:text-gray-900 dark:hover:text-white'"
+            @click="toggleChip('category', filter.id)"
           >
             {{ filter.name }}
           </UiButton>
@@ -44,20 +46,20 @@
           <UiButton
             v-for="feat in featureFilters"
             :key="feat.id"
-            @click="toggleChip('feature', feat.id)"
-            variant="dashed" size="xs" shape="pill"
-            class="whitespace-nowrap shrink-0"
+            variant="dashed"
+            size="xs" shape="pill" class="whitespace-nowrap shrink-0"
             :class="activeFeatures.has(feat.id)
               ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-400 dark:border-emerald-700 border-solid'
               : 'bg-transparent text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+            @click="toggleChip('feature', feat.id)"
           >
             {{ feat.name }}
           </UiButton>
           <UiButton
             v-if="hasActiveFilters"
+            variant="ghost"
+            color="gray" size="xs" shape="pill" class="shrink-0"
             @click="clearFilters"
-            variant="ghost" color="gray" size="xs" shape="pill"
-            class="shrink-0"
           >
             Clear all
           </UiButton>
@@ -77,9 +79,10 @@
             {{ $t('templates.noResults') }}
           </div>
           <div v-else :key="filterKey" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UiButton v-for="template in filteredTemplates" :key="template.id" @click="insertTemplate(template)"
-              variant="outline" color="gray" block
-              class="text-left p-4 items-start justify-start">
+            <UiButton
+v-for="template in filteredTemplates" :key="template.id" variant="outline"
+              color="gray" block class="text-left p-4 items-start justify-start"
+              @click="insertTemplate(template)">
               <div>
                 <h3 class="font-semibold text-gray-900 dark:text-gray-400 mb-1">{{ template.name }}</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400-muted">{{ template.description }}</p>
@@ -92,7 +95,7 @@
 </template>
 
 <script setup>
-const props = defineProps({
+const _props = defineProps({
   isOpen: Boolean
 })
 
@@ -138,11 +141,11 @@ const getTemplateLineCount = (template) => {
 const toggleChip = (type, id) => {
   if (type === 'category') {
     const next = new Set(activeCategories.value)
-    next.has(id) ? next.delete(id) : next.add(id)
+    if (next.has(id)) { next.delete(id) } else { next.add(id) }
     activeCategories.value = next
   } else if (type === 'feature') {
     const next = new Set(activeFeatures.value)
-    next.has(id) ? next.delete(id) : next.add(id)
+    if (next.has(id)) { next.delete(id) } else { next.add(id) }
     activeFeatures.value = next
   }
 }

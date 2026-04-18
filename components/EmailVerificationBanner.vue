@@ -6,7 +6,8 @@
     leave-active-class="transition-all duration-200 ease-in"
     leave-from-class="max-h-24 opacity-100"
     leave-to-class="max-h-0 opacity-0">
-    <div v-if="visible"
+    <div
+v-if="visible"
       class="flex-shrink-0 overflow-hidden bg-blue-600 dark:bg-blue-700 text-white text-xs font-medium cursor-pointer"
       :style="{ paddingTop: 'env(safe-area-inset-top, 0px)' }"
       role="status"

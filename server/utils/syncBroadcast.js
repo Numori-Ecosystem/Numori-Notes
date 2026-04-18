@@ -55,7 +55,7 @@ export function notifyDataWipe(userId, excludeSessionId = null) {
  * Receiving clients should clear local data and log out.
  * If revokedSessionIds is null, notifies ALL sessions except the excluded one.
  */
-export function notifySessionRevoked(userId, excludeSessionId = null, revokedSessionIds = null) {
+export function notifySessionRevoked(userId, excludeSessionId = null, _revokedSessionIds = null) {
   const sessions = listeners.get(userId)
   if (!sessions) return
 

@@ -17,7 +17,7 @@ export const handleTimezoneExpression = (input) => {
         const now = new Date()
         const formatted = now.toLocaleString('en-US', { timeZone: iana })
         return { value: now.getTime(), display: formatted, liveTime: true, iana }
-      } catch (e) { /* fall through */ }
+      } catch (_e) { /* fall through */ }
     }
   }
 
@@ -32,7 +32,7 @@ export const handleTimezoneExpression = (input) => {
         const now = new Date()
         const formatted = now.toLocaleString('en-US', { timeZone: iana })
         return { value: now.getTime(), display: formatted, liveTime: true, iana }
-      } catch (e) { /* fall through */ }
+      } catch (_e) { /* fall through */ }
     }
   }
 
@@ -64,7 +64,7 @@ export const handleTimezoneExpression = (input) => {
         const resultDate = new Date(sourceDate.getTime() + diffHours * 3600000)
         const formatted = resultDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
         return { value: resultDate.getTime(), display: formatted }
-      } catch (e) { /* fall through */ }
+      } catch (_e) { /* fall through */ }
     }
   }
 
@@ -160,7 +160,7 @@ export const handleDateExpression = (input) => {
       if (totalSeconds >= 1 && Number.isInteger(totalSeconds)) return { value: result, display: `${totalSeconds} ${totalSeconds === 1 ? 'second' : 'seconds'}` }
       return { value: result, display: `${formatResult(totalDays)} days` }
     }
-  } catch (e) {
+  } catch (_e) {
     const inputLower = input.toLowerCase().trim()
     const timestamp = getDateFromKeyword(inputLower)
     if (timestamp !== null) {

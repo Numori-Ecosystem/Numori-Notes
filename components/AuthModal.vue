@@ -14,13 +14,14 @@
       <!-- ═══ Login / Register ═══ -->
       <template v-if="step === 'auth'">
         <!-- Tab switcher -->
-        <UiButtonsGroup variant="tabs" class="mb-4"
+        <UiButtonsGroup
+variant="tabs" class="mb-4"
           :model-value="mode"
-          @update:model-value="switchMode($event)"
           :options="[
             { value: 'login', label: 'Sign In' },
             { value: 'register', label: 'Create Account' },
           ]"
+          @update:model-value="switchMode($event)"
         />
 
         <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
@@ -29,7 +30,7 @@
 
         <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
-        <form @submit.prevent="handleSubmit" class="space-y-3">
+        <form class="space-y-3" @submit.prevent="handleSubmit">
           <!-- Name (register only) -->
           <UiFormField v-if="mode === 'register'" label="Name">
             <UiInput v-model="name" type="text" autocomplete="name" placeholder="Your name (optional)" :validate="false" />
@@ -41,7 +42,8 @@
 
           <div>
             <UiFormField label="Password">
-              <UiInput v-model="password" type="password" required autocomplete="current-password"
+              <UiInput
+v-model="password" type="password" required autocomplete="current-password"
                 :minlength="mode === 'register' ? 8 : undefined" placeholder="••••••••" :validate="false" />
             </UiFormField>
             <p v-if="mode === 'register'" class="text-xs text-gray-500 dark:text-gray-500 mt-1">At least 8 characters</p>
@@ -50,7 +52,8 @@
           <!-- Confirm password (register only) -->
           <div v-if="mode === 'register'">
             <UiFormField label="Confirm Password">
-              <UiInput v-model="confirmPassword" type="password" required autocomplete="new-password"
+              <UiInput
+v-model="confirmPassword" type="password" required autocomplete="new-password"
                 :minlength="8" placeholder="••••••••" :validate="false" />
             </UiFormField>
             <p v-if="passwordMismatch" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
@@ -79,7 +82,7 @@
 
         <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
-        <form @submit.prevent="handleForgotPassword" class="space-y-3">
+        <form class="space-y-3" @submit.prevent="handleForgotPassword">
           <UiFormField label="Email">
             <UiInput v-model="recoveryEmail" type="email" required placeholder="you@example.com" />
           </UiFormField>
@@ -101,9 +104,10 @@
 
         <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
-        <form @submit.prevent="handleVerifyRecovery" class="space-y-3">
+        <form class="space-y-3" @submit.prevent="handleVerifyRecovery">
           <UiFormField label="Verification Code">
-            <UiInput v-model="otpCode" type="text" required :maxlength="6" pattern="[0-9]{6}"
+            <UiInput
+v-model="otpCode" type="text" required :maxlength="6" pattern="[0-9]{6}"
               validation-pattern="^[0-9]{6}$" validation-message="Enter a 6-digit code"
               placeholder="000000" />
           </UiFormField>
@@ -127,7 +131,7 @@
 
         <UiAlert v-if="error" color="red" class="mb-3">{{ error }}</UiAlert>
 
-        <form @submit.prevent="handleResetPassword" class="space-y-3">
+        <form class="space-y-3" @submit.prevent="handleResetPassword">
           <UiFormField label="New Password" hint="At least 8 characters">
             <UiInput v-model="newPassword" type="password" required :minlength="8" placeholder="••••••••" :validate="false" />
           </UiFormField>

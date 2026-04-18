@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     'nitro:config'(nitroConfig) {
       if (nitroConfig.imports?.imports) {
         nitroConfig.imports.imports = nitroConfig.imports.imports.filter(
-          (i: any) => !(i?.name === 'useAppConfig' && String(i?.from || '').includes('nitro-server'))
+          (i: { name?: string; from?: string }) => !(i?.name === 'useAppConfig' && String(i?.from || '').includes('nitro-server'))
         )
       }
     },
@@ -47,6 +47,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxt/icon',
     '@nuxt/fonts',
+    '@nuxt/eslint',
     'nuxt-i18n-micro',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',

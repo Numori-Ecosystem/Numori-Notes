@@ -1,16 +1,19 @@
 <template>
   <div class="space-y-3">
     <!-- Canvas area -->
-    <div class="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden mx-auto"
+    <div
+class="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden mx-auto"
       :style="{ width: canvasSize + 'px', height: canvasSize + 'px' }">
-      <canvas ref="canvasRef" :width="canvasSize" :height="canvasSize"
+      <canvas
+ref="canvasRef" :width="canvasSize" :height="canvasSize"
         class="cursor-grab active:cursor-grabbing touch-none"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
         @wheel.prevent="onWheel" />
       <!-- Circular overlay mask -->
-      <div class="absolute inset-0 pointer-events-none"
+      <div
+class="absolute inset-0 pointer-events-none"
         :style="{ boxShadow: 'inset 0 0 0 9999px rgba(0,0,0,0.45)', borderRadius: '50%' }" />
     </div>
 
@@ -19,10 +22,12 @@
       <!-- Zoom -->
       <div class="flex items-center gap-2">
         <Icon name="mdi:magnify-minus-outline" class="w-4 h-4 text-gray-400 flex-shrink-0" />
-        <UiSlider :min="minScale" :max="maxScale" :step="0.01" v-model="scale"
+        <UiSlider
+v-model="scale" :min="minScale" :max="maxScale" :step="0.01"
           width="flex" @input="draw" />
         <Icon name="mdi:magnify-plus-outline" class="w-4 h-4 text-gray-400 flex-shrink-0" />
-        <UiInput type="number" :model-value="scaleDisplay" :min="Math.round(minScale * 100)" :max="Math.round(maxScale * 100)" :step="1"
+        <UiInput
+type="number" :model-value="scaleDisplay" :min="Math.round(minScale * 100)" :max="Math.round(maxScale * 100)" :step="1"
           stepper-layout="stacked-right" :validate="false" class="!w-16 flex-shrink-0 text-center"
           @update:model-value="onScaleInput" />
       </div>
@@ -30,10 +35,12 @@
       <!-- Rotate -->
       <div class="flex items-center gap-2">
         <Icon name="mdi:rotate-left" class="w-4 h-4 text-gray-400 flex-shrink-0" />
-        <UiSlider :min="-180" :max="180" :step="1" v-model="rotation"
+        <UiSlider
+v-model="rotation" :min="-180" :max="180" :step="1"
           width="flex" @input="draw" />
         <Icon name="mdi:rotate-right" class="w-4 h-4 text-gray-400 flex-shrink-0" />
-        <UiInput type="number" :model-value="rotation" :min="-180" :max="180" :step="1"
+        <UiInput
+type="number" :model-value="rotation" :min="-180" :max="180" :step="1"
           stepper-layout="stacked-right" :validate="false" class="!w-16 flex-shrink-0 text-center"
           @update:model-value="onRotationInput" />
       </div>

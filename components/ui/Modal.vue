@@ -10,7 +10,8 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      <div
+v-if="show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
         :class="[zClass, paddingClass]"
         @click.self="!persistent && $emit('close')">
         <Transition
@@ -22,7 +23,8 @@
           leave-to-class="opacity-0 scale-95"
           appear
         >
-          <div v-if="show"
+          <div
+v-if="show"
             class="bg-white dark:bg-gray-925 overflow-hidden flex flex-col"
             :class="[panelClass, maxWidthClass, roundedClass]"
             @click.stop>

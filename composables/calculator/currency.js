@@ -239,7 +239,7 @@ export const handleCurrencyExpression = (input) => {
           try {
             const result = evaluateMath(expr)
             return { value: result, currency: targetCurrency, hasCurrency: true, isConverted: false }
-          } catch (e) { /* fall through */ }
+          } catch (_e) { /* fall through */ }
         }
 
         // Mixed currencies — convert through USD
@@ -248,14 +248,14 @@ export const handleCurrencyExpression = (input) => {
           const usdResult = evaluateMath(expr)
           const converted = usdResult * exchangeRates.value[targetCurrency]
           return { value: converted, currency: targetCurrency, hasCurrency: true, isConverted: true }
-        } catch (e) { /* fall through */ }
+        } catch (_e) { /* fall through */ }
       }
 
       try {
         const value = evaluateMath(sourceExpr)
         const converted = convertCurrency(value, 'USD', targetCurrency)
         return { value: converted, currency: targetCurrency, hasCurrency: true, isConverted: true }
-      } catch (e) { /* fall through */ }
+      } catch (_e) { /* fall through */ }
     }
   }
 
@@ -358,7 +358,7 @@ export const handleCurrencyExpression = (input) => {
       const mathResult = evaluateMath(expr)
       const finalValue = allSameCurrency ? mathResult : mathResult * exchangeRates.value[primaryCurrency]
       return { value: finalValue, currency: primaryCurrency, hasCurrency: true, isConverted: false }
-    } catch (e) { /* fall through */ }
+    } catch (_e) { /* fall through */ }
   }
 
   return noResult

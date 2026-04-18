@@ -4,7 +4,7 @@
  * but they still check for updates via the version endpoint.
  */
 export default defineNuxtPlugin(() => {
-  const isCapacitor = !!(window as any).Capacitor
+  const isCapacitor = !!(window as unknown as { Capacitor?: unknown }).Capacitor
 
   if (!isCapacitor && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((registration) => {

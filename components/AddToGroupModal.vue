@@ -20,13 +20,15 @@
         </div>
 
         <!-- Existing groups -->
-        <UiButton v-for="group in groups" :key="group.id"
+        <UiButton
+v-for="group in groups" :key="group.id"
           variant="ghost" block
-          @click="$emit('select', group.id)"
           :class="currentGroupId === group.id
             ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'">
-          <Icon name="mdi:folder-outline" class="w-4.5 h-4.5 flex-shrink-0"
+            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+          @click="$emit('select', group.id)">
+          <Icon
+name="mdi:folder-outline" class="w-4.5 h-4.5 flex-shrink-0"
             :class="currentGroupId === group.id ? 'text-primary-500' : 'text-gray-400'" />
           <span class="truncate">{{ group.name }}</span>
           <Icon v-if="currentGroupId === group.id" name="mdi:check" class="w-4 h-4 ml-auto text-primary-500 flex-shrink-0" />

@@ -31,7 +31,7 @@ export const useServiceWorker = () => {
   })
 
   const isNative = platform === 'android' || platform === 'ios'
-  const buildVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'
+  const buildVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0' // eslint-disable-line no-undef
 
   const DISMISSED_KEY = 'dismissed_update_version'
 

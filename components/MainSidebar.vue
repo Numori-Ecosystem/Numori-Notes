@@ -10,41 +10,48 @@
         leave-active-class="transition-opacity duration-150 ease-in"
         leave-from-class="opacity-100"
         leave-to-class="opacity-0">
-        <div v-if="selectMode"
+        <div
+v-if="selectMode"
           class="absolute inset-0 z-10 p-4 bg-primary-50 dark:bg-primary-900/20 flex flex-col justify-center space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium text-primary-700 dark:text-primary-300">
               {{ selectedIds.size }} selected
             </span>
-            <UiButton variant="ghost" color="gray" icon-only size="sm" @click="exitSelectMode"
-              title="Cancel selection">
+            <UiButton
+variant="ghost" color="gray" icon-only size="sm" title="Cancel selection"
+              @click="exitSelectMode">
               <Icon name="mdi:close" class="w-5 h-5" />
             </UiButton>
           </div>
           <div class="flex items-center gap-2">
-            <UiButton variant="outline" color="gray" size="sm" icon-only @click="toggleSelectAll"
-              class="flex-shrink-0"
-              :title="allSelected ? 'Deselect All' : 'Select All'">
+            <UiButton
+variant="outline" color="gray" size="sm" icon-only class="flex-shrink-0"
+              :title="allSelected ? 'Deselect All' : 'Select All'"
+              @click="toggleSelectAll">
               <Icon :name="allSelected ? 'mdi:checkbox-marked-outline' : 'mdi:checkbox-blank-outline'" class="w-4 h-4" />
             </UiButton>
-            <UiButton variant="solid" color="primary" size="sm" :disabled="selectedIds.size === 0" @click="bulkGroup"
-              class="flex-1">
+            <UiButton
+variant="solid" color="primary" size="sm" :disabled="selectedIds.size === 0" class="flex-1"
+              @click="bulkGroup">
               <Icon name="mdi:folder-outline" class="w-4 h-4" />
               Group
             </UiButton>
-            <UiButton v-if="showArchive" variant="solid" color="primary" size="sm" :disabled="selectedIds.size === 0" @click="bulkUnarchive"
-              class="flex-1">
+            <UiButton
+v-if="showArchive" variant="solid" color="primary" size="sm" :disabled="selectedIds.size === 0" class="flex-1"
+              @click="bulkUnarchive">
               <Icon name="mdi:package-up" class="w-4 h-4" />
               Unarchive
             </UiButton>
-            <UiButton v-else variant="solid" color="gray" size="sm" :disabled="selectedIds.size === 0" @click="bulkArchive"
-              class="flex-1">
+            <UiButton
+v-else variant="solid" color="gray" size="sm" :disabled="selectedIds.size === 0" class="flex-1"
+              @click="bulkArchive">
               <Icon name="mdi:archive-outline" class="w-4 h-4" />
               Archive
             </UiButton>
-            <UiButton variant="solid" color="red" size="sm" icon-only :disabled="selectedIds.size === 0" @click="bulkDelete"
-              class="flex-shrink-0"
-              title="Delete">
+            <UiButton
+variant="solid" color="red" size="sm" icon-only :disabled="selectedIds.size === 0" class="flex-shrink-0"
+              title="Delete"
+              @click="bulkDelete">
               <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
             </UiButton>
           </div>
@@ -60,35 +67,40 @@
 
       <!-- Search + select toggle + filters -->
       <div class="flex items-center gap-2">
-        <UiButton variant="ghost" icon-only size="sm" @click="toggleSelectMode"
-          class="flex-shrink-0"
+        <UiButton
+variant="ghost" icon-only size="sm" class="flex-shrink-0"
           :class="selectMode
             ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
             : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
-          title="Select notes">
+          title="Select notes"
+          @click="toggleSelectMode">
           <Icon name="mdi:checkbox-multiple-marked-outline" class="w-4 h-4 block" />
         </UiButton>
         <div class="relative flex-1">
           <Icon name="mdi:magnify" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <UiInput v-model="searchQuery" type="text" placeholder="Search notes..." :validate="false" />
         </div>
-        <UiButton variant="ghost" icon-only size="sm" @click="showFilters = !showFilters"
-          class="flex-shrink-0"
+        <UiButton
+variant="ghost" icon-only size="sm" class="flex-shrink-0"
           :class="showFilters || hasActiveFilters
             ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
             : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
-          title="Filters">
-          <Icon :name="showFilters ? 'mdi:filter-variant-remove' : 'mdi:filter-variant'"
+          title="Filters"
+          @click="showFilters = !showFilters">
+          <Icon
+:name="showFilters ? 'mdi:filter-variant-remove' : 'mdi:filter-variant'"
             class="w-4 h-4 block transition-transform duration-200"
             :class="{ 'rotate-180': showFilters }" />
         </UiButton>
-        <UiButton v-if="hasArchivedNotes" variant="ghost" icon-only size="sm" @click="showArchive = !showArchive"
-          class="flex-shrink-0"
+        <UiButton
+v-if="hasArchivedNotes" variant="ghost" icon-only size="sm" class="flex-shrink-0"
           :class="showArchive
             ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
             : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
-          title="Archive">
-          <Icon :name="showArchive ? 'mdi:archive' : 'mdi:archive-outline'"
+          title="Archive"
+          @click="showArchive = !showArchive">
+          <Icon
+:name="showArchive ? 'mdi:archive' : 'mdi:archive-outline'"
             class="w-4 h-4 block" />
         </UiButton>
       </div>
@@ -103,7 +115,8 @@
         leave-to-class="opacity-0 -translate-y-1 max-h-0">
         <div v-if="showFilters" class="overflow-hidden rounded-lg bg-white dark:bg-gray-800 p-2.5 space-y-2 shadow-sm">
           <!-- Date range -->
-          <UiSelect v-model="filters.dateRange" size="xs"
+          <UiSelect
+v-model="filters.dateRange" size="xs"
             :options="[
               { value: '', label: 'Modified: Any time' },
               { value: 'today', label: 'Modified: Today' },
@@ -114,32 +127,37 @@
 
           <!-- Toggle chips -->
           <div class="flex flex-wrap gap-1.5">
-            <UiButton variant="ghost" shape="pill" size="xs" @click="filters.searchContent = !filters.searchContent"
-              :class="filters.searchContent
+            <UiButton
+variant="ghost" shape="pill" size="xs" :class="filters.searchContent
                 ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
+              @click="filters.searchContent = !filters.searchContent">
               Content
             </UiButton>
-            <UiButton variant="ghost" shape="pill" size="xs" @click="filters.hasDescription = !filters.hasDescription"
-              :class="filters.hasDescription
+            <UiButton
+variant="ghost" shape="pill" size="xs" :class="filters.hasDescription
                 ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
+              @click="filters.hasDescription = !filters.hasDescription">
               Has desc
             </UiButton>
-            <UiButton variant="ghost" shape="pill" size="xs" @click="filters.hasTags = !filters.hasTags"
-              :class="filters.hasTags
+            <UiButton
+variant="ghost" shape="pill" size="xs" :class="filters.hasTags
                 ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
+              @click="filters.hasTags = !filters.hasTags">
               Has tags
             </UiButton>
-            <UiButton variant="ghost" shape="pill" size="xs" @click="filters.emptyOnly = !filters.emptyOnly"
-              :class="filters.emptyOnly
+            <UiButton
+variant="ghost" shape="pill" size="xs" :class="filters.emptyOnly
                 ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'">
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'"
+              @click="filters.emptyOnly = !filters.emptyOnly">
               Empty
             </UiButton>
-            <UiButton v-if="hasActiveFilters" variant="ghost" color="red" shape="pill" size="xs" @click="clearFilters"
-              class="ml-auto">
+            <UiButton
+v-if="hasActiveFilters" variant="ghost" color="red" shape="pill" size="xs" class="ml-auto"
+              @click="clearFilters">
               Clear
             </UiButton>
           </div>
@@ -148,12 +166,13 @@
 
       <!-- Tag filter -->
       <div v-if="allTags.length" class="flex flex-wrap gap-1.5">
-        <UiButton v-for="tag in allTags" :key="tag"
+        <UiButton
+v-for="tag in allTags" :key="tag"
           variant="ghost" shape="pill" size="xs"
-          @click="toggleTag(tag)"
           :class="selectedTags.includes(tag)
             ? 'bg-primary-600 text-white'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'">
+            : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
+          @click="toggleTag(tag)">
           {{ tag }}
         </UiButton>
       </div>
@@ -161,7 +180,8 @@
     </div>
 
     <!-- Notes List -->
-    <div class="flex-1 overflow-y-auto" ref="listRef"
+    <div
+ref="listRef" class="flex-1 overflow-y-auto"
       @dragover.prevent="onDragOverList"
       @drop.prevent="onDrop">
       <div v-if="sidebarItems.length === 0" class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
@@ -170,20 +190,22 @@
 
       <template v-for="(item, idx) in displayItems" :key="item.id">
         <!-- ── Drop gap indicator ── -->
-        <div class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20"
+        <div
+class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20"
           :style="gapStyle(idx)" />
 
         <!-- ── Group header ── -->
-        <div v-if="item.kind === 'group'"
+        <div
+v-if="item.kind === 'group'"
+          v-show="!isDraggedItem(item.id)"
           :data-item-id="item.id"
           :data-kind="'group'"
           :draggable="canReorder && !isTouchDevice"
-          @dragstart="onDragStart($event, item.id, 'group')"
-          @dragend="onDragEnd"
-          @touchstart.passive="onTouchStart($event, item.id, 'group')"
           class="relative"
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
-          v-show="!isDraggedItem(item.id)">
+          @dragstart="onDragStart($event, item.id, 'group')"
+          @dragend="onDragEnd"
+          @touchstart.passive="onTouchStart($event, item.id, 'group')">
           <GroupListItem
             :group="item.data"
             :note-count="getGroupNotes(item.id).length"
@@ -194,17 +216,18 @@
         </div>
 
         <!-- ── Grouped note (child of a group) ── -->
-        <div v-else-if="item.kind === 'grouped-note'"
+        <div
+v-else-if="item.kind === 'grouped-note'"
+          v-show="!isDraggedItem(item.id)"
           :data-item-id="item.id"
           :data-kind="'note'"
           :data-group="item.parentGroupId"
           :draggable="canReorder && !isTouchDevice"
-          @dragstart="onDragStart($event, item.id, 'note')"
-          @dragend="onDragEnd"
-          @touchstart.passive="onTouchStart($event, item.id, 'note')"
           class="relative pl-4 border-l-2 border-l-primary-200 dark:border-l-primary-800/50"
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
-          v-show="!isDraggedItem(item.id)">
+          @dragstart="onDragStart($event, item.id, 'note')"
+          @dragend="onDragEnd"
+          @touchstart.passive="onTouchStart($event, item.id, 'note')">
           <NoteListItem
             :note="item.data" :active="item.data.id === currentNoteId"
             :select-mode="selectMode"
@@ -231,22 +254,24 @@
         </div>
 
         <!-- ── Empty group placeholder ── -->
-        <div v-else-if="item.kind === 'group-empty'"
+        <div
+v-else-if="item.kind === 'group-empty'"
           class="pl-4 border-l-2 border-l-primary-200 dark:border-l-primary-800/50 px-4 py-3 text-xs text-gray-400 dark:text-gray-500 italic">
           No notes in this group
         </div>
 
         <!-- ── Ungrouped note ── -->
-        <div v-else
+        <div
+v-else
+          v-show="!isDraggedItem(item.id)"
           :data-item-id="item.id"
           :data-kind="'note'"
           :draggable="canReorder && !isTouchDevice"
-          @dragstart="onDragStart($event, item.id, 'note')"
-          @dragend="onDragEnd"
-          @touchstart.passive="onTouchStart($event, item.id, 'note')"
           class="relative"
           :class="{ 'opacity-30': isTouchDraggedItem(item.id) }"
-          v-show="!isDraggedItem(item.id)">
+          @dragstart="onDragStart($event, item.id, 'note')"
+          @dragend="onDragEnd"
+          @touchstart.passive="onTouchStart($event, item.id, 'note')">
           <NoteListItem
             :note="item.data" :active="item.data.id === currentNoteId"
             :select-mode="selectMode"
@@ -274,36 +299,40 @@
       </template>
 
       <!-- ── Bottom gap + drop zone ── -->
-      <div class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20 mx-1.5"
+      <div
+class="drag-gap-el overflow-hidden rounded-lg border-dashed border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/20 mx-1.5"
         :style="gapStyle(displayItems.length)" />
       <div v-if="draggingId" class="min-h-[60px]" />
     </div>
 
     <!-- User Account Section -->
     <div class="flex-shrink-0 bg-gray-100/80 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-700">
-      <UiDropdown ref="accountDropdownRef" drop="up"
+      <UiDropdown
+ref="accountDropdownRef" drop="up"
         panel-class="absolute bottom-full left-0 right-0 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50">
         <template #trigger="{ toggle }">
           <!-- Logged-in state -->
-          <UiButton v-if="isLoggedIn" @click="toggle" variant="list-item" class="text-left">
+          <UiButton v-if="isLoggedIn" variant="list-item" class="text-left" @click="toggle">
             <UiAvatar :src="user?.avatarUrl" />
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{{ user?.name || 'No name' }}</p>
               <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user?.email }}</p>
             </div>
-            <Icon name="mdi:chevron-down"
+            <Icon
+name="mdi:chevron-down"
               class="w-5 h-5 flex-shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200"
               :class="{ 'rotate-180': accountDropdownRef?.isOpen }" />
           </UiButton>
 
           <!-- Logged-out state -->
-          <UiButton v-else @click="toggle" variant="list-item" class="text-left">
+          <UiButton v-else variant="list-item" class="text-left" @click="toggle">
             <UiAvatar color="gray" fallback-icon="mdi:account-circle-outline" />
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 dark:text-gray-200">Guest</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">Not signed in</p>
             </div>
-            <Icon name="mdi:chevron-down"
+            <Icon
+name="mdi:chevron-down"
               class="w-5 h-5 flex-shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200"
               :class="{ 'rotate-180': accountDropdownRef?.isOpen }" />
           </UiButton>
@@ -311,28 +340,28 @@
 
         <div class="py-1">
           <template v-if="isLoggedIn">
-            <UiButton @click="accountAction('edit-profile')" variant="menu-item" class="px-4">
+            <UiButton variant="menu-item" class="px-4" @click="accountAction('edit-profile')">
               <Icon name="mdi:account-edit-outline" class="w-4 h-4" />
               Edit Profile
             </UiButton>
           </template>
           <template v-else>
-            <UiButton @click="accountAction('show-auth')" variant="menu-item" class="px-4">
+            <UiButton variant="menu-item" class="px-4" @click="accountAction('show-auth')">
               <Icon name="mdi:login" class="w-4 h-4" />
               Sign In / Sign Up
             </UiButton>
           </template>
-          <UiButton @click="accountAction('show-locale-settings')" variant="menu-item" class="px-4">
+          <UiButton variant="menu-item" class="px-4" @click="accountAction('show-locale-settings')">
             <Icon name="mdi:cog-outline" class="w-4 h-4" />
             Settings
           </UiButton>
-          <UiButton @click="accountAction('show-language')" variant="menu-item" class="px-4">
+          <UiButton variant="menu-item" class="px-4" @click="accountAction('show-language')">
             <Icon name="mdi:translate" class="w-4 h-4" />
             Change Language
           </UiButton>
           <template v-if="isLoggedIn">
             <UiDivider color="dark" />
-            <UiButton @click="accountAction('logout')" variant="menu-item" color="red" class="px-4">
+            <UiButton variant="menu-item" color="red" class="px-4" @click="accountAction('logout')">
               <Icon name="mdi:logout" class="w-4 h-4" />
               Sign Out
             </UiButton>
@@ -498,8 +527,6 @@ const dropInsertIndex = computed(() => {
   if (targetIdx === -1) return -1
   return dt.position === 'before' ? targetIdx : targetIdx + 1
 })
-
-const GAP_PX = 52
 
 const isDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && !touchDragActive.value && hasDragMoved.value
 const isTouchDraggedItem = (id) => draggingId.value !== null && draggingId.value === id && touchDragActive.value && hasDragMoved.value
@@ -693,7 +720,7 @@ const onTouchStart = (e, id, type) => {
     dragExpandedGroupIds.value = new Set()
 
     // Haptic feedback
-    try { window.navigator?.vibrate?.(30) } catch (_) {}
+    try { window.navigator?.vibrate?.(30) } catch (_) { /* ignore */ }
 
     // Create floating clone
     touchCloneEl = createTouchClone(el)

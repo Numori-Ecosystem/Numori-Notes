@@ -1,12 +1,14 @@
 <template>
   <!-- Hover-triggered on desktop, click-triggered on mobile -->
-  <div class="relative"
+  <div
+class="relative"
     @mouseenter="!isMobile && (showSub = true)"
     @mouseleave="!isMobile && (showSub = false)">
     <UiButton variant="menu-item" :disabled="disabled" @click="showSub = !showSub">
       <Icon :name="icon" class="w-4 h-4 block flex-shrink-0" />
       <span class="flex-1 text-left">{{ label }}</span>
-      <Icon :name="isMobile ? (showSub ? 'mdi:chevron-up' : 'mdi:chevron-down') : 'mdi:chevron-right'"
+      <Icon
+:name="isMobile ? (showSub ? 'mdi:chevron-up' : 'mdi:chevron-down') : 'mdi:chevron-right'"
         class="w-3.5 h-3.5 block flex-shrink-0 text-gray-400" />
     </UiButton>
 
@@ -18,7 +20,8 @@
       leave-active-class="transition-all duration-75 ease-in"
       leave-from-class="max-h-60 opacity-100"
       leave-to-class="max-h-0 opacity-0">
-      <div v-if="showSub && !disabled && isMobile"
+      <div
+v-if="showSub && !disabled && isMobile"
         class="overflow-hidden bg-gray-50 dark:bg-gray-850 border-l-2 border-primary-400 ml-5">
         <slot />
       </div>
@@ -32,7 +35,8 @@
       leave-active-class="transition duration-75 ease-in"
       leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-95">
-      <div v-if="showSub && !disabled && !isMobile"
+      <div
+v-if="showSub && !disabled && !isMobile"
         class="absolute top-0 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-50"
         :class="alignLeft ? 'right-full mr-1' : 'left-full ml-1'">
         <slot />

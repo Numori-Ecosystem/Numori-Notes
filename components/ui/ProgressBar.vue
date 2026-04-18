@@ -7,7 +7,8 @@
     </div>
     <!-- Track background with animated fill bar -->
     <div class="w-full rounded-full overflow-hidden" :class="[trackClass, heightClass]">
-      <div class="h-full rounded-full transition-all duration-200" :class="barClass"
+      <div
+class="h-full rounded-full transition-all duration-200" :class="barClass"
         :style="{ width: percentage + '%' }" />
     </div>
   </div>

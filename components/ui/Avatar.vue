@@ -1,8 +1,9 @@
 <template>
   <!-- Circular avatar container with image or fallback icon -->
-  <div class="rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+  <div
+class="rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
     :class="[sizeClass, bgClass, ringClass]">
-    <img v-if="src" :src="src" :alt="alt" class="w-full h-full object-cover" />
+    <img v-if="src" :src="src" :alt="alt" class="w-full h-full object-cover" >
     <Icon v-else :name="fallbackIcon" :class="iconSizeClass" />
   </div>
 </template>

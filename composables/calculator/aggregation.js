@@ -51,7 +51,7 @@ export const calculateSumWithCurrency = (currentIndex, allResults, targetCurrenc
         const value = parseFloat(resultMatch[1])
         const currency = resultMatch[2]
         if (currency && targetCurrency) {
-          try { sum += convertCurrency(value, currency, targetCurrency) } catch (e) { sum += value }
+          try { sum += convertCurrency(value, currency, targetCurrency) } catch (_e) { sum += value }
         } else { sum += value }
       }
     }
@@ -86,7 +86,7 @@ export const calculateSubWithCurrency = (currentIndex, allResults, targetCurrenc
         const value = parseFloat(resultMatch[1])
         const currency = resultMatch[2]
         if (currency && targetCurrency) {
-          try { values.push(convertCurrency(value, currency, targetCurrency)) } catch (e) { values.push(value) }
+          try { values.push(convertCurrency(value, currency, targetCurrency)) } catch (_e) { values.push(value) }
         } else { values.push(value) }
       }
     }
