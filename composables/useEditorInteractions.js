@@ -67,6 +67,11 @@ export function useEditorInteractions({
     }
   }
 
+  // --- Touch tracking for scroll vs tap detection ---
+  let resultTouchStartX = 0
+  let resultTouchStartY = 0
+  const TOUCH_MOVE_THRESHOLD = 10 // px – ignore taps that drifted (i.e. scrolling)
+
   // --- Long-press state ---
   let longPressTimer = null
   let longPressTriggered = false
@@ -123,10 +128,23 @@ export function useEditorInteractions({
     return false
   }
 
+  const handleResultTouchStart = (event) => {
+    const touch = event.touches?.[0]
+    if (!touch) return false
+    resultTouchStartX = touch.clientX
+    resultTouchStartY = touch.clientY
+    return false
+  }
+
   const handleResultTouch = (event, view) => {
     if (!getShowInline() || !autoCopyResult.value) return false
     const touch = event.changedTouches?.[0]
     if (!touch) return false
+
+    // If the finger moved more than the threshold, the user was scrolling – skip copy
+    const dx = touch.clientX - resultTouchStartX
+    const dy = touch.clientY - resultTouchStartY
+    if (Math.abs(dx) > TOUCH_MOVE_THRESHOLD || Math.abs(dy) > TOUCH_MOVE_THRESHOLD) return false
 
     const el = document.elementFromPoint(touch.clientX, touch.clientY)
     if (!el || !el.classList.contains('numori-inline-result')) return false
@@ -141,6 +159,11 @@ export function useEditorInteractions({
     event.preventDefault()
     copyResult(lineData.result, lineIndex)
     showCopiedToast(view, touch.clientX, touch.clientY, lineIndex)
+
+    // The tap focused CodeMirror which would open the virtual keyboard.
+    // Blur immediately so the keyboard doesn't appear for a copy action.
+    view.contentDOM.blur()
+
     return false
   }
 
@@ -332,7 +355,7 @@ export function useEditorInteractions({
   }
 
   // --- Copied toast ---
-  const showCopiedToast = (view, posx, posy, lineIndex) => {
+  const showCopiedToast = (view, posx, posy, _lineIndex) => {
     const editorDom = view.dom
     if (!editorDom) return
     const animStyle = getLocalePreferences()?.copyAnimationStyle || 'float-up'
@@ -340,8 +363,19 @@ export function useEditorInteractions({
     toast.className = `numori-inline-copied-toast numori-toast-${animStyle}`
     toast.textContent = 'Copied'
     const rect = editorDom.getBoundingClientRect()
-    toast.style.left = `${posx - rect.left}px`
-    toast.style.top = lineIndex <= 1 ? `${posy - rect.top + 8}px` : `${posy - rect.top - 24}px`
+    let relX = posx - rect.left
+    // Place above the tap by default; fall back to below if near the top
+    let relY = posy - rect.top - 24
+    const MIN_TOP = 4 // never closer than 4px from the editor's top edge
+    if (relY < MIN_TOP) {
+      relY = posy - rect.top + 8
+    }
+    // Keep the toast from overflowing the right edge
+    const TOAST_WIDTH = 52 // approximate width of "Copied" label
+    const maxX = rect.width - TOAST_WIDTH - 4
+    if (relX > maxX) relX = maxX
+    toast.style.left = `${relX}px`
+    toast.style.top = `${relY}px`
     editorDom.style.position = 'relative'
     editorDom.appendChild(toast)
     setTimeout(() => toast.remove(), 850)
@@ -378,6 +412,7 @@ export function useEditorInteractions({
     copyLinkUrl,
     copyLinkName,
     handleResultClick,
+    handleResultTouchStart,
     handleResultTouch,
     handleMdClick,
     handleMdTouchStart,

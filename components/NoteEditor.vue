@@ -144,7 +144,7 @@ const autoCopyResult = computed(() => props.localePreferences?.autoCopyResult !=
 // --- Interactions (link popup, click/touch handlers) ---
 const {
   linkPopup, closeLinkPopup, openLink, copyLinkUrl, copyLinkName,
-  handleResultClick, handleResultTouch,
+  handleResultClick, handleResultTouchStart, handleResultTouch,
   handleMdClick, handleMdTouchStart, handleMdTouchMove, handleMdTouchEnd,
   handleContextMenu, cleanupTimers,
 } = useEditorInteractions({
@@ -328,6 +328,19 @@ const cmExtensions = computed(() => [
     focus: () => {
       window.__codemirrorFocused = true
       window.dispatchEvent(new CustomEvent('codemirrorFocus', { detail: true }))
+
+      // On mobile, the virtual keyboard pushes the viewport up.
+      // Wait for the keyboard to finish animating, then smoothly
+      // nudge the scroll down so the cursor clears the toolbar.
+      if (editorView && 'ontouchstart' in window) {
+        setTimeout(() => {
+          if (!editorView) return
+          const scroller = editorView.scrollDOM
+          if (scroller) {
+            scroller.scrollBy({ top: 10, behavior: 'smooth' })
+          }
+        }, 400)
+      }
     },
     blur: () => {
       window.__codemirrorFocused = false
@@ -337,7 +350,10 @@ const cmExtensions = computed(() => [
       if (handleMdClick(event, view)) return true
       return handleResultClick(event, view)
     },
-    touchstart: (event, view) => handleMdTouchStart(event, view),
+    touchstart: (event, view) => {
+      handleResultTouchStart(event)
+      return handleMdTouchStart(event, view)
+    },
     touchmove: (event) => handleMdTouchMove(event),
     touchend: (event, view) => {
       if (handleMdTouchEnd(event, view)) return true
