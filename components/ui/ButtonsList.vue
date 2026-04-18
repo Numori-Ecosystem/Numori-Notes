@@ -36,6 +36,10 @@
  * <UiButtonsList label="Danger Zone" danger>
  *   <UiButtonsListItem icon="mdi:trash-can" danger>Delete Account</UiButtonsListItem>
  * </UiButtonsList>
+ *
+ * @slot default — List items (typically UiButtonsListItem components)
+ *
+ * @see UiButtonsListItem — Row item designed for use inside this list
  */
 const props = defineProps({
   /**

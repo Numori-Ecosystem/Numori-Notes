@@ -22,5 +22,7 @@
  *   <span>Save</span>
  *   <UiKbd>{{ modLabel }}+S</UiKbd>
  * </div>
+ *
+ * @slot default — Key text or combination to display
  */
 </script>

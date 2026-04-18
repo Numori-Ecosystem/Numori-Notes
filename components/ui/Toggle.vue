@@ -39,6 +39,8 @@
  *
  * @example Read-only toggle (parent controls state)
  * <UiToggle :model-value="isActive" readonly @click="handleToggle" />
+ *
+ * @emits {boolean} update:modelValue — Emitted when the toggle is switched (v-model)
  */
 const props = defineProps({
   /**

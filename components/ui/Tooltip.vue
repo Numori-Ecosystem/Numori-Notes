@@ -43,6 +43,9 @@
  *     <p>Detailed description here.</p>
  *   </template>
  * </UiTooltip>
+ *
+ * @slot default — Trigger element that the tooltip wraps
+ * @slot content — Rich tooltip content (alternative to the text prop)
  */
 const props = defineProps({
   /**

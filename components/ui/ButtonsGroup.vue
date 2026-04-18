@@ -42,6 +42,10 @@
  *   { value: 'active', label: 'Active' },
  *   { value: 'archived', label: 'Archived' },
  * ]" />
+ *
+ * @emits {string | number | boolean} update:modelValue — Emitted when an option is selected
+ *
+ * @see UiButton — Underlying button component used for each option
  */
 const props = defineProps({
   /**

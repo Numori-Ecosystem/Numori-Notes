@@ -23,6 +23,10 @@
  *
  * @example Disabled item
  * <UiDropdownItem icon="mdi:lock" label="Locked" disabled />
+ *
+ * @emits {void} click — Emitted when the item is clicked (unless disabled)
+ *
+ * @see UiDropdown — Parent dropdown container
  */
 defineProps({
   /**

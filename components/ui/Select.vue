@@ -115,6 +115,8 @@
  *
  * @example Loading state
  * <UiSelect v-model="val" :options="[]" :loading="true" loading-text="Fetching..." />
+ *
+ * @emits {string | number | boolean} update:modelValue — Emitted when an option is selected
  */
 const props = defineProps({
   /**

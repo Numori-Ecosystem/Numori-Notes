@@ -49,6 +49,15 @@
  *   </template>
  *   <slot />
  * </UiDropdown>
+ *
+ * @emits {void} open — Emitted when the dropdown opens
+ * @emits {void} close — Emitted when the dropdown closes
+ *
+ * @slot trigger — Trigger element that opens the dropdown. Receives { open: boolean, toggle: Function }
+ * @slot default — Dropdown menu content. Receives { close: Function }
+ *
+ * @see UiDropdownItem — Standard menu item for use inside this dropdown
+ * @see UiDropdownSubmenu — Nested submenu for this dropdown
  */
 const props = defineProps({
   /**

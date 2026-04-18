@@ -24,6 +24,9 @@
  *
  * @example Flex slider with custom step
  * <UiSlider v-model="opacity" :min="0" :max="1" :step="0.01" width="flex" />
+ *
+ * @emits {number} update:modelValue — Emitted when the slider value changes (v-model)
+ * @emits {Event} input — Emitted with the native input event on each change
  */
 const props = defineProps({
   /**

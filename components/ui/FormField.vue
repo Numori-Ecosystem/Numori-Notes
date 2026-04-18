@@ -37,6 +37,8 @@
  * <UiFormField label="Font Ligatures" inline>
  *   <UiToggle v-model="ligatures" />
  * </UiFormField>
+ *
+ * @slot default — Form control (e.g. UiInput, UiSelect, UiToggle)
  */
 const props = defineProps({
   /**

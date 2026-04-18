@@ -41,6 +41,13 @@
  *     <UiBadge color="red">3</UiBadge>
  *   </template>
  * </UiButtonsListItem>
+ *
+ * @emits {void} click — Emitted when the item is clicked (unless disabled)
+ *
+ * @slot default — Label text for the list item
+ * @slot suffix — Custom trailing content (replaces the default chevron icon)
+ *
+ * @see UiButtonsList — Parent container for grouping list items
  */
 defineProps({
   /**

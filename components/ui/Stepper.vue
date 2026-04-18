@@ -23,6 +23,8 @@
  *
  * @example Non-interactive indicator
  * <UiStepper :model-value="step" :steps="3" />
+ *
+ * @emits {number} update:modelValue — Emitted when a step dot is clicked
  */
 const props = defineProps({
   /**

@@ -39,6 +39,11 @@
  * @example Programmatic open via ref
  * <UiFileInput ref="fileInput" @select="onFile"><span>Pick</span></UiFileInput>
  * <!-- In script: fileInput.value.open() -->
+ *
+ * @emits {File | File[]} select — Emitted with the selected file(s) after validation passes
+ * @emits {{ type: string, file: File, message: string }} error — Emitted when a file exceeds the maxSize limit
+ *
+ * @slot default — Trigger content (e.g. a button or icon) that opens the file picker
  */
 const props = defineProps({
   /**

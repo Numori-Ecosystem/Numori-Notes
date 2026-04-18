@@ -48,6 +48,8 @@
  *
  * @example Anchor link
  * <UiButton tag="a" variant="link" href="/docs">Read docs</UiButton>
+ *
+ * @slot default — Button content (label text, icons, or any child elements)
  */
 import { twMerge } from 'tailwind-merge'
 const props = defineProps({

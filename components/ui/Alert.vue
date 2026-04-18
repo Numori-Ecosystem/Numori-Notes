@@ -36,6 +36,9 @@
  *
  * @example Compact error (xs size)
  * <UiAlert color="red" size="xs">Invalid email address</UiAlert>
+ *
+ * @slot default — Alert content (plain text, rich HTML, or structured layouts)
+ * @slot icon — Custom icon element (replaces the icon prop)
  */
 const props = defineProps({
   /**

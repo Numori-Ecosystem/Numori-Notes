@@ -25,6 +25,9 @@
  *
  * @example Uncontrolled with checked prop
  * <UiCheckbox :checked="true" @change="handleChange" />
+ *
+ * @emits {boolean} update:modelValue — Emitted when the checked state changes (v-model)
+ * @emits {Event} change — Emitted with the native change event
  */
 const props = defineProps({
   /**

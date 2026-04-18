@@ -39,6 +39,10 @@
  * <UiPopup :show="open" :x="posX" :y="posY" :offset-y="8" width="w-64" @close="open = false">
  *   <div class="p-3">Custom content</div>
  * </UiPopup>
+ *
+ * @emits {void} close — Emitted when the backdrop is clicked to dismiss the popup
+ *
+ * @slot default — Popup content
  */
 const props = defineProps({
   /**

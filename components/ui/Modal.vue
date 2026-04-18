@@ -57,6 +57,10 @@
  * <UiModal :show="showFull" max-width="full">
  *   <div class="h-full">Full screen content</div>
  * </UiModal>
+ *
+ * @emits {void} close — Emitted when the modal should close (backdrop click or programmatic)
+ *
+ * @slot default — Modal content
  */
 const props = defineProps({
   /**

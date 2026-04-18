@@ -136,6 +136,9 @@
  *
  * @example Email with validation
  * <UiInput v-model="email" type="email" :validate="true" />
+ *
+ * @emits {string | number} update:modelValue — Emitted when the input value changes (v-model)
+ * @emits {{ valid: boolean, error: string | null }} validation — Emitted when the validation state changes
  */
 const props = defineProps({
   /**

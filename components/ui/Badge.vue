@@ -22,6 +22,8 @@
  *
  * @example Medium green badge
  * <UiBadge color="green" size="md">Active</UiBadge>
+ *
+ * @slot default — Badge text or content
  */
 const props = defineProps({
   /**

@@ -59,6 +59,11 @@
  * <UiDropdownSubmenu icon="mdi:share" label="Share" align-left>
  *   <UiDropdownItem icon="mdi:email" label="Email" @click="shareEmail" />
  * </UiDropdownSubmenu>
+ *
+ * @slot default — Submenu items (typically UiDropdownItem components)
+ *
+ * @see UiDropdown — Parent dropdown container
+ * @see UiDropdownItem — Standard menu item for use inside this submenu
  */
 defineProps({
   /**
