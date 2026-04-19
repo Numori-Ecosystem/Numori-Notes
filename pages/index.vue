@@ -169,7 +169,7 @@
       @share="handleShareNote" @unshare="shareManagement.handleUnshareNote" @open-analytics="shareManagement.handleOpenAnalytics"
     />
 
-    <HelpModal :is-open="showHelp" :mod-label="modLabel" @close="showHelp = false" />
+    <HelpModal :is-open="showHelp" :mod-label="modLabel" :has-active-note="!!currentNote" @close="showHelp = false" @insert="insertTemplate" />
     <AboutModal :is-open="showAbout" :check-for-update="sw.checkForUpdate" @close="showAbout = false" />
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <SettingsModal
