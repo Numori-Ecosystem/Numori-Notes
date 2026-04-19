@@ -265,7 +265,18 @@ watch(
       }
     }
   },
+  { immediate: true },
 )
+
+// biometricsEnrolled may resolve after the lock screen is already visible,
+// so watch it separately to auto-trigger when it becomes available.
+watch(hasBiometrics, async (available) => {
+  if (available && props.show && !showBiometricPrompt.value) {
+    showBiometricPrompt.value = true
+    await nextTick()
+    attemptBiometrics()
+  }
+})
 </script>
 
 <style scoped>
