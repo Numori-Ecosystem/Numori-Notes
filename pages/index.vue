@@ -172,7 +172,6 @@
     <HelpModal :is-open="showHelp" :mod-label="modLabel" @close="showHelp = false" />
     <AboutModal :is-open="showAbout" :check-for-update="sw.checkForUpdate" @close="showAbout = false" />
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
-    <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
     <SettingsModal
       :is-open="showLocaleSettings" :initial-section="settingsInitialSection"
       :preferences="localePrefs.preferences"
@@ -398,7 +397,6 @@ const focusMode = ref(false)
 const showMetaModal = ref(false)
 const showHelp = ref(false)
 const showTemplates = ref(false)
-const showLanguageModal = ref(false)
 const showLocaleSettings = ref(false)
 const settingsInitialSection = ref(null)
 const showAbout = ref(false)
@@ -594,7 +592,7 @@ const sidebarProps = computed(() => ({
 const sidebarEvents = {
   'new-note': createNote, 'select-note': selectNote, 'delete-note': confirmDelete,
   'edit-note': openEditModal, 'bulk-delete': confirmBulkDelete, 'selection-change': onSelectionChange,
-  'show-help': () => { showHelp.value = true }, 'show-language': () => { showLanguageModal.value = true },
+  'show-help': () => { showHelp.value = true },
   'show-locale-settings': () => { showLocaleSettings.value = true },
   'show-auth': () => { authHandlers.showAuthModal.value = true },
   logout: authHandlers.handleLogout, 'edit-profile': () => { settingsInitialSection.value = 'profile'; showLocaleSettings.value = true },

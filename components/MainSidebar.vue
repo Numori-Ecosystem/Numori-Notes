@@ -490,23 +490,28 @@
             <Icon name="mdi:cog-outline" class="w-4 h-4" />
             Settings
           </UiButton>
-          <UiButton variant="menu-item" class="px-4" @click="accountAction('show-language')">
-            <Icon name="mdi:translate" class="w-4 h-4" />
-            Change Language
-          </UiButton>
-          <template v-if="isLoggedIn && appLockEnabled">
-            <UiDivider color="dark" />
-            <UiButton variant="menu-item" class="px-4" @click="accountAction('lock-app')">
-              <Icon name="mdi:lock" class="w-4 h-4" />
-              Lock App
-            </UiButton>
-          </template>
           <template v-if="isLoggedIn">
-            <UiDivider color="dark" />
-            <UiButton variant="menu-item" color="red" class="px-4" @click="accountAction('logout')">
-              <Icon name="mdi:logout" class="w-4 h-4" />
-              Sign Out
-            </UiButton>
+            <UiDropdownRow>
+              <UiButton
+                v-if="appLockEnabled"
+                variant="menu-item"
+                class="flex-1 justify-center"
+                @click="accountAction('lock-app')"
+              >
+                <Icon name="mdi:lock" class="w-4 h-4" />
+                Lock
+              </UiButton>
+              <UiDivider v-if="appLockEnabled" direction="vertical" />
+              <UiButton
+                variant="menu-item"
+                color="red"
+                class="flex-1 justify-center"
+                @click="accountAction('logout')"
+              >
+                <Icon name="mdi:logout" class="w-4 h-4" />
+                Sign Out
+              </UiButton>
+            </UiDropdownRow>
           </template>
         </div>
       </UiDropdown>
@@ -536,7 +541,6 @@ const emit = defineEmits([
   'edit-note',
   'show-help',
   'show-locale-settings',
-  'show-language',
   'show-auth',
   'logout',
   'edit-profile',
