@@ -335,9 +335,9 @@
                       <Icon name="mdi:camera" class="w-4 h-4 text-white" />
                     </div>
                   </button>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ user?.name || 'No name set' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user?.email }}</p>
+                  <div class="flex-1 min-w-0 cursor-pointer" role="button" tabindex="0" title="Edit profile" @click="enterEditProfile" @keydown.enter="enterEditProfile">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ user?.name || 'No name set' }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ user?.email }}</p>
                     <p class="text-[10px] text-gray-400 dark:text-gray-600 mt-0.5">Member since {{ user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—' }}</p>
                   </div>
                 </div>
@@ -374,6 +374,7 @@
                       <Icon name="mdi:upload" class="w-4 h-4" /> Upload Image
                     </UiFileInput>
                     <UiButton v-if="user?.avatarUrl" variant="ghost" color="red" size="xs" class="block mx-auto mt-2" @click="removeAvatar">Remove current avatar</UiButton>
+                    <UiButton variant="ghost" color="gray" size="sm" class="block mx-auto mt-1" @click="cancelProfileSubSection">Cancel</UiButton>
                   </div>
                   <div v-else class="space-y-3">
                     <AvatarEditor :image-source="avatarImageSrc" :canvas-size="editorCanvasSize" @update="onAvatarCropped" />
@@ -381,6 +382,7 @@
                       <UiButton variant="solid" color="gray" class="flex-1" @click="avatarImageSrc = null">Choose Different</UiButton>
                       <UiButton variant="solid" color="primary" :loading="profileSaving" class="flex-1" @click="saveAvatar">Save Avatar</UiButton>
                     </div>
+                    <UiButton variant="ghost" color="gray" size="sm" block @click="cancelProfileSubSection">Cancel</UiButton>
                   </div>
                 </SettingsGroup>
               </template>
@@ -391,7 +393,10 @@
                   <div class="space-y-4 py-1">
                     <UiFormField label="Name"><UiInput v-model="editName" type="text" placeholder="Your name" :validate="false" /></UiFormField>
                     <UiFormField label="Email"><UiInput v-model="editEmail" type="email" placeholder="you@example.com" /></UiFormField>
-                    <UiButton variant="solid" color="primary" block :loading="profileSaving" @click="saveProfile">Save Changes</UiButton>
+                    <div class="flex gap-2">
+                      <UiButton variant="outline" color="gray" class="flex-1" @click="cancelProfileSubSection">Cancel</UiButton>
+                      <UiButton variant="solid" color="primary" class="flex-1" :loading="profileSaving" @click="saveProfile">Save Changes</UiButton>
+                    </div>
                   </div>
                 </SettingsGroup>
               </template>
@@ -408,7 +413,10 @@
                       <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
                     </div>
                     <UiProgressBar v-if="reEncryptProgress" label="Re-encrypting notes…" show-value :current="reEncryptProgress.current" :total="reEncryptProgress.total" />
-                    <UiButton variant="solid" color="primary" block :loading="profileSaving" :disabled="!currentPassword || !newPassword || newPassword !== confirmNewPassword || newPassword.length < 8" @click="savePassword">Update Password</UiButton>
+                    <div class="flex gap-2">
+                      <UiButton variant="outline" color="gray" class="flex-1" :disabled="profileSaving" @click="cancelProfileSubSection">Cancel</UiButton>
+                      <UiButton variant="solid" color="primary" class="flex-1" :loading="profileSaving" :disabled="!currentPassword || !newPassword || newPassword !== confirmNewPassword || newPassword.length < 8" @click="savePassword">Update Password</UiButton>
+                    </div>
                   </div>
                 </SettingsGroup>
               </template>
@@ -417,7 +425,7 @@
               <template v-if="!profileSubSection">
                 <SettingsGroup title="Account" class="mb-5">
                   <SettingsRow label="Edit Profile" icon="mdi:account-edit-outline">
-                    <UiButton variant="ghost" color="gray" size="sm" @click="profileSubSection = 'edit'"><Icon name="mdi:chevron-right" class="w-4 h-4" /></UiButton>
+                    <UiButton variant="ghost" color="gray" size="sm" @click="enterEditProfile"><Icon name="mdi:chevron-right" class="w-4 h-4" /></UiButton>
                   </SettingsRow>
                   <SettingsRow label="Change Password" icon="mdi:lock-outline" :border="false">
                     <UiButton variant="ghost" color="gray" size="sm" @click="profileSubSection = 'password'"><Icon name="mdi:chevron-right" class="w-4 h-4" /></UiButton>
@@ -1005,6 +1013,18 @@ const onDraftMethodChange = (method) => {
   draft.method = method
   if (method === 'biometrics') draft.selectedBiometrics = appLockAvailableBiometrics.value.map((b) => b.id)
   draft.pin = ''; draft.pinConfirm = ''; draft.password = ''; draft.passwordConfirm = ''
+}
+
+const cancelProfileSubSection = () => {
+  avatarImageSrc.value = null
+  croppedAvatarDataUrl.value = null
+  profileSubSection.value = null
+}
+
+const enterEditProfile = () => {
+  editName.value = props.user?.name || ''
+  editEmail.value = props.user?.email || ''
+  profileSubSection.value = 'edit'
 }
 
 const showProfileFeedback = (msg, type = 'success') => {
