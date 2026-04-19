@@ -1,45 +1,38 @@
 <template>
-  <UiModal :show="isOpen" max-width="sm" @close="$emit('close')">
-    <div class="p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-400 leading-none">
-          {{ editingGroupId ? 'Edit Group' : 'New Group' }}
-        </h2>
-        <UiButton variant="ghost" color="gray" icon-only size="sm" @click="$emit('close')">
-          <Icon name="mdi:close" class="block w-5 h-5" />
-        </UiButton>
-      </div>
-
-      <div class="space-y-4">
-        <UiFormField label="Name">
-          <UiInput
-            ref="nameInput"
-            v-model="localName"
-            type="text"
-            placeholder="Group name"
-            :validate="false"
-            @keydown.enter="save"
-          />
-        </UiFormField>
-        <UiFormField label="Internal Name" hint="Auto-generated from name. Edit to customise.">
-          <UiInput
-            v-model="localInternalName"
-            type="text"
-            placeholder="group_name"
-            :validate="false"
-            @update:model-value="internalNameManuallyEdited = true"
-          />
-        </UiFormField>
-      </div>
-
-      <div class="flex justify-end gap-2 mt-6">
-        <UiButton variant="ghost" color="gray" @click="$emit('close')"> Cancel </UiButton>
-        <UiButton :disabled="!localName.trim()" @click="save">
-          {{ editingGroupId ? 'Save' : 'Create' }}
-        </UiButton>
-      </div>
+  <UiPrompt
+    :show="isOpen"
+    :title="editingGroupId ? 'Edit Group' : 'New Group'"
+    :confirm-on-enter="false"
+    @close="$emit('close')"
+  >
+    <div class="space-y-4">
+      <UiFormField label="Name">
+        <UiInput
+          ref="nameInput"
+          v-model="localName"
+          type="text"
+          placeholder="Group name"
+          :validate="false"
+          @keydown.enter="save"
+        />
+      </UiFormField>
+      <UiFormField label="Internal Name" hint="Auto-generated from name. Edit to customise.">
+        <UiInput
+          v-model="localInternalName"
+          type="text"
+          placeholder="group_name"
+          :validate="false"
+          @update:model-value="internalNameManuallyEdited = true"
+        />
+      </UiFormField>
     </div>
-  </UiModal>
+    <template #actions>
+      <UiButton variant="ghost" color="gray" @click="$emit('close')"> Cancel </UiButton>
+      <UiButton :disabled="!localName.trim()" @click="save">
+        {{ editingGroupId ? 'Save' : 'Create' }}
+      </UiButton>
+    </template>
+  </UiPrompt>
 </template>
 
 <script setup>

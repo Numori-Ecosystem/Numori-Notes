@@ -92,16 +92,18 @@
           Recovery by Email
           <template #suffix><UiToggle :model-value="passwordRecoveryEnabled" :disabled="savingSecurity" size="sm" readonly /></template>
         </UiListMenuItem>
-        <div v-if="confirmingRecoveryEnable" class="rounded-lg border p-3 space-y-2 mx-4 mb-3 bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-800">
-          <div class="flex gap-2">
-            <Icon name="mdi:shield-alert-outline" class="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-            <p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">Enabling password recovery makes your account recoverable via email, but anyone with email access could reset your password and delete your notes.</p>
-          </div>
-          <div class="flex gap-2">
-            <UiButton variant="outline" color="gray" size="xs" class="flex-1" @click="confirmingRecoveryEnable = false">Cancel</UiButton>
-            <UiButton variant="solid" color="amber" size="xs" class="flex-1" :loading="savingSecurity" @click="confirmPasswordRecovery">Enable</UiButton>
-          </div>
-        </div>
+        <SettingsConfirmModal
+          :is-open="confirmingRecoveryEnable"
+          title="Enable Password Recovery?"
+          icon="mdi:shield-alert-outline"
+          confirm-label="Enable"
+          confirm-color="amber"
+          :loading="savingSecurity"
+          @close="confirmingRecoveryEnable = false"
+          @confirm="confirmPasswordRecovery"
+        >
+          Enabling password recovery makes your account recoverable via email, but anyone with email access could reset your password and delete your notes.
+        </SettingsConfirmModal>
         <template v-if="passwordRecoveryEnabled">
           <UiAlert color="amber" icon="mdi:shield-alert-outline" bordered size="md" class="mx-4 mb-2">
             <p class="font-semibold text-amber-800 dark:text-amber-200">Account access risk</p>
