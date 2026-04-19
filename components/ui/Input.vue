@@ -83,6 +83,19 @@
         @keydown="onKeydown"
       >
 
+      <!-- Clear button -->
+      <button
+        v-if="clearable && modelValue"
+        type="button"
+        tabindex="-1"
+        class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        aria-label="Clear"
+        @mousedown.prevent
+        @click="emit('update:modelValue', '')"
+      >
+        <Icon name="mdi:close-circle" class="w-4 h-4" />
+      </button>
+
       <!-- Password visibility toggle button -->
       <button
         v-if="isPassword && showToggle"
@@ -334,6 +347,13 @@ const props = defineProps({
   // ── Validation props ──
 
   /**
+   * Show a clear button when the input has a value.
+   * @type {boolean}
+   * @default false
+   */
+  clearable: { type: Boolean, default: false },
+
+  /**
    * Enable built-in validation feedback shown below the input on blur.
    * @type {boolean}
    * @default true
@@ -422,6 +442,9 @@ const inputClasses = computed(() => {
 
   // Extra right padding for password toggle
   if (isPassword.value && props.showToggle) classes.push('pr-10')
+
+  // Extra right padding for clear button
+  if (props.clearable) classes.push('pr-8')
 
   // Number text alignment
   if (isNumber.value && hasStepper.value) classes.push('text-center')

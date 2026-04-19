@@ -2,7 +2,8 @@
   <div class="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
     <!-- Selection Toolbar / Header — crossfade in a fixed container -->
     <div
-      class="relative border-b border-gray-200 dark:border-gray-800 flex-shrink-0 overflow-hidden"
+      class="relative border-b border-gray-200 dark:border-gray-800 flex-shrink-0"
+      :class="showFilters ? 'overflow-visible' : 'overflow-hidden'"
     >
       <!-- Select toolbar -->
       <Transition
@@ -160,6 +161,7 @@
               type="text"
               placeholder="Search notes..."
               :validate="false"
+              clearable
             />
           </div>
           <UiButton
@@ -194,7 +196,7 @@
         >
           <div
             v-if="showFilters"
-            class="overflow-hidden rounded-lg bg-white dark:bg-gray-800 p-2.5 space-y-2 shadow-sm"
+            class="rounded-lg bg-white dark:bg-gray-800 p-2.5 space-y-2 shadow-sm"
           >
             <!-- Date range -->
             <UiSelect
@@ -724,7 +726,7 @@ const getGroupNotes = (groupId) => {
 const sidebarItems = computed(() => {
   const items = []
   for (const n of filteredNotes.value) {
-    if (!n.groupId || showArchive.value) {
+    if (!n.groupId || showArchive.value || isFiltering.value) {
       items.push({ id: n.id, kind: 'note', sortOrder: n.sortOrder ?? 0, data: n })
     }
   }
