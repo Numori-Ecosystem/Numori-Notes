@@ -37,9 +37,9 @@
         <!-- Sidebar navigation -->
         <nav
           v-show="!isMobile || (!activeSection && transitionState !== 'leaving')"
-          class="flex-shrink-0 w-full md:w-60 h-full bg-gray-50 dark:bg-gray-900 md:border-r border-gray-200 dark:border-gray-800 overflow-y-auto"
+          class="flex-shrink-0 w-full md:w-60 h-full bg-gray-50 dark:bg-gray-900 md:border-r border-gray-200 dark:border-gray-800 flex flex-col"
         >
-          <div class="p-3 pb-2">
+          <div class="p-3 pb-2 flex-shrink-0">
             <div class="relative">
               <Icon
                 name="mdi:magnify"
@@ -62,7 +62,7 @@
               </button>
             </div>
           </div>
-          <ul class="px-2 pb-3 space-y-0.5">
+          <ul class="px-2 pb-3 space-y-0.5 overflow-y-auto flex-1 min-h-0">
             <template v-for="(section, idx) in filteredSections" :key="section.id">
               <!-- Separator between app settings and account sections -->
               <li v-if="section.id === 'profile' && idx > 0" class="py-1.5 px-3">
