@@ -368,8 +368,8 @@ const close = () => {
 }
 
 // Programmatic toggle for parent row clicks.
-// Uses a skip flag to prevent the race with onClickOutside:
-// when the row is clicked, onClickOutside fires first (closing the dropdown),
+// Uses a skip flag to prevent the race with the document click handler:
+// when the row is clicked, the capture-phase listener fires first (closing the dropdown),
 // then the row handler calls toggle(). The flag lets us detect this and skip the re-open.
 let skipNextOpen = false
 const toggle = () => {
@@ -381,11 +381,16 @@ const toggle = () => {
 const closeFromOutside = () => {
   if (isOpen.value) skipNextOpen = true
   close()
-  // Reset the flag after the current event finishes
   setTimeout(() => { skipNextOpen = false }, 0)
 }
 
-defineExpose({ toggle, close, isOpen })
+const onDocumentClick = (e) => {
+  if (!containerRef.value || containerRef.value.contains(e.target)) return
+  closeFromOutside()
+}
 
-onClickOutside(containerRef, closeFromOutside)
+onMounted(() => document.addEventListener('click', onDocumentClick, true))
+onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick, true))
+
+defineExpose({ toggle, close, isOpen })
 </script>

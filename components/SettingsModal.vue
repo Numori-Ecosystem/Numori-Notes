@@ -1301,12 +1301,18 @@ const resetProfileState = () => {
   loadPrivacyScreen(props.user); resetDraft()
 }
 
+const handleEscape = (e) => { if (e.key === 'Escape' && props.isOpen) closeModal() }
+
 onMounted(async () => {
   checkMobile(); window.addEventListener('resize', checkMobile)
-  await detectBiometrics()
-  const handleEscape = (e) => { if (e.key === 'Escape' && props.isOpen) closeModal() }
   document.addEventListener('keydown', handleEscape)
-  onUnmounted(() => { document.removeEventListener('keydown', handleEscape); window.removeEventListener('resize', checkMobile); if (biometricPollTimer) { clearInterval(biometricPollTimer); biometricPollTimer = null } })
+  await detectBiometrics()
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleEscape)
+  window.removeEventListener('resize', checkMobile)
+  if (biometricPollTimer) { clearInterval(biometricPollTimer); biometricPollTimer = null }
 })
 
 watch(activeSection, (section, oldSection) => {
