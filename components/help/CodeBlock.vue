@@ -1,7 +1,7 @@
 <template>
   <div class="relative numori-codeblock rounded-xl border border-gray-100 dark:border-gray-700/50 overflow-hidden">
     <!-- Highlighted content -->
-    <div ref="contentEl" class="p-3.5 font-mono text-[13px] leading-[1.7] space-y-0">
+    <div class="p-3.5 font-mono text-[13px] leading-[1.7] space-y-0 select-text">
       <div v-for="(line, i) in highlightedLines" :key="i" class="whitespace-pre-wrap">
         <template v-if="line.length === 0">&nbsp;</template>
         <template v-for="(span, j) in line" :key="j">
@@ -40,10 +40,9 @@ const props = defineProps({
   lines: { type: Array, default: () => [] },
 })
 
-const canInsert = inject('helpCanInsert', ref(false))
+const canInsert = inject('helpCanInsert', computed(() => false))
 const onInsert = inject('helpOnInsert', null)
 
-const contentEl = ref(null)
 const copied = ref(false)
 
 // Highlight lines using the numori tokenizer
@@ -80,6 +79,13 @@ const handleInsert = () => {
 </script>
 
 <style>
+/* Allow text selection in code blocks (overrides global user-select: none) */
+.numori-codeblock .select-text,
+.numori-codeblock .select-text * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* Light mode numori highlighting */
 .numori-codeblock {
   background-color: #FCFCFA;
