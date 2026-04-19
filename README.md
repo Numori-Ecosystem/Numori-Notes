@@ -20,6 +20,8 @@ Do math with natural language and get results in real time as you type. Just wri
 - **Works everywhere** — PWA for desktop and mobile browsers, plus native iOS and Android via Capacitor
 - **Offline-first** — everything runs client-side with IndexedDB; no internet required for core features
 - **Share notes** — password-protected shared links with view analytics
+- **App lock** — optional PIN/biometric lock for the native mobile apps with configurable auto-lock timeout
+- **Privacy screen** — automatic screen content hiding when the app is backgrounded on mobile
 - **i18n** — English and Spanish, easy to add more
 - **In-app updates** — automatic update detection with toast notifications
 
@@ -67,28 +69,47 @@ npm run dev                 # http://localhost:3000
 │   │   ├── Badge.vue              # Status / label badge
 │   │   ├── Button.vue             # Button with variants, sizes, loading state
 │   │   ├── ButtonsGroup.vue       # Grouped button container
-│   │   ├── ButtonsList.vue        # Vertical button list
-│   │   ├── ButtonsListItem.vue    # Single item in a buttons list
 │   │   ├── Checkbox.vue           # Checkbox input
 │   │   ├── Divider.vue            # Horizontal divider
 │   │   ├── Dropdown.vue           # Dropdown menu container
 │   │   ├── DropdownItem.vue       # Dropdown menu item
+│   │   ├── DropdownRow.vue        # Dropdown row layout
 │   │   ├── DropdownSubmenu.vue    # Nested dropdown submenu
 │   │   ├── FileInput.vue          # File upload input
 │   │   ├── FormField.vue          # Form field wrapper with label / error
 │   │   ├── Input.vue              # Text input
 │   │   ├── Kbd.vue                # Keyboard shortcut badge
+│   │   ├── ListMenu.vue           # Vertical list menu
+│   │   ├── ListMenuItem.vue       # Single item in a list menu
 │   │   ├── Modal.vue              # Modal dialog
 │   │   ├── Popup.vue              # Popup / popover
 │   │   ├── ProgressBar.vue        # Progress bar
+│   │   ├── Prompt.vue             # Confirmation prompt dialog
 │   │   ├── Select.vue             # Select dropdown
 │   │   ├── Slider.vue             # Range slider
 │   │   ├── Stepper.vue            # Numeric stepper
 │   │   ├── Toggle.vue             # Toggle switch
 │   │   └── Tooltip.vue            # Tooltip
+│   ├── settings/                  # Settings modal sub-components
+│   │   ├── Behaviour.vue          # Behaviour preferences (auto-save, etc.)
+│   │   ├── ConfirmModal.vue       # Settings confirmation dialog
+│   │   ├── Cursor.vue             # Cursor style preferences
+│   │   ├── DangerZone.vue         # Account deletion / data wipe
+│   │   ├── General.vue            # General settings tab
+│   │   ├── Layout.vue             # Layout preferences (sidebar, editor)
+│   │   ├── Locales.vue            # Language / locale settings
+│   │   ├── Modal.vue              # Settings modal shell with tab navigation
+│   │   ├── Profile.vue            # User profile settings
+│   │   ├── Results.vue            # Calculator result display settings
+│   │   ├── SectionHeader.vue      # Reusable settings section header
+│   │   ├── Security.vue           # Security settings (app lock, privacy screen)
+│   │   ├── Sessions.vue           # Active sessions management
+│   │   ├── SharedNotes.vue        # Shared notes management
+│   │   └── Typography.vue         # Font and typography preferences
 │   ├── AboutModal.vue             # About / credits modal
 │   ├── AddToGroupModal.vue        # Add note(s) to a group
 │   ├── AppHeader.vue              # Top bar with title, menus, and actions
+│   ├── AppLockScreen.vue          # PIN / biometric lock screen overlay
 │   ├── AuthModal.vue              # Login / register modal
 │   ├── AvatarEditor.vue           # Avatar upload / crop
 │   ├── ConfirmBulkDeleteModal.vue # Bulk-delete confirmation
@@ -102,14 +123,11 @@ npm run dev                 # http://localhost:3000
 │   ├── GroupListItem.vue          # Single group row in the sidebar
 │   ├── GroupModal.vue             # Create / rename group modal
 │   ├── HelpModal.vue              # In-app documentation modal
-│   ├── LanguageSwitcher.vue       # i18n locale selector
 │   ├── MainSidebar.vue            # Notes list sidebar with search, tags, groups, CRUD, and account menu
 │   ├── NoteEditor.vue             # CodeMirror editor wrapper with calc integration
 │   ├── NoteListItem.vue           # Single note row in the sidebar
 │   ├── NoteMetaModal.vue          # Note rename / metadata / share modal
 │   ├── OfflineIndicator.vue       # Offline status indicator
-│   ├── ProfileModal.vue           # User profile, sessions, password change, data deletion
-│   ├── SettingsModal.vue          # Locale and display preferences
 │   ├── ShareAnalyticsModal.vue    # Shared note view analytics
 │   ├── SharedNoteToolbar.vue      # Toolbar for the public shared-note page
 │   ├── ShareModal.vue             # Share a note (password, link, analytics)
@@ -137,6 +155,7 @@ npm run dev                 # http://localhost:3000
 │   │   └── __tests__/             # Calculator engine tests (colocated)
 │   ├── useApi.js                  # API fetch wrapper (app-level)
 │   ├── useApiBase.js              # Base fetch helper (shared with shared page)
+│   ├── useAppLock.js              # PIN / biometric app lock state and logic
 │   ├── useAuth.js                 # Auth state, key derivation, session persistence and validation
 │   ├── useAuthHandlers.js         # Auth event handlers (login, register, logout flows)
 │   ├── useNumoriLanguage.js       # Custom CodeMirror language (numori)
@@ -157,6 +176,7 @@ npm run dev                 # http://localhost:3000
 │   ├── useNotes.js                # Note CRUD + IndexedDB persistence
 │   ├── useOnlineStatus.js         # Online / offline status tracking
 │   ├── usePlatform.js             # Platform detection (web, ios, android)
+│   ├── usePrivacyScreen.js        # Privacy screen (hide content when backgrounded)
 │   ├── useServiceWorker.js        # Service worker registration and update handling
 │   ├── useShareManagement.js      # Share CRUD and link management
 │   ├── useSync.js                 # Cloud sync with E2E encryption
@@ -180,7 +200,9 @@ npm run dev                 # http://localhost:3000
 │   │   │   ├── profile.put.js     # PUT  /api/auth/profile — update profile
 │   │   │   ├── password.put.js    # PUT  /api/auth/password — change password + re-encrypt
 │   │   │   ├── privacy.put.js     # PUT  /api/auth/privacy — tracking preferences
+│   │   │   ├── privacy-screen.put.js # PUT /api/auth/privacy-screen — toggle privacy screen
 │   │   │   ├── security.put.js    # PUT  /api/auth/security — toggle security settings
+│   │   │   ├── app-lock.put.js    # PUT  /api/auth/app-lock — configure app lock settings
 │   │   │   ├── session-duration.put.js # PUT /api/auth/session-duration — configure session lifetime
 │   │   │   ├── sessions.get.js    # GET  /api/auth/sessions — list active sessions
 │   │   │   ├── sessions.delete.js # DELETE /api/auth/sessions — revoke all other sessions
@@ -256,6 +278,8 @@ The app is a pure client-side SPA (`ssr: false` in `nuxt.config.ts`). All data i
 - `useNumoriLanguage.js` — Registers a custom CodeMirror language (`numori`) with syntax highlighting for numbers, operators, units, currencies, functions, and comments.
 - `useNotes.js` — Manages multiple notes with auto-save to IndexedDB via Dexie.js.
 - `useGroups.js` / `useGroupManagement.js` — Note group state and CRUD with cloud sync support.
+- `useAppLock.js` — PIN / biometric app lock for native mobile apps with configurable auto-lock timeout.
+- `usePrivacyScreen.js` — Hides app content when backgrounded on mobile (iOS/Android).
 - `useTemplates.js` — Provides predefined templates (budget, cooking, fitness, etc.).
 - `useToast.js` — Toast notification state management.
 - `useServiceWorker.js` — Service worker registration and in-app update detection.

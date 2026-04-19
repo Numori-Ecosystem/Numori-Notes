@@ -331,6 +331,8 @@ const dependencies = [
   { name: 'nuxt-codemirror', url: 'https://nuxt.com/modules/nuxt-codemirror', license: 'MIT', description: 'CodeMirror editor integration for Nuxt' },
   { name: 'CodeMirror', url: 'https://codemirror.net', license: 'MIT', description: 'Extensible code editor component for the web' },
   { name: 'Capacitor', url: 'https://capacitorjs.com', license: 'MIT', description: 'Cross-platform native runtime for web apps on iOS, Android, and desktop' },
+  { name: '@capacitor/privacy-screen', url: 'https://github.com/nickvdyck/capacitor-privacy-screen', license: 'MIT', description: 'Hide app content when backgrounded on iOS and Android' },
+  { name: '@capgo/capacitor-native-biometric', url: 'https://github.com/nickvdyck/capacitor-native-biometric', license: 'MIT', description: 'Native biometric authentication (Face ID, Touch ID, fingerprint)' },
   { name: 'Dexie.js', url: 'https://dexie.org', license: 'Apache-2.0', description: 'Minimalistic IndexedDB wrapper with a friendly API' },
   { name: 'highlight.js', url: 'https://highlightjs.org', license: 'BSD-3', description: 'Syntax highlighting for the web' },
   { name: 'bcryptjs', url: 'https://github.com/dcodeIO/bcrypt.js', license: 'MIT', description: 'Pure JavaScript bcrypt password hashing' },
