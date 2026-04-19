@@ -459,47 +459,16 @@
       <div v-if="draggingId" class="min-h-[60px]" />
     </div>
 
-    <!-- Archive & Bin buttons -->
+    <!-- Notes / Archive / Bin segmented control -->
     <div
-      class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+      class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-3 py-2"
     >
-      <div class="flex items-center">
-        <UiButton
-          variant="list-item"
-          class="flex-1 justify-center text-left"
-          :class="
-            showArchive
-              ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
-              : ''
-          "
-          @click="showArchive = !showArchive"
-        >
-          <Icon
-            :name="showArchive ? 'mdi:archive' : 'mdi:archive-outline'"
-            class="w-4 h-4"
-          />
-          <span class="text-sm">Archive</span>
-          <span v-if="archivedCount > 0" class="text-xs text-gray-400 dark:text-gray-500 ml-auto">{{ archivedCount }}</span>
-        </UiButton>
-        <div class="w-px h-6 bg-gray-200 dark:bg-gray-700" />
-        <UiButton
-          variant="list-item"
-          class="flex-1 justify-center text-left"
-          :class="
-            showBin
-              ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
-              : ''
-          "
-          @click="showBin = !showBin"
-        >
-          <Icon
-            :name="showBin ? 'mdi:delete' : 'mdi:delete-outline'"
-            class="w-4 h-4"
-          />
-          <span class="text-sm">Bin</span>
-          <span v-if="binCount > 0" class="text-xs text-gray-400 dark:text-gray-500 ml-auto">{{ binCount }}</span>
-        </UiButton>
-      </div>
+      <UiButtonsGroup
+        :model-value="sidebarView"
+        variant="tabs"
+        :options="sidebarViewOptions"
+        @update:model-value="sidebarView = $event"
+      />
     </div>
 
     <!-- User Account Section -->
@@ -602,7 +571,6 @@ const props = defineProps({
   sharedNotesMap: { type: Map, default: () => new Map() },
   analyticsNotesMap: { type: Map, default: () => new Map() },
   pendingNoteIds: { type: Set, default: () => new Set() },
-  binCount: { type: Number, default: 0 },
 })
 
 const emit = defineEmits([
@@ -650,20 +618,26 @@ const searchQuery = ref('')
 const selectedTags = ref([])
 const listRef = ref(null)
 const showFilters = ref(false)
-const showArchive = ref(false)
-const showBin = ref(false)
+
+// Sidebar view: 'notes' | 'archive' | 'bin'
+const sidebarView = ref('notes')
+const showArchive = computed(() => sidebarView.value === 'archive')
+const showBin = computed(() => sidebarView.value === 'bin')
+
+const sidebarViewOptions = computed(() => [
+  { value: 'notes', label: 'Notes' },
+  { value: 'bin', label: binCount.value > 0 ? `Bin (${binCount.value})` : 'Bin' },
+  { value: 'archive', label: archivedCount.value > 0 ? `Archive (${archivedCount.value})` : 'Archive' },
+])
 
 const hasArchivedNotes = computed(() => props.notes.some((n) => n.archived && !n.deletedAt))
 const archivedCount = computed(() => props.notes.filter((n) => n.archived && !n.deletedAt).length)
+const binCount = computed(() => props.notes.filter((n) => !!n.deletedAt).length)
 
 // Auto-exit archive view when no archived notes remain
 watch(hasArchivedNotes, (has) => {
-  if (!has) showArchive.value = false
+  if (!has && sidebarView.value === 'archive') sidebarView.value = 'notes'
 })
-
-// Ensure only one special view is active at a time
-watch(showArchive, (on) => { if (on) showBin.value = false })
-watch(showBin, (on) => { if (on) showArchive.value = false })
 
 // ── Account dropdown ─────────────────────────────────────
 const accountDropdownRef = ref(null)

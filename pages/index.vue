@@ -263,7 +263,7 @@ import { useGroupManagement } from '~/composables/useGroupManagement'
 import { useNoteActions } from '~/composables/useNoteActions'
 
 const {
-  notes, currentNoteId, currentNote, allTags, deletedIds, binNotes,
+  notes, currentNoteId, currentNote, allTags, deletedIds,
   addNote, deleteNote, softDeleteNote, restoreNote, permanentlyDeleteNote,
   updateNoteContent, updateNoteMeta, saveNotes,
   clearDeletedIds, reorderNotes, moveNotesToGroup, removeNotesFromGroup,
@@ -620,7 +620,6 @@ const sidebarProps = computed(() => ({
   appLockEnabled: appLock.settings.enabled,
   sharedNoteIds: sharedNoteIds.value, sharedNotesMap: sharedNotesMap.value,
   analyticsNotesMap: analyticsNotesMap.value, pendingNoteIds: pendingNoteIds.value,
-  binCount: binNotes.value.length,
 }))
 
 const sidebarEvents = {
