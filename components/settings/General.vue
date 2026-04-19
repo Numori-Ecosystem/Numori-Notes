@@ -11,6 +11,14 @@
           </template>
         </UiListMenuItem>
       </UiListMenu>
+      <UiListMenu label="Deletion" preset="settings" class="mt-5">
+        <UiListMenuItem icon="mdi:delete-outline" hint="Move deleted notes to bin instead of permanently deleting them">
+          Bin (Trash)
+          <template #suffix>
+            <UiToggle :model-value="preferences.binEnabled !== false" @update:model-value="preferences.binEnabled = $event; onSettingChange()" />
+          </template>
+        </UiListMenuItem>
+      </UiListMenu>
       <UiListMenu label="Updates" preset="settings" class="mt-5">
         <UiListMenuItem icon="mdi:update" hint="How often to check for new versions" :select-ref="selectUpdateInterval">
           Check Interval

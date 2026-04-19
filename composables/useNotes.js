@@ -12,24 +12,16 @@ export const useNotes = () => {
 
   const startLiveQuery = () => {
     if (!import.meta.client) return
-    const observable = liveQuery(() =>
-      db.notes.orderBy('sortOrder').toArray()
-    )
+    const observable = liveQuery(() => db.notes.orderBy('sortOrder').toArray())
     subscription = observable.subscribe({
       next: (rows) => {
-        // Merge instead of replace: only update notes whose data actually
-        // changed so that Vue reactive references (and downstream watchers
-        // like the editor's props.content) stay stable when nothing changed.
-        const incoming = new Map(rows.map(r => [r.id, r]))
-        // Remove notes that no longer exist in DB
+        const incoming = new Map(rows.map((r) => [r.id, r]))
         for (let i = notes.value.length - 1; i >= 0; i--) {
           if (!incoming.has(notes.value[i].id)) notes.value.splice(i, 1)
         }
-        // Update existing / add new
         for (const row of rows) {
-          const existing = notes.value.find(n => n.id === row.id)
+          const existing = notes.value.find((n) => n.id === row.id)
           if (existing) {
-            // Only assign fields that actually differ
             for (const key of Object.keys(row)) {
               const oldVal = existing[key]
               const newVal = row[key]
@@ -41,7 +33,6 @@ export const useNotes = () => {
             notes.value.push(row)
           }
         }
-        // Ensure sort order matches DB
         notes.value.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
       },
       error: (err) => console.error('liveQuery error:', err),
@@ -65,7 +56,11 @@ export const useNotes = () => {
     // Load deleted IDs
     const row = await db.appState.get('deleted_note_ids')
     if (row?.value) {
-      try { deletedIds.value = JSON.parse(row.value) } catch { deletedIds.value = [] }
+      try {
+        deletedIds.value = JSON.parse(row.value)
+      } catch {
+        deletedIds.value = []
+      }
     }
 
     // Rule 1: Create welcome note only on first-ever app open while NOT logged in.
@@ -108,8 +103,8 @@ export const useNotes = () => {
   // ── Computed ──────────────────────────────────────────────────────────
   const allTags = computed(() => {
     const tagSet = new Set()
-    notes.value.forEach(n => {
-      if (n.tags) n.tags.forEach(t => tagSet.add(t))
+    notes.value.forEach((n) => {
+      if (!n.deletedAt && n.tags) n.tags.forEach((t) => tagSet.add(t))
     })
     return [...tagSet].sort()
   })
@@ -197,9 +192,11 @@ Discounted: prev - 10%
 
   /** Check if a note is the unmodified auto-generated welcome note. */
   const isWelcomeNote = (note) => {
-    return note.title === 'Welcome'
-      && note.description === 'Notes with calculator features'
-      && note.content === WELCOME_CONTENT
+    return (
+      note.title === 'Welcome' &&
+      note.description === 'Notes with calculator features' &&
+      note.content === WELCOME_CONTENT
+    )
   }
 
   /**
@@ -221,7 +218,7 @@ Discounted: prev - 10%
 
   const createNote = (title = 'Untitled Note', description = '') => {
     const defaultContent = title === 'Welcome' ? WELCOME_CONTENT : ''
-    const existingNames = notes.value.map(n => n.internalName).filter(Boolean)
+    const existingNames = notes.value.map((n) => n.internalName).filter(Boolean)
 
     return {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -233,14 +230,15 @@ Discounted: prev - 10%
       groupId: null,
       content: defaultContent,
       archived: false,
+      deletedAt: null,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }
   }
 
   const addNote = () => {
     const now = new Date().toISOString()
-    notes.value.forEach(n => {
+    notes.value.forEach((n) => {
       n.sortOrder = (n.sortOrder ?? 0) + 1
       n.updatedAt = now
     })
@@ -253,7 +251,7 @@ Discounted: prev - 10%
   }
 
   const deleteNote = (id) => {
-    const index = notes.value.findIndex(n => n.id === id)
+    const index = notes.value.findIndex((n) => n.id === id)
     if (index !== -1) {
       notes.value.splice(index, 1)
 
@@ -263,8 +261,8 @@ Discounted: prev - 10%
       }
 
       if (currentNoteId.value === id) {
-        const next = notes.value.find(n => n.id !== id && !n.archived)
-        currentNoteId.value = next ? next.id : (notes.value.length > 0 ? notes.value[0].id : null)
+        const next = notes.value.find((n) => n.id !== id && !n.archived && !n.deletedAt)
+        currentNoteId.value = next ? next.id : notes.value.length > 0 ? notes.value[0].id : null
       }
 
       // Remove from DB
@@ -273,8 +271,52 @@ Discounted: prev - 10%
     }
   }
 
+  /** Soft-delete: move note to bin by setting deletedAt timestamp */
+  const softDeleteNote = (id) => {
+    const note = notes.value.find((n) => n.id === id)
+    if (note) {
+      note.deletedAt = new Date().toISOString()
+      note.updatedAt = new Date().toISOString()
+      if (currentNoteId.value === id) {
+        const next = notes.value.find((n) => n.id !== id && !n.archived && !n.deletedAt)
+        currentNoteId.value = next ? next.id : null
+      }
+      saveNotes()
+    }
+  }
+
+  /** Restore a note from the bin */
+  const restoreNote = (id) => {
+    const note = notes.value.find((n) => n.id === id)
+    if (note) {
+      note.deletedAt = null
+      note.updatedAt = new Date().toISOString()
+      saveNotes()
+    }
+  }
+
+  /** Permanently delete a note from the bin */
+  const permanentlyDeleteNote = (id) => {
+    deleteNote(id)
+  }
+
+  /** Empty the entire bin (permanently delete all soft-deleted notes) */
+  const emptyBin = () => {
+    const binNotes = notes.value.filter((n) => n.deletedAt)
+    for (const note of binNotes) {
+      deleteNote(note.id)
+    }
+  }
+
+  /** Get all notes in the bin */
+  const binNotes = computed(() => {
+    return notes.value
+      .filter((n) => n.deletedAt)
+      .sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt))
+  })
+
   const updateNoteContent = (id, content) => {
-    const note = notes.value.find(n => n.id === id)
+    const note = notes.value.find((n) => n.id === id)
     if (note) {
       note.content = content
       note.updatedAt = new Date().toISOString()
@@ -283,7 +325,7 @@ Discounted: prev - 10%
   }
 
   const updateNoteMeta = (id, { title, description, tags, internalName, groupId }) => {
-    const note = notes.value.find(n => n.id === id)
+    const note = notes.value.find((n) => n.id === id)
     if (note) {
       if (title !== undefined) note.title = title
       if (description !== undefined) note.description = description
@@ -299,13 +341,13 @@ Discounted: prev - 10%
   }
 
   const archiveNote = (id) => {
-    const note = notes.value.find(n => n.id === id)
+    const note = notes.value.find((n) => n.id === id)
     if (note) {
       note.archived = true
       note.updatedAt = new Date().toISOString()
       // If archiving the current note, select the next non-archived note
       if (currentNoteId.value === id) {
-        const next = notes.value.find(n => n.id !== id && !n.archived)
+        const next = notes.value.find((n) => n.id !== id && !n.archived)
         currentNoteId.value = next ? next.id : null
       }
       saveNotes()
@@ -313,7 +355,7 @@ Discounted: prev - 10%
   }
 
   const unarchiveNote = (id) => {
-    const note = notes.value.find(n => n.id === id)
+    const note = notes.value.find((n) => n.id === id)
     if (note) {
       note.archived = false
       note.updatedAt = new Date().toISOString()
@@ -324,12 +366,15 @@ Discounted: prev - 10%
   const bulkArchive = (ids) => {
     const now = new Date().toISOString()
     for (const id of ids) {
-      const note = notes.value.find(n => n.id === id)
-      if (note) { note.archived = true; note.updatedAt = now }
+      const note = notes.value.find((n) => n.id === id)
+      if (note) {
+        note.archived = true
+        note.updatedAt = now
+      }
     }
     // If current note was archived, select next non-archived
     if (ids.includes(currentNoteId.value)) {
-      const next = notes.value.find(n => !ids.includes(n.id) && !n.archived)
+      const next = notes.value.find((n) => !ids.includes(n.id) && !n.archived)
       currentNoteId.value = next ? next.id : null
     }
     saveNotes()
@@ -338,15 +383,18 @@ Discounted: prev - 10%
   const bulkUnarchive = (ids) => {
     const now = new Date().toISOString()
     for (const id of ids) {
-      const note = notes.value.find(n => n.id === id)
-      if (note) { note.archived = false; note.updatedAt = now }
+      const note = notes.value.find((n) => n.id === id)
+      if (note) {
+        note.archived = false
+        note.updatedAt = now
+      }
     }
     saveNotes()
   }
 
   const reorderNotes = (orderedIds) => {
     orderedIds.forEach((id, index) => {
-      const note = notes.value.find(n => n.id === id)
+      const note = notes.value.find((n) => n.id === id)
       if (note) {
         note.sortOrder = index
         note.updatedAt = new Date().toISOString()
@@ -359,7 +407,7 @@ Discounted: prev - 10%
   const moveNotesToGroup = (noteIds, groupId) => {
     const now = new Date().toISOString()
     for (const id of noteIds) {
-      const note = notes.value.find(n => n.id === id)
+      const note = notes.value.find((n) => n.id === id)
       if (note) {
         note.groupId = groupId
         note.updatedAt = now
@@ -380,11 +428,15 @@ Discounted: prev - 10%
   }
 
   const currentNote = computed(() => {
-    return notes.value.find(n => n.id === currentNoteId.value) || null
+    return notes.value.find((n) => n.id === currentNoteId.value) || null
   })
 
-  onMounted(() => { loadNotes() })
-  onBeforeUnmount(() => { stopLiveQuery() })
+  onMounted(() => {
+    loadNotes()
+  })
+  onBeforeUnmount(() => {
+    stopLiveQuery()
+  })
 
   return {
     notes,
@@ -392,8 +444,13 @@ Discounted: prev - 10%
     currentNote,
     allTags,
     deletedIds,
+    binNotes,
     addNote,
     deleteNote,
+    softDeleteNote,
+    restoreNote,
+    permanentlyDeleteNote,
+    emptyBin,
     updateNoteContent,
     updateNoteMeta,
     loadNotes,
@@ -406,6 +463,6 @@ Discounted: prev - 10%
     unarchiveNote,
     bulkArchive,
     bulkUnarchive,
-    removeWelcomeNoteIfNeeded
+    removeWelcomeNoteIfNeeded,
   }
 }

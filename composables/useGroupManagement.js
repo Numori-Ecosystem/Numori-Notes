@@ -12,6 +12,8 @@ export function useGroupManagement({
   moveNotesToGroup,
   removeNotesFromGroup,
   deleteNote,
+  softDeleteNote,
+  binEnabled,
   syncNow,
 }) {
   const showGroupModal = ref(false)
@@ -114,7 +116,11 @@ export function useGroupManagement({
       moveNotesToGroup(noteIds, moveToGroupId)
     } else if (action === 'delete-all') {
       const noteIds = notes.value.filter((n) => n.groupId === groupId).map((n) => n.id)
-      for (const id of noteIds) deleteNote(id)
+      const useSoftDelete = binEnabled && binEnabled.value
+      for (const id of noteIds) {
+        if (useSoftDelete) softDeleteNote(id)
+        else deleteNote(id)
+      }
     }
 
     deleteGroupFromDb(groupId)

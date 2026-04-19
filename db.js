@@ -66,35 +66,53 @@ db.version(1).stores({
 })
 
 // ── Version 2 — internal names + note groups ───────────────────────────
-db.version(2).stores({
-  notes: 'id, sortOrder, groupId',
-  groups: 'id, sortOrder',
-}).upgrade(async tx => {
-  // Add default internalName to existing notes with uniqueness
-  const allNotes = await tx.table('notes').toArray()
-  const usedNames = new Set()
+db.version(2)
+  .stores({
+    notes: 'id, sortOrder, groupId',
+    groups: 'id, sortOrder',
+  })
+  .upgrade(async (tx) => {
+    // Add default internalName to existing notes with uniqueness
+    const allNotes = await tx.table('notes').toArray()
+    const usedNames = new Set()
 
-  for (const note of allNotes) {
-    let base = (note.title || '')
-      .toLowerCase()
-      .replace(/\s+/g, '_')
-      .replace(/[^a-z0-9_]/g, '')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '') || 'untitled_note'
+    for (const note of allNotes) {
+      let base =
+        (note.title || '')
+          .toLowerCase()
+          .replace(/\s+/g, '_')
+          .replace(/[^a-z0-9_]/g, '')
+          .replace(/_+/g, '_')
+          .replace(/^_|_$/g, '') || 'untitled_note'
 
-    let name = base
-    if (usedNames.has(name)) {
-      let i = 1
-      while (usedNames.has(`${base}_${i}`)) i++
-      name = `${base}_${i}`
+      let name = base
+      if (usedNames.has(name)) {
+        let i = 1
+        while (usedNames.has(`${base}_${i}`)) i++
+        name = `${base}_${i}`
+      }
+      usedNames.add(name)
+
+      await tx.table('notes').update(note.id, {
+        internalName: name,
+        groupId: note.groupId === undefined ? null : note.groupId,
+      })
     }
-    usedNames.add(name)
+  })
 
-    await tx.table('notes').update(note.id, {
-      internalName: name,
-      groupId: note.groupId === undefined ? null : note.groupId
-    })
-  }
-})
+// ── Version 3 — soft-delete bin (deletedAt index) ──────────────────────
+db.version(3)
+  .stores({
+    notes: 'id, sortOrder, groupId, deletedAt',
+  })
+  .upgrade(async (tx) => {
+    // Ensure existing notes have deletedAt = null
+    const allNotes = await tx.table('notes').toArray()
+    for (const note of allNotes) {
+      if (note.deletedAt === undefined) {
+        await tx.table('notes').update(note.id, { deletedAt: null })
+      }
+    }
+  })
 
 export default db

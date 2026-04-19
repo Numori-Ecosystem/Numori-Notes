@@ -265,6 +265,14 @@ export async function migrate() {
     END $do$
   `)
 
+  // Add deleted_at for soft-delete (bin) support
+  await query(`
+    DO $do$ BEGIN
+      ALTER TABLE notes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $do$
+  `)
+
   // Add internal_name to notes for normalised identifier
   await query(`
     DO $do$ BEGIN

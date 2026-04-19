@@ -14,7 +14,20 @@
 import db from '~/db.js'
 import { encryptNote, decryptNote } from '~/utils/crypto.js'
 
-export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onDataWipe, onSessionRevoked, removeWelcomeNoteIfNeeded, groups, saveGroups, deletedGroupIds, clearDeletedGroupIds) => {
+export const useSync = (
+  auth,
+  notes,
+  saveNotes,
+  deletedIds,
+  clearDeletedIds,
+  onDataWipe,
+  onSessionRevoked,
+  removeWelcomeNoteIfNeeded,
+  groups,
+  saveGroups,
+  deletedGroupIds,
+  clearDeletedGroupIds,
+) => {
   const { apiFetch, apiUrl } = useApi()
 
   const syncing = ref(false)
@@ -84,10 +97,11 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
           content: n.content,
           sortOrder: n.sortOrder ?? 0,
           archived: n.archived ?? false,
+          deletedAt: n.deletedAt || null,
           internalName: n.internalName || '',
           groupId: n.groupId || null,
           createdAt: n.createdAt,
-          updatedAt: n.updatedAt
+          updatedAt: n.updatedAt,
         }
         const encrypted = await encryptNote(plain, key)
         encryptedClientNotes.push(encrypted)
@@ -106,13 +120,13 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
           lastSyncedAt: lastSyncedAt.value,
           sessionId,
           broadcast: shouldBroadcast,
-          welcomeCreated: localWelcomeCreated
-        }
+          welcomeCreated: localWelcomeCreated,
+        },
       })
 
       if (data.deletedClientIds?.length) {
         for (const id of data.deletedClientIds) {
-          const idx = notes.value.findIndex(n => n.id === id)
+          const idx = notes.value.findIndex((n) => n.id === id)
           if (idx !== -1) notes.value.splice(idx, 1)
         }
         await db.notes.bulkDelete(data.deletedClientIds)
@@ -124,9 +138,8 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
       let removedWelcomeNoteId = null
       if (data.welcomeCreated && removeWelcomeNoteIfNeeded) {
         // Find the unmodified welcome note before removing it
-        const welcomeNote = notes.value.find(n =>
-          n.title === 'Welcome'
-          && n.description === 'Notes with calculator features'
+        const welcomeNote = notes.value.find(
+          (n) => n.title === 'Welcome' && n.description === 'Notes with calculator features',
         )
         if (welcomeNote) {
           removedWelcomeNoteId = welcomeNote.id
@@ -141,16 +154,23 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
         // Skip re-adding the welcome note we just removed
         if (removedWelcomeNoteId && localId === removedWelcomeNoteId) continue
 
-        const existing = notes.value.find(n => n.id === localId)
+        const existing = notes.value.find((n) => n.id === localId)
         if (existing) {
           if (new Date(decrypted.updatedAt) > new Date(existing.updatedAt)) {
             if (existing.title !== decrypted.title) existing.title = decrypted.title
-            if (existing.description !== decrypted.description) existing.description = decrypted.description
-            if (JSON.stringify(existing.tags) !== JSON.stringify(decrypted.tags)) existing.tags = decrypted.tags
+            if (existing.description !== decrypted.description)
+              existing.description = decrypted.description
+            if (JSON.stringify(existing.tags) !== JSON.stringify(decrypted.tags))
+              existing.tags = decrypted.tags
             if (existing.content !== decrypted.content) existing.content = decrypted.content
-            if (existing.archived !== (decrypted.archived ?? false)) existing.archived = decrypted.archived ?? false
-            if (existing.sortOrder !== (decrypted.sortOrder ?? 0)) existing.sortOrder = decrypted.sortOrder ?? 0
-            if (existing.internalName !== (decrypted.internalName || '')) existing.internalName = decrypted.internalName || ''
+            if (existing.archived !== (decrypted.archived ?? false))
+              existing.archived = decrypted.archived ?? false
+            const remoteDeletedAt = decrypted.deletedAt || null
+            if (existing.deletedAt !== remoteDeletedAt) existing.deletedAt = remoteDeletedAt
+            if (existing.sortOrder !== (decrypted.sortOrder ?? 0))
+              existing.sortOrder = decrypted.sortOrder ?? 0
+            if (existing.internalName !== (decrypted.internalName || ''))
+              existing.internalName = decrypted.internalName || ''
             const remoteGroupId = decrypted.groupId || null
             if (existing.groupId !== remoteGroupId) existing.groupId = remoteGroupId
             existing.updatedAt = decrypted.updatedAt
@@ -164,10 +184,11 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
             content: decrypted.content,
             sortOrder: decrypted.sortOrder ?? 0,
             archived: decrypted.archived ?? false,
+            deletedAt: decrypted.deletedAt || null,
             internalName: decrypted.internalName || '',
             groupId: decrypted.groupId || null,
             createdAt: decrypted.createdAt,
-            updatedAt: decrypted.updatedAt
+            updatedAt: decrypted.updatedAt,
           })
         }
       }
@@ -189,14 +210,14 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
       // Sync groups if available
       if (groups && saveGroups) {
         try {
-          const clientGroups = (groups.value || []).map(g => ({
+          const clientGroups = (groups.value || []).map((g) => ({
             clientId: g.id,
             name: g.name,
             internalName: g.internalName || '',
             sortOrder: g.sortOrder ?? 0,
             collapsed: g.collapsed ?? false,
             createdAt: g.createdAt,
-            updatedAt: g.updatedAt
+            updatedAt: g.updatedAt,
           }))
 
           const deletedGroupClientIds = deletedGroupIds ? [...deletedGroupIds.value] : []
@@ -205,29 +226,32 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
           const groupData = await apiFetch('/api/groups/sync', {
             method: 'POST',
             headers: auth.authHeaders.value,
-            body: { groups: clientGroups, deletedClientIds: deletedGroupClientIds }
+            body: { groups: clientGroups, deletedClientIds: deletedGroupClientIds },
           })
 
           // Remove groups that were deleted by other devices
           if (groupData.deletedClientIds?.length) {
             for (const id of groupData.deletedClientIds) {
-              const idx = groups.value.findIndex(g => g.id === id)
+              const idx = groups.value.findIndex((g) => g.id === id)
               if (idx !== -1) groups.value.splice(idx, 1)
             }
             await db.groups.bulkDelete(groupData.deletedClientIds)
           }
 
           // Merge pulled groups (skip any that we just asked the server to delete)
-          for (const remote of (groupData.pulled || [])) {
+          for (const remote of groupData.pulled || []) {
             const localId = remote.clientId || remote.id.toString()
             if (deletedGroupSet.has(localId)) continue
-            const existing = groups.value.find(g => g.id === localId)
+            const existing = groups.value.find((g) => g.id === localId)
             if (existing) {
               if (new Date(remote.updatedAt) > new Date(existing.updatedAt)) {
                 if (existing.name !== remote.name) existing.name = remote.name
-                if (existing.internalName !== (remote.internalName || '')) existing.internalName = remote.internalName || ''
-                if (existing.collapsed !== (remote.collapsed ?? false)) existing.collapsed = remote.collapsed ?? false
-                if (existing.sortOrder !== (remote.sortOrder ?? 0)) existing.sortOrder = remote.sortOrder ?? 0
+                if (existing.internalName !== (remote.internalName || ''))
+                  existing.internalName = remote.internalName || ''
+                if (existing.collapsed !== (remote.collapsed ?? false))
+                  existing.collapsed = remote.collapsed ?? false
+                if (existing.sortOrder !== (remote.sortOrder ?? 0))
+                  existing.sortOrder = remote.sortOrder ?? 0
                 existing.updatedAt = remote.updatedAt
               }
             } else {
@@ -238,7 +262,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
                 sortOrder: remote.sortOrder ?? 0,
                 collapsed: remote.collapsed ?? false,
                 createdAt: remote.createdAt,
-                updatedAt: remote.updatedAt
+                updatedAt: remote.updatedAt,
               })
             }
           }
@@ -262,7 +286,9 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
       if (shouldBroadcast) {
         expectingSelfEcho = true
         clearTimeout(echoTimer)
-        echoTimer = setTimeout(() => { expectingSelfEcho = false }, 500)
+        echoTimer = setTimeout(() => {
+          expectingSelfEcho = false
+        }, 500)
       }
     } catch (err) {
       syncError.value = err.data?.statusMessage || err.message || 'Sync failed'
@@ -373,7 +399,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
     if (!auth.token.value || sessionRevokedHandled) return
 
     eventSource = new EventSource(
-      apiUrl(`/api/sync/events?token=${auth.token.value}&sessionId=${sessionId}`)
+      apiUrl(`/api/sync/events?token=${auth.token.value}&sessionId=${sessionId}`),
     )
 
     eventSource.onmessage = (e) => {
@@ -387,7 +413,9 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
         } else if (msg.type === 'sync' && !syncing.value && !expectingSelfEcho) {
           sync('sse')
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
 
     eventSource.onerror = () => {
@@ -423,7 +451,7 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
         clearTimeout(sseReconnectTimer)
       }
     },
-    { immediate: true }
+    { immediate: true },
   )
 
   const onBeforeUnload = () => disconnectSSE()
@@ -442,5 +470,14 @@ export const useSync = (auth, notes, saveNotes, deletedIds, clearDeletedIds, onD
     }
   })
 
-  return { syncing, lastSyncedAt, syncError, pendingNoteIds, isOnline, sync, syncNow, debouncedSync }
+  return {
+    syncing,
+    lastSyncedAt,
+    syncError,
+    pendingNoteIds,
+    isOnline,
+    sync,
+    syncNow,
+    debouncedSync,
+  }
 }

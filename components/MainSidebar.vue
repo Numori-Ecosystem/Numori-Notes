@@ -47,53 +47,81 @@
                 class="w-4 h-4"
               />
             </UiButton>
-            <UiButton
-              variant="solid"
-              color="primary"
-              size="sm"
-              :disabled="selectedIds.size === 0"
-              class="flex-1"
-              @click="bulkGroup"
-            >
-              <Icon name="mdi:folder-outline" class="w-4 h-4" />
-              Group
-            </UiButton>
-            <UiButton
-              v-if="showArchive"
-              variant="solid"
-              color="primary"
-              size="sm"
-              :disabled="selectedIds.size === 0"
-              class="flex-1"
-              @click="bulkUnarchive"
-            >
-              <Icon name="mdi:package-up" class="w-4 h-4" />
-              Unarchive
-            </UiButton>
-            <UiButton
-              v-else
-              variant="solid"
-              color="gray"
-              size="sm"
-              :disabled="selectedIds.size === 0"
-              class="flex-1"
-              @click="bulkArchive"
-            >
-              <Icon name="mdi:archive-outline" class="w-4 h-4" />
-              Archive
-            </UiButton>
-            <UiButton
-              variant="solid"
-              color="red"
-              size="sm"
-              icon-only
-              :disabled="selectedIds.size === 0"
-              class="flex-shrink-0"
-              title="Delete"
-              @click="bulkDelete"
-            >
-              <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
-            </UiButton>
+            <!-- Bin mode actions -->
+            <template v-if="showBin">
+              <UiButton
+                variant="solid"
+                color="primary"
+                size="sm"
+                :disabled="selectedIds.size === 0"
+                class="flex-1"
+                @click="bulkRestore"
+              >
+                <Icon name="mdi:restore" class="w-4 h-4" />
+                Restore
+              </UiButton>
+              <UiButton
+                variant="solid"
+                color="red"
+                size="sm"
+                :disabled="selectedIds.size === 0"
+                class="flex-1"
+                @click="bulkPermanentDelete"
+              >
+                <Icon name="mdi:delete-forever-outline" class="w-4 h-4" />
+                Delete
+              </UiButton>
+            </template>
+            <!-- Normal mode actions -->
+            <template v-else>
+              <UiButton
+                variant="solid"
+                color="primary"
+                size="sm"
+                :disabled="selectedIds.size === 0"
+                class="flex-1"
+                @click="bulkGroup"
+              >
+                <Icon name="mdi:folder-outline" class="w-4 h-4" />
+                Group
+              </UiButton>
+              <UiButton
+                v-if="showArchive"
+                variant="solid"
+                color="primary"
+                size="sm"
+                :disabled="selectedIds.size === 0"
+                class="flex-1"
+                @click="bulkUnarchive"
+              >
+                <Icon name="mdi:package-up" class="w-4 h-4" />
+                Unarchive
+              </UiButton>
+              <UiButton
+                v-else
+                variant="solid"
+                color="gray"
+                size="sm"
+                :disabled="selectedIds.size === 0"
+                class="flex-1"
+                @click="bulkArchive"
+              >
+                <Icon name="mdi:archive-outline" class="w-4 h-4" />
+                Archive
+              </UiButton>
+              <UiButton
+                variant="solid"
+                color="red"
+                size="sm"
+                icon-only
+                :disabled="selectedIds.size === 0"
+                class="flex-shrink-0"
+                title="Delete"
+                @click="bulkDelete"
+              >
+                <Icon name="mdi:trash-can-outline" class="w-4 h-4" />
+              </UiButton>
+            </template>
           </div>
         </div>
       </Transition>
@@ -151,25 +179,6 @@
               :name="showFilters ? 'mdi:filter-variant-remove' : 'mdi:filter-variant'"
               class="w-4 h-4 block transition-transform duration-200"
               :class="{ 'rotate-180': showFilters }"
-            />
-          </UiButton>
-          <UiButton
-            v-if="hasArchivedNotes"
-            variant="ghost"
-            icon-only
-            size="sm"
-            class="flex-shrink-0"
-            :class="
-              showArchive
-                ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
-                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-            "
-            title="Archive"
-            @click="showArchive = !showArchive"
-          >
-            <Icon
-              :name="showArchive ? 'mdi:archive' : 'mdi:archive-outline'"
-              class="w-4 h-4 block"
             />
           </UiButton>
         </div>
@@ -299,9 +308,21 @@
     >
       <div
         v-if="sidebarItems.length === 0"
-        class="p-4 text-center text-sm text-gray-500 dark:text-gray-400"
+        class="p-4 text-center text-sm text-gray-500 dark:text-gray-400 mt-8"
       >
-        {{ showArchive ? 'No archived notes' : 'No notes found' }}
+        <template v-if="showBin">
+          <Icon name="mdi:delete-empty-outline" class="w-10 h-10 mx-auto mb-3 opacity-40" />
+          <p>Bin is empty</p>
+          <p class="text-xs mt-1 text-gray-400 dark:text-gray-500">Deleted notes will appear here</p>
+        </template>
+        <template v-else-if="showArchive">
+          <Icon name="mdi:archive-off-outline" class="w-10 h-10 mx-auto mb-3 opacity-40" />
+          <p>No archived notes</p>
+          <p class="text-xs mt-1 text-gray-400 dark:text-gray-500">Archived notes will appear here</p>
+        </template>
+        <template v-else>
+          No notes found
+        </template>
       </div>
 
       <template v-for="(item, idx) in displayItems" :key="item.id">
@@ -358,6 +379,7 @@
             :analytics-hash="analyticsNotesMap.get(item.data.id) || null"
             :pending="pendingNoteIds.has(item.data.id)"
             :is-logged-in="isLoggedIn"
+            :bin-mode="showBin"
             @select="(id) => $emit('select-note', id)"
             @delete="(id) => $emit('delete-note', id)"
             @share="(id) => $emit('share-note', id)"
@@ -372,6 +394,8 @@
             @unarchive="(id) => $emit('unarchive-note', id)"
             @toggle-select="toggleNoteSelection"
             @add-to-group="(id) => $emit('add-to-group', id)"
+            @restore="(id) => $emit('restore-note', id)"
+            @permanent-delete="(id) => $emit('permanent-delete-note', id)"
           />
         </div>
 
@@ -406,6 +430,7 @@
             :analytics-hash="analyticsNotesMap.get(item.data.id) || null"
             :pending="pendingNoteIds.has(item.data.id)"
             :is-logged-in="isLoggedIn"
+            :bin-mode="showBin"
             @select="(id) => $emit('select-note', id)"
             @delete="(id) => $emit('delete-note', id)"
             @share="(id) => $emit('share-note', id)"
@@ -420,6 +445,8 @@
             @unarchive="(id) => $emit('unarchive-note', id)"
             @toggle-select="toggleNoteSelection"
             @add-to-group="(id) => $emit('add-to-group', id)"
+            @restore="(id) => $emit('restore-note', id)"
+            @permanent-delete="(id) => $emit('permanent-delete-note', id)"
           />
         </div>
       </template>
@@ -430,6 +457,49 @@
         :style="gapStyle(displayItems.length)"
       />
       <div v-if="draggingId" class="min-h-[60px]" />
+    </div>
+
+    <!-- Archive & Bin buttons -->
+    <div
+      class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+    >
+      <div class="flex items-center">
+        <UiButton
+          variant="list-item"
+          class="flex-1 justify-center text-left"
+          :class="
+            showArchive
+              ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
+              : ''
+          "
+          @click="showArchive = !showArchive"
+        >
+          <Icon
+            :name="showArchive ? 'mdi:archive' : 'mdi:archive-outline'"
+            class="w-4 h-4"
+          />
+          <span class="text-sm">Archive</span>
+          <span v-if="archivedCount > 0" class="text-xs text-gray-400 dark:text-gray-500 ml-auto">{{ archivedCount }}</span>
+        </UiButton>
+        <div class="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+        <UiButton
+          variant="list-item"
+          class="flex-1 justify-center text-left"
+          :class="
+            showBin
+              ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
+              : ''
+          "
+          @click="showBin = !showBin"
+        >
+          <Icon
+            :name="showBin ? 'mdi:delete' : 'mdi:delete-outline'"
+            class="w-4 h-4"
+          />
+          <span class="text-sm">Bin</span>
+          <span v-if="binCount > 0" class="text-xs text-gray-400 dark:text-gray-500 ml-auto">{{ binCount }}</span>
+        </UiButton>
+      </div>
     </div>
 
     <!-- User Account Section -->
@@ -532,6 +602,7 @@ const props = defineProps({
   sharedNotesMap: { type: Map, default: () => new Map() },
   analyticsNotesMap: { type: Map, default: () => new Map() },
   pendingNoteIds: { type: Set, default: () => new Set() },
+  binCount: { type: Number, default: 0 },
 })
 
 const emit = defineEmits([
@@ -546,6 +617,10 @@ const emit = defineEmits([
   'edit-profile',
   'lock-app',
   'bulk-delete',
+  'bulk-restore',
+  'bulk-permanent-delete',
+  'restore-note',
+  'permanent-delete-note',
   'selection-change',
   'reorder',
   'share-note',
@@ -576,13 +651,19 @@ const selectedTags = ref([])
 const listRef = ref(null)
 const showFilters = ref(false)
 const showArchive = ref(false)
+const showBin = ref(false)
 
-const hasArchivedNotes = computed(() => props.notes.some((n) => n.archived))
+const hasArchivedNotes = computed(() => props.notes.some((n) => n.archived && !n.deletedAt))
+const archivedCount = computed(() => props.notes.filter((n) => n.archived && !n.deletedAt).length)
 
 // Auto-exit archive view when no archived notes remain
 watch(hasArchivedNotes, (has) => {
   if (!has) showArchive.value = false
 })
+
+// Ensure only one special view is active at a time
+watch(showArchive, (on) => { if (on) showBin.value = false })
+watch(showBin, (on) => { if (on) showArchive.value = false })
 
 // ── Account dropdown ─────────────────────────────────────
 const accountDropdownRef = ref(null)
@@ -657,6 +738,7 @@ const clearHoverExpand = () => {
 
 const filteredGroups = computed(() => {
   if (showArchive.value) return []
+  if (showBin.value) return []
   if (isFiltering.value) return []
   return props.groups
 })
@@ -1271,6 +1353,18 @@ const bulkDelete = () => {
   exitSelectMode()
 }
 
+const bulkRestore = () => {
+  if (selectedIds.value.size === 0) return
+  emit('bulk-restore', [...selectedIds.value])
+  exitSelectMode()
+}
+
+const bulkPermanentDelete = () => {
+  if (selectedIds.value.size === 0) return
+  emit('bulk-permanent-delete', [...selectedIds.value])
+  exitSelectMode()
+}
+
 const bulkArchive = () => {
   if (selectedIds.value.size === 0) return
   emit('bulk-archive', [...selectedIds.value])
@@ -1300,8 +1394,16 @@ const toggleTag = (tag) => {
 const filteredNotes = computed(() => {
   let result = props.notes
 
-  // Filter by archive state
-  result = result.filter((n) => (showArchive.value ? !!n.archived : !n.archived))
+  // Bin mode: show only soft-deleted notes
+  if (showBin.value) {
+    result = result.filter((n) => !!n.deletedAt)
+  } else {
+    // Exclude notes in the bin
+    result = result.filter((n) => !n.deletedAt)
+
+    // Filter by archive state
+    result = result.filter((n) => (showArchive.value ? !!n.archived : !n.archived))
+  }
 
   const q = searchQuery.value.trim().toLowerCase()
   if (q) {

@@ -186,8 +186,8 @@
     />
 
     <ExportOptionsModal :is-open="noteActions.showExportOptions.value" @close="noteActions.showExportOptions.value = false" @confirm="noteActions.handleExportConfirm" />
-    <ConfirmDeleteModal :is-open="showDeleteConfirm" @close="showDeleteConfirm = false" @confirm="handleDeleteConfirm" />
-    <ConfirmBulkDeleteModal :is-open="showBulkDeleteConfirm" :count="pendingBulkDeleteIds.length" @close="showBulkDeleteConfirm = false" @confirm="handleBulkDeleteConfirm" />
+    <ConfirmDeleteModal :is-open="showDeleteConfirm" :bin-enabled="binEnabled" @close="showDeleteConfirm = false" @confirm="handleDeleteConfirm" />
+    <ConfirmBulkDeleteModal :is-open="showBulkDeleteConfirm" :count="pendingBulkDeleteIds.length" :bin-enabled="binEnabled" @close="showBulkDeleteConfirm = false" @confirm="handleBulkDeleteConfirm" />
 
     <WelcomeWizard
       :is-open="welcomeWizard.isOpen.value" :preferences="localePrefs.preferences"
@@ -263,8 +263,9 @@ import { useGroupManagement } from '~/composables/useGroupManagement'
 import { useNoteActions } from '~/composables/useNoteActions'
 
 const {
-  notes, currentNoteId, currentNote, allTags, deletedIds,
-  addNote, deleteNote, updateNoteContent, updateNoteMeta, saveNotes,
+  notes, currentNoteId, currentNote, allTags, deletedIds, binNotes,
+  addNote, deleteNote, softDeleteNote, restoreNote, permanentlyDeleteNote,
+  updateNoteContent, updateNoteMeta, saveNotes,
   clearDeletedIds, reorderNotes, moveNotesToGroup, removeNotesFromGroup,
   archiveNote, unarchiveNote, bulkArchive, bulkUnarchive, removeWelcomeNoteIfNeeded,
 } = useNotes()
@@ -328,10 +329,13 @@ const authHandlers = useAuthHandlers({
 // --- Composable: Share management ---
 const shareManagement = useShareManagement({ auth, notes, apiFetch })
 
+// --- Bin enabled preference ---
+const binEnabled = computed(() => localePrefs.preferences.binEnabled !== false)
+
 // --- Composable: Group management ---
 const groupManagement = useGroupManagement({
   notes, groups, addGroup, updateGroup, deleteGroupFromDb, toggleGroupCollapsed,
-  reorderGroups, moveNotesToGroup, removeNotesFromGroup, deleteNote, syncNow,
+  reorderGroups, moveNotesToGroup, removeNotesFromGroup, deleteNote, softDeleteNote, binEnabled, syncNow,
 })
 
 // Wrapper: create note + instant sync
@@ -559,9 +563,19 @@ const showBulkDeleteConfirm = ref(false)
 const pendingBulkDeleteIds = ref([])
 
 const confirmDelete = (id) => { pendingDeleteId.value = id; showDeleteConfirm.value = true }
-const handleDeleteConfirm = () => {
+const handleDeleteConfirm = ({ skipBin } = {}) => {
   showDeleteConfirm.value = false
-  if (pendingDeleteId.value) { deleteNote(pendingDeleteId.value); pendingDeleteId.value = null; syncNow() }
+  if (pendingDeleteId.value) {
+    if (binEnabled.value && !skipBin) {
+      softDeleteNote(pendingDeleteId.value)
+      syncNow(pendingDeleteId.value)
+      toast.show('Note moved to bin', { type: 'success', icon: 'mdi:delete-outline' })
+    } else {
+      deleteNote(pendingDeleteId.value)
+      syncNow()
+    }
+    pendingDeleteId.value = null
+  }
 }
 
 const applyFormat = (before, after) => { if (editorRef.value) editorRef.value.wrapSelection(before, after) }
@@ -577,9 +591,14 @@ const insertTemplate = (templateContent) => {
 
 const onSelectionChange = (ids) => { selectedNoteIds.value = ids }
 const confirmBulkDelete = (ids) => { pendingBulkDeleteIds.value = ids; showBulkDeleteConfirm.value = true }
-const handleBulkDeleteConfirm = () => {
+const handleBulkDeleteConfirm = ({ skipBin } = {}) => {
   showBulkDeleteConfirm.value = false
-  for (const id of pendingBulkDeleteIds.value) deleteNote(id)
+  if (binEnabled.value && !skipBin) {
+    for (const id of pendingBulkDeleteIds.value) softDeleteNote(id)
+    toast.show(`${pendingBulkDeleteIds.value.length} note${pendingBulkDeleteIds.value.length > 1 ? 's' : ''} moved to bin`, { type: 'success', icon: 'mdi:delete-outline' })
+  } else {
+    for (const id of pendingBulkDeleteIds.value) deleteNote(id)
+  }
   pendingBulkDeleteIds.value = []; syncNow()
 }
 
@@ -588,6 +607,12 @@ const handleUnarchiveNote = (id) => { unarchiveNote(id); syncNow(id); toast.show
 const handleBulkArchive = (ids) => { bulkArchive(ids); syncNow(); toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} archived`, { type: 'success', icon: 'mdi:archive-outline' }) }
 const handleBulkUnarchive = (ids) => { bulkUnarchive(ids); syncNow(); toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} unarchived`, { type: 'success', icon: 'mdi:package-up' }) }
 
+// --- Bin handlers ---
+const handleRestoreNote = (id) => { restoreNote(id); syncNow(id); toast.show('Note restored', { type: 'success', icon: 'mdi:restore' }) }
+const handlePermanentDelete = (id) => { permanentlyDeleteNote(id); syncNow(); toast.show('Note permanently deleted', { type: 'success', icon: 'mdi:delete-forever-outline' }) }
+const handleBulkRestore = (ids) => { for (const id of ids) restoreNote(id); syncNow(); toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} restored`, { type: 'success', icon: 'mdi:restore' }) }
+const handleBulkPermanentDelete = (ids) => { for (const id of ids) permanentlyDeleteNote(id); syncNow(); toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} permanently deleted`, { type: 'success', icon: 'mdi:delete-forever-outline' }) }
+
 // --- Sidebar props/events (shared between desktop and mobile) ---
 const sidebarProps = computed(() => ({
   notes: notes.value, groups: groups.value, currentNoteId: currentNoteId.value,
@@ -595,6 +620,7 @@ const sidebarProps = computed(() => ({
   appLockEnabled: appLock.settings.enabled,
   sharedNoteIds: sharedNoteIds.value, sharedNotesMap: sharedNotesMap.value,
   analyticsNotesMap: analyticsNotesMap.value, pendingNoteIds: pendingNoteIds.value,
+  binCount: binNotes.value.length,
 }))
 
 const sidebarEvents = {
@@ -612,6 +638,8 @@ const sidebarEvents = {
   'copy-to-clipboard': noteActions.handleCopyById, 'print-note': noteActions.handlePrintById,
   'archive-note': handleArchiveNote, 'unarchive-note': handleUnarchiveNote,
   'bulk-archive': handleBulkArchive, 'bulk-unarchive': handleBulkUnarchive,
+  'bulk-restore': handleBulkRestore, 'bulk-permanent-delete': handleBulkPermanentDelete,
+  'restore-note': handleRestoreNote, 'permanent-delete-note': handlePermanentDelete,
   'bulk-group': groupManagement.handleBulkGroup, 'add-to-group': groupManagement.handleAddToGroup,
   'toggle-group-collapse': groupManagement.handleToggleGroupCollapse,
   'edit-group': groupManagement.handleEditGroup, 'delete-group': groupManagement.handleDeleteGroup,

@@ -91,63 +91,77 @@
               </UiButton>
             </template>
 
-            <UiButton variant="menu-item" @click.stop="handleAction('duplicate')">
-              <Icon name="mdi:content-duplicate" class="w-4 h-4" /> Duplicate
-            </UiButton>
-            <UiButton variant="menu-item" @click.stop="handleAction('copy-to-clipboard')">
-              <Icon name="mdi:clipboard-text-outline" class="w-4 h-4" /> Copy to clipboard
-            </UiButton>
-            <UiButton variant="menu-item" @click.stop="handleAction('export')">
-              <Icon name="mdi:file-export-outline" class="w-4 h-4" /> Export
-            </UiButton>
-            <UiButton variant="menu-item" @click.stop="handleAction('print')">
-              <Icon name="mdi:printer-outline" class="w-4 h-4" /> Print
-            </UiButton>
-            <UiDivider color="medium" />
-            <UiButton variant="menu-item" @click.stop="handleAction('share')">
-              <Icon name="mdi:share-variant-outline" class="w-4 h-4" />
-              {{ shared ? 'Sharing details' : 'Share' }}
-            </UiButton>
-            <UiButton v-if="shared" variant="menu-item" @click.stop="handleCopyLink">
-              <Icon :name="copied ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" />
-              {{ copied ? 'Copied' : 'Copy link' }}
-            </UiButton>
-            <UiButton
-              v-if="shared"
-              variant="menu-item"
-              color="red"
-              @click.stop="handleAction('unshare')"
-            >
-              <Icon name="mdi:link-variant-off" class="w-4 h-4" /> Stop sharing
-            </UiButton>
-            <UiButton
-              v-if="analyticsHash"
-              variant="menu-item"
-              @click.stop="handleAction('analytics')"
-            >
-              <Icon name="mdi:chart-bar" class="w-4 h-4" /> View analytics
-            </UiButton>
-            <UiDivider color="medium" />
-            <UiButton
-              v-if="note.archived"
-              variant="menu-item"
-              @click.stop="handleAction('unarchive')"
-            >
-              <Icon name="mdi:package-up" class="w-4 h-4" /> Unarchive
-            </UiButton>
-            <UiButton v-else variant="menu-item" @click.stop="handleAction('archive')">
-              <Icon name="mdi:archive-outline" class="w-4 h-4" /> Archive
-            </UiButton>
-            <UiButton variant="menu-item" @click.stop="handleAction('properties')">
-              <Icon name="mdi:information-outline" class="w-4 h-4" /> Properties
-            </UiButton>
-            <UiButton variant="menu-item" @click.stop="handleAction('add-to-group')">
-              <Icon name="mdi:folder-plus-outline" class="w-4 h-4" /> Add to group
-            </UiButton>
-            <UiDivider color="medium" />
-            <UiButton variant="menu-item" color="red" @click.stop="handleAction('delete')">
-              <Icon name="mdi:trash-can-outline" class="w-4 h-4" /> Delete
-            </UiButton>
+            <!-- Bin mode: simplified menu -->
+            <template v-if="binMode">
+              <UiButton variant="menu-item" @click.stop="handleAction('restore')">
+                <Icon name="mdi:restore" class="w-4 h-4" /> Restore
+              </UiButton>
+              <UiDivider color="medium" />
+              <UiButton variant="menu-item" color="red" @click.stop="handleAction('permanent-delete')">
+                <Icon name="mdi:delete-forever-outline" class="w-4 h-4" /> Delete permanently
+              </UiButton>
+            </template>
+
+            <!-- Normal mode: full menu -->
+            <template v-else>
+              <UiButton variant="menu-item" @click.stop="handleAction('duplicate')">
+                <Icon name="mdi:content-duplicate" class="w-4 h-4" /> Duplicate
+              </UiButton>
+              <UiButton variant="menu-item" @click.stop="handleAction('copy-to-clipboard')">
+                <Icon name="mdi:clipboard-text-outline" class="w-4 h-4" /> Copy to clipboard
+              </UiButton>
+              <UiButton variant="menu-item" @click.stop="handleAction('export')">
+                <Icon name="mdi:file-export-outline" class="w-4 h-4" /> Export
+              </UiButton>
+              <UiButton variant="menu-item" @click.stop="handleAction('print')">
+                <Icon name="mdi:printer-outline" class="w-4 h-4" /> Print
+              </UiButton>
+              <UiDivider color="medium" />
+              <UiButton variant="menu-item" @click.stop="handleAction('share')">
+                <Icon name="mdi:share-variant-outline" class="w-4 h-4" />
+                {{ shared ? 'Sharing details' : 'Share' }}
+              </UiButton>
+              <UiButton v-if="shared" variant="menu-item" @click.stop="handleCopyLink">
+                <Icon :name="copied ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" />
+                {{ copied ? 'Copied' : 'Copy link' }}
+              </UiButton>
+              <UiButton
+                v-if="shared"
+                variant="menu-item"
+                color="red"
+                @click.stop="handleAction('unshare')"
+              >
+                <Icon name="mdi:link-variant-off" class="w-4 h-4" /> Stop sharing
+              </UiButton>
+              <UiButton
+                v-if="analyticsHash"
+                variant="menu-item"
+                @click.stop="handleAction('analytics')"
+              >
+                <Icon name="mdi:chart-bar" class="w-4 h-4" /> View analytics
+              </UiButton>
+              <UiDivider color="medium" />
+              <UiButton
+                v-if="note.archived"
+                variant="menu-item"
+                @click.stop="handleAction('unarchive')"
+              >
+                <Icon name="mdi:package-up" class="w-4 h-4" /> Unarchive
+              </UiButton>
+              <UiButton v-else variant="menu-item" @click.stop="handleAction('archive')">
+                <Icon name="mdi:archive-outline" class="w-4 h-4" /> Archive
+              </UiButton>
+              <UiButton variant="menu-item" @click.stop="handleAction('properties')">
+                <Icon name="mdi:information-outline" class="w-4 h-4" /> Properties
+              </UiButton>
+              <UiButton variant="menu-item" @click.stop="handleAction('add-to-group')">
+                <Icon name="mdi:folder-plus-outline" class="w-4 h-4" /> Add to group
+              </UiButton>
+              <UiDivider color="medium" />
+              <UiButton variant="menu-item" color="red" @click.stop="handleAction('delete')">
+                <Icon name="mdi:trash-can-outline" class="w-4 h-4" /> Delete
+              </UiButton>
+            </template>
           </UiDropdown>
         </div>
       </div>
@@ -166,6 +180,7 @@ const props = defineProps({
   analyticsHash: { type: String, default: null },
   pending: { type: Boolean, default: false },
   isLoggedIn: { type: Boolean, default: false },
+  binMode: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -183,6 +198,8 @@ const emit = defineEmits([
   'archive',
   'unarchive',
   'add-to-group',
+  'restore',
+  'permanent-delete',
 ])
 
 const { copy: clipboardCopy } = useClipboard()
@@ -230,6 +247,8 @@ const handleAction = (action) => {
   else if (action === 'archive') emit('archive', props.note.id)
   else if (action === 'unarchive') emit('unarchive', props.note.id)
   else if (action === 'add-to-group') emit('add-to-group', props.note.id)
+  else if (action === 'restore') emit('restore', props.note.id)
+  else if (action === 'permanent-delete') emit('permanent-delete', props.note.id)
 }
 
 const handleCopyLink = async () => {

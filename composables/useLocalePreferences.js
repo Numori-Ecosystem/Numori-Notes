@@ -103,6 +103,8 @@ const DEFAULT_PREFERENCES = {
   markdownMode: 'edit',
   // Updates
   updateCheckInterval: 30, // minutes
+  // Bin (trash)
+  binEnabled: true,
 }
 
 export const useLocalePreferences = () => {
@@ -112,14 +114,21 @@ export const useLocalePreferences = () => {
   // Load saved preferences from Dexie — store promise so callers can await if needed
   let _ready
   if (import.meta.client) {
-    _ready = db.preferences.get('locale').then((row) => {
-      if (row?.value) {
-        try {
-          const parsed = typeof row.value === 'string' ? JSON.parse(row.value) : row.value
-          Object.assign(preferences, parsed)
-        } catch { /* use defaults */ }
-      }
-    }).catch(() => { /* use defaults */ })
+    _ready = db.preferences
+      .get('locale')
+      .then((row) => {
+        if (row?.value) {
+          try {
+            const parsed = typeof row.value === 'string' ? JSON.parse(row.value) : row.value
+            Object.assign(preferences, parsed)
+          } catch {
+            /* use defaults */
+          }
+        }
+      })
+      .catch(() => {
+        /* use defaults */
+      })
   } else {
     _ready = Promise.resolve()
   }
@@ -138,7 +147,7 @@ export const useLocalePreferences = () => {
 
   const getActivePreset = () => {
     for (const [name, preset] of Object.entries(LOCALE_PRESETS)) {
-      const matches = Object.keys(preset).every(key => preferences[key] === preset[key])
+      const matches = Object.keys(preset).every((key) => preferences[key] === preset[key])
       if (matches) return name
     }
     return 'Custom'
@@ -149,7 +158,9 @@ export const useLocalePreferences = () => {
       // Unwrap reactive proxy — IndexedDB structured clone can't handle Proxies
       const plain = JSON.parse(JSON.stringify(preferences))
       db.preferences.put({ key: 'locale', value: JSON.stringify(plain) })
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   const reset = () => {

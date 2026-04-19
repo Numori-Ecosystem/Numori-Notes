@@ -245,9 +245,7 @@ const save = () => {
 }
 
 const handleDelete = () => {
-  if (confirm('Are you sure you want to delete this note?')) {
-    emit('delete', props.noteId)
-    emit('close')
-  }
+  emit('close')
+  emit('delete', props.noteId)
 }
 </script>
