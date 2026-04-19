@@ -10,30 +10,44 @@
     >
       <div
         v-if="show"
-        class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-50 dark:bg-gray-925"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-50 dark:bg-gray-950 overflow-hidden"
       >
-        <div class="w-full max-w-xs px-6 space-y-6 text-center">
+        <!-- Subtle background decoration -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            class="absolute -top-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-primary-400/5 dark:bg-primary-400/3 blur-3xl"
+          />
+          <div
+            class="absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] rounded-full bg-primary-600/5 dark:bg-primary-600/3 blur-3xl"
+          />
+        </div>
+
+        <div class="relative w-full max-w-sm px-8 text-center">
           <!-- App icon / lock icon -->
-          <div class="flex flex-col items-center gap-3">
+          <div class="flex flex-col items-center gap-4 mb-8">
             <div
-              class="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"
+              class="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20"
             >
-              <Icon name="mdi:lock" class="w-8 h-8 text-primary-600 dark:text-primary-400" />
+              <Icon name="mdi:lock" class="w-9 h-9 text-white" />
             </div>
-            <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Numori Notes
-            </h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              {{ unlockLabel }}
-            </p>
+            <div>
+              <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-50 tracking-tight">
+                Numori Notes
+              </h1>
+              <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+                {{ unlockLabel }}
+              </p>
+            </div>
           </div>
 
           <!-- Biometric prompt (shown first for biometrics method) -->
-          <div v-if="showBiometricPrompt" class="space-y-3">
+          <div v-if="showBiometricPrompt" class="space-y-4">
             <UiButton
               variant="solid"
               color="primary"
               block
+              size="lg"
+              shape="pill"
               @click="attemptBiometrics"
             >
               <Icon name="mdi:fingerprint" class="w-5 h-5" />
@@ -51,63 +65,38 @@
           </div>
 
           <!-- PIN input -->
-          <div v-else-if="activeMethod === 'pin'" class="space-y-4">
-            <div class="flex justify-center gap-2">
+          <div v-else-if="activeMethod === 'pin'" class="space-y-6">
+            <!-- PIN dots -->
+            <div class="flex justify-center gap-3">
               <div
                 v-for="i in pinLength"
                 :key="i"
-                class="w-3 h-3 rounded-full transition-colors duration-150"
-                :class="
+                class="w-3.5 h-3.5 rounded-full transition-all duration-200"
+                :class="[
                   i <= enteredPin.length
-                    ? 'bg-primary-600 dark:bg-primary-400'
-                    : 'bg-gray-300 dark:bg-gray-600'
-                "
+                    ? 'bg-primary-500 dark:bg-primary-400 scale-110 shadow-sm shadow-primary-500/30'
+                    : 'bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600',
+                  shake && i <= enteredPin.length ? 'animate-shake' : '',
+                ]"
               />
             </div>
 
             <!-- Number pad -->
-            <div class="grid grid-cols-3 gap-2 max-w-[240px] mx-auto">
-              <UiButton
-                v-for="n in [1,2,3,4,5,6,7,8,9]"
-                :key="n"
-                variant="ghost"
-                color="gray"
-                class="h-14 text-xl font-medium rounded-xl"
-                @click="enterDigit(n)"
-              >
-                {{ n }}
-              </UiButton>
-              <div />
-              <UiButton
-                variant="ghost"
-                color="gray"
-                class="h-14 text-xl font-medium rounded-xl"
-                @click="enterDigit(0)"
-              >
-                0
-              </UiButton>
-              <UiButton
-                variant="ghost"
-                color="gray"
-                class="h-14 rounded-xl"
-                :disabled="enteredPin.length === 0"
-                @click="deleteDigit"
-              >
-                <Icon name="mdi:backspace-outline" class="w-5 h-5" />
-              </UiButton>
-            </div>
-
-            <!-- Biometrics shortcut -->
-            <UiButton
-              v-if="hasBiometrics"
-              variant="ghost"
-              color="primary"
-              size="sm"
-              @click="showBiometricPrompt = true"
+            <UiNumpad
+              ref="numpadRef"
+              :can-delete="enteredPin.length > 0"
+              @digit="enterDigit"
+              @delete="deleteDigit"
             >
-              <Icon name="mdi:fingerprint" class="w-4 h-4" />
-              Use biometrics
-            </UiButton>
+              <template v-if="hasBiometrics" #bottom-left>
+                <button
+                  class="h-16 w-full rounded-2xl transition-all duration-150 flex items-center justify-center text-primary-500 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:scale-95"
+                  @click="showBiometricPrompt = true"
+                >
+                  <Icon name="mdi:fingerprint" class="w-6 h-6" />
+                </button>
+              </template>
+            </UiNumpad>
           </div>
 
           <!-- Password input -->
@@ -124,6 +113,8 @@
               variant="solid"
               color="primary"
               block
+              size="lg"
+              shape="pill"
               :disabled="!enteredPassword"
               @click="submitPassword"
             >
@@ -150,21 +141,23 @@
             leave-active-class="transition duration-150"
             leave-to-class="opacity-0"
           >
-            <p v-if="error" class="text-sm text-red-600 dark:text-red-400">
+            <p v-if="error" class="mt-4 text-sm text-red-500 dark:text-red-400 font-medium">
               {{ error }}
             </p>
           </Transition>
 
           <!-- Logout -->
-          <UiButton
-            variant="ghost"
-            color="red"
-            size="sm"
-            @click="$emit('logout')"
-          >
-            <Icon name="mdi:logout-variant" class="w-4 h-4" />
-            Sign out
-          </UiButton>
+          <div class="mt-10">
+            <UiButton
+              variant="ghost"
+              color="gray"
+              size="sm"
+              @click="$emit('logout')"
+            >
+              <Icon name="mdi:logout-variant" class="w-4 h-4" />
+              Sign out
+            </UiButton>
+          </div>
         </div>
       </div>
     </Transition>
@@ -184,8 +177,10 @@ const pinLength = 4
 const enteredPin = ref('')
 const enteredPassword = ref('')
 const error = ref('')
+const shake = ref(false)
 const showBiometricPrompt = ref(false)
 const passwordInputRef = ref(null)
+const numpadRef = ref(null)
 
 const hasBiometrics = computed(() => settings.method === 'biometrics' && biometricsEnrolled.value)
 
@@ -215,7 +210,11 @@ const enterDigit = (digit) => {
     const success = unlock(enteredPin.value)
     if (!success) {
       error.value = 'Incorrect PIN'
-      setTimeout(() => { enteredPin.value = '' }, 300)
+      shake.value = true
+      setTimeout(() => {
+        enteredPin.value = ''
+        shake.value = false
+      }, 400)
     }
   }
 }
@@ -244,7 +243,7 @@ const attemptBiometrics = async () => {
   }
 }
 
-// Auto-trigger biometrics when lock screen appears
+// Auto-trigger biometrics when lock screen appears & focus for keyboard input
 watch(
   () => props.show,
   async (visible) => {
@@ -252,6 +251,7 @@ watch(
       enteredPin.value = ''
       enteredPassword.value = ''
       error.value = ''
+      shake.value = false
       return
     }
     if (hasBiometrics.value) {
@@ -260,11 +260,28 @@ watch(
       attemptBiometrics()
     } else {
       showBiometricPrompt.value = false
+      await nextTick()
       if (activeMethod.value === 'password') {
-        await nextTick()
         passwordInputRef.value?.$el?.querySelector('input')?.focus()
+      } else {
+        // Focus the numpad so keyboard events are captured
+        numpadRef.value?.focus()
       }
     }
   },
 )
 </script>
+
+<style scoped>
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+</style>
