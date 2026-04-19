@@ -36,7 +36,7 @@
       <div class="flex flex-1 overflow-hidden min-h-0">
         <!-- Sidebar navigation -->
         <nav
-          v-show="!isMobile || !activeSection"
+          v-show="!isMobile || (!activeSection && transitionState !== 'leaving')"
           class="flex-shrink-0 w-full md:w-60 h-full bg-gray-50 dark:bg-gray-900 md:border-r border-gray-200 dark:border-gray-800 overflow-y-auto"
         >
           <div class="p-3 pb-2">
@@ -100,7 +100,7 @@
         </nav>
 
         <!-- Content panel -->
-        <div v-show="!isMobile || activeSection" ref="contentPanelRef" class="flex-1 overflow-y-auto bg-white dark:bg-gray-925">
+        <div v-show="!isMobile || activeSection || transitionState === 'leaving'" ref="contentPanelRef" class="flex-1 overflow-y-auto overflow-x-hidden bg-white dark:bg-gray-925">
           <!-- No section selected (desktop placeholder) -->
           <div
             v-if="!activeSection && !isMobile"
@@ -756,7 +756,29 @@ watch(filteredSections, (filtered) => {
 const selectSection = (id) => {
   if (id === activeSection.value) return
   profileSubSection.value = null
-  activeSection.value = id
+
+  // On mobile, switching between sections should also slide horizontally
+  if (isMobile.value && activeSection.value) {
+    slideDirection.value = sectionIndex(id) > sectionIndex(activeSection.value) ? 'right' : 'left'
+    transitionState.value = 'leaving'
+    const enterDir = slideDirection.value
+    setTimeout(() => {
+      activeSection.value = id
+      displayedSection.value = id
+      if (contentPanelRef.value) contentPanelRef.value.scrollTop = 0
+      slideDirection.value = enterDir
+      transitionState.value = 'entering-start'
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          transitionState.value = 'entering'
+          setTimeout(() => { transitionState.value = 'idle' }, 200)
+        })
+      })
+    }, 200)
+  } else {
+    activeSection.value = id
+  }
+
   searchQuery.value = ''
   // Load data for sections that need it
   if (id === 'sessions') loadSessions()
@@ -767,8 +789,42 @@ const sectionIndex = (id) => sections.findIndex((s) => s.id === id)
 
 // ── Transition ──
 const transitionState = ref('idle')
+const mobileGoingBack = ref(false)
 
 watch(activeSection, (newId, oldId) => {
+  const mobile = isMobile.value
+
+  // Mobile: entering a section (from sidebar) or going back (to sidebar)
+  if (mobile) {
+    const goingBack = mobileGoingBack.value
+    mobileGoingBack.value = false
+
+    if (!oldId && newId) {
+      // Entering section from sidebar — slide in from right
+      slideDirection.value = 'right'
+      displayedSection.value = newId
+      transitionState.value = 'entering-start'
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          transitionState.value = 'entering'
+          setTimeout(() => { transitionState.value = 'idle' }, 200)
+        })
+      })
+      return
+    }
+    if (oldId && !newId && goingBack) {
+      // Going back to sidebar — slide out to right
+      slideDirection.value = 'left'
+      transitionState.value = 'leaving'
+      setTimeout(() => {
+        displayedSection.value = null
+        transitionState.value = 'idle'
+      }, 200)
+      return
+    }
+  }
+
+  // Desktop or section-to-section switch
   if (!oldId || !newId) {
     displayedSection.value = newId
     transitionState.value = 'idle'
@@ -791,6 +847,23 @@ watch(activeSection, (newId, oldId) => {
 
 const sectionTransitionClasses = computed(() => {
   const dir = slideDirection.value
+  const mobile = isMobile.value
+
+  // Mobile horizontal slide
+  if (mobile && (dir === 'right' || dir === 'left')) {
+    switch (transitionState.value) {
+      case 'leaving': return dir === 'left'
+        ? 'transition-all duration-200 ease-in opacity-0 translate-x-8'
+        : 'transition-all duration-200 ease-in opacity-0 -translate-x-8'
+      case 'entering-start': return dir === 'right'
+        ? 'opacity-0 translate-x-8'
+        : 'opacity-0 -translate-x-8'
+      case 'entering': return 'transition-all duration-200 ease-out opacity-100 translate-x-0'
+      default: return 'opacity-100 translate-x-0'
+    }
+  }
+
+  // Desktop vertical slide
   switch (transitionState.value) {
     case 'leaving': return dir === 'down' ? 'transition-all duration-150 ease-in opacity-0 -translate-y-4' : 'transition-all duration-150 ease-in opacity-0 translate-y-4'
     case 'entering-start': return dir === 'down' ? 'opacity-0 translate-y-4' : 'opacity-0 -translate-y-4'
@@ -801,7 +874,7 @@ const sectionTransitionClasses = computed(() => {
 
 const mobileBack = () => {
   if (profileSubSection.value) { profileSubSection.value = null; return }
-  if (activeSection.value && isMobile.value) { activeSection.value = null } else { closeModal() }
+  if (activeSection.value && isMobile.value) { mobileGoingBack.value = true; activeSection.value = null } else { closeModal() }
 }
 
 // ── Language ──
