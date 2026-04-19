@@ -22,7 +22,7 @@
               <UiButton v-if="sn.collectAnalytics" variant="ghost" color="primary" size="xs" icon-only title="View analytics" @click="openAnalytics(sn.hash)"><Icon name="mdi:chart-bar" class="w-4 h-4" /></UiButton>
               <UiButton variant="ghost" color="primary" size="xs" icon-only title="Copy link" @click="copySharedLink(sn.hash)"><Icon :name="copiedHash === sn.hash ? 'mdi:check' : 'mdi:content-copy'" class="w-4 h-4" /></UiButton>
               <UiButton variant="ghost" color="red" size="xs" icon-only :disabled="!sn.isActive" :title="sn.isActive ? 'Stop sharing' : 'Already unshared'" @click="handleUnshare(sn.hash)"><Icon name="mdi:link-variant-off" class="w-4 h-4" /></UiButton>
-              <UiButton variant="ghost" color="red" size="xs" icon-only title="Delete permanently" @click="handlePurge(sn.hash)"><Icon name="mdi:delete-outline" class="w-4 h-4" /></UiButton>
+              <UiButton variant="ghost" color="red" size="xs" icon-only title="Delete permanently" @click="purgeTarget = sn.hash"><Icon name="mdi:delete-outline" class="w-4 h-4" /></UiButton>
             </div>
           </div>
         </div>
@@ -33,6 +33,18 @@
       </div>
     </div>
   </div>
+
+  <UiPrompt
+    :show="!!purgeTarget"
+    title="Delete shared note?"
+    body="Permanently delete this shared note and all its analytics? This cannot be undone."
+    icon="mdi:delete-outline"
+    confirm-label="Delete"
+    confirm-color="red"
+    :loading="purging"
+    @close="purgeTarget = null"
+    @confirm="confirmPurge"
+  />
 </template>
 
 <script setup>
@@ -49,6 +61,8 @@ const { copy: clipboardCopy } = useClipboard()
 const sharedNotes = ref([])
 const loading = ref(false)
 const copiedHash = ref(null)
+const purgeTarget = ref(null)
+const purging = ref(false)
 
 const showFeedback = (msg, type = 'success') => {
   toast.show(msg, { type: type === 'error' ? 'error' : 'success', icon: type === 'error' ? 'mdi:alert-circle-outline' : 'mdi:check-circle-outline' })
@@ -89,14 +103,19 @@ const handleUnshare = async (hash) => {
 }
 
 const handlePurge = async (hash) => {
-  if (!confirm('Permanently delete this shared note and all its analytics? This cannot be undone.')) return
+  purging.value = true
   try { await apiFetch(`/api/share/${hash}?purge=true`, { method: 'DELETE', headers: props.authHeaders }); await loadSharedNotes(); showFeedback('Shared note deleted'); emit('unshare', hash) }
   catch (err) { showFeedback(err?.data?.statusMessage || 'Failed to delete shared note', 'error') }
+  finally { purging.value = false; purgeTarget.value = null }
+}
+
+const confirmPurge = () => {
+  if (purgeTarget.value) handlePurge(purgeTarget.value)
 }
 
 const openAnalytics = (hash) => {
+  emit('open-analytics', hash)
   emit('close-modal')
-  nextTick(() => { emit('open-analytics', hash) })
 }
 
 onMounted(() => loadSharedNotes())

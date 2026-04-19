@@ -385,6 +385,30 @@
       </template>
     </div>
   </UiModal>
+
+  <UiPrompt
+    :show="!!deleteSelectedTarget"
+    title="Delete selected records?"
+    :body="`Delete ${deleteSelectedTarget || 0} selected record(s)?`"
+    icon="mdi:delete-outline"
+    confirm-label="Delete"
+    confirm-color="red"
+    :loading="deleting"
+    @close="deleteSelectedTarget = 0"
+    @confirm="confirmDeleteSelected"
+  />
+
+  <UiPrompt
+    :show="showDeleteAllPrompt"
+    title="Delete all analytics?"
+    body="Delete all analytics data for this share? This cannot be undone."
+    icon="mdi:delete-outline"
+    confirm-label="Delete All"
+    confirm-color="red"
+    :loading="deleting"
+    @close="showDeleteAllPrompt = false"
+    @confirm="confirmDeleteAll"
+  />
 </template>
 
 <script setup>
@@ -408,6 +432,9 @@ const data = ref(null)
 const showRaw = ref(false)
 const selectedIds = ref(new Set())
 const currentPage = ref(1)
+const deleteSelectedTarget = ref(0)
+const showDeleteAllPrompt = ref(false)
+const deleting = ref(false)
 
 const allOnPageSelected = computed(() => {
   if (!data.value || !uniqueDetailViewers.value.length) return false
@@ -533,7 +560,11 @@ const toggleSelectAll = () => {
 
 const deleteSelected = async () => {
   if (!selectedIds.value.size) return
-  if (!confirm(`Delete ${selectedIds.value.size} selected record(s)?`)) return
+  deleteSelectedTarget.value = selectedIds.value.size
+}
+
+const confirmDeleteSelected = async () => {
+  deleting.value = true
   try {
     await apiFetch(`/api/share/${props.hash}/analytics`, {
       method: 'DELETE',
@@ -544,11 +575,18 @@ const deleteSelected = async () => {
     await loadData(currentPage.value)
   } catch {
     /* ignore */
+  } finally {
+    deleting.value = false
+    deleteSelectedTarget.value = 0
   }
 }
 
 const deleteAll = async () => {
-  if (!confirm('Delete all analytics data for this share? This cannot be undone.')) return
+  showDeleteAllPrompt.value = true
+}
+
+const confirmDeleteAll = async () => {
+  deleting.value = true
   try {
     await apiFetch(`/api/share/${props.hash}/analytics`, {
       method: 'DELETE',
@@ -558,6 +596,9 @@ const deleteAll = async () => {
     await loadData(1)
   } catch {
     /* ignore */
+  } finally {
+    deleting.value = false
+    showDeleteAllPrompt.value = false
   }
 }
 
