@@ -14,6 +14,7 @@
 
     <!-- Trigger button: shows selected value, placeholder, or loading spinner -->
     <button
+      ref="triggerRef"
       type="button"
       :disabled="disabled || loading"
       :aria-label="ariaLabel"
@@ -231,6 +232,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const containerRef = ref(null)
+const triggerRef = ref(null)
 const searchRef = ref(null)
 const sizerRef = ref(null)
 const isOpen = ref(false)
@@ -365,5 +367,25 @@ const close = () => {
   searchQuery.value = ''
 }
 
-onClickOutside(containerRef, close)
+// Programmatic toggle for parent row clicks.
+// Uses a skip flag to prevent the race with onClickOutside:
+// when the row is clicked, onClickOutside fires first (closing the dropdown),
+// then the row handler calls toggle(). The flag lets us detect this and skip the re-open.
+let skipNextOpen = false
+const toggle = () => {
+  if (props.disabled || props.loading) return
+  if (skipNextOpen) { skipNextOpen = false; return }
+  toggleOpen()
+}
+
+const closeFromOutside = () => {
+  if (isOpen.value) skipNextOpen = true
+  close()
+  // Reset the flag after the current event finishes
+  setTimeout(() => { skipNextOpen = false }, 0)
+}
+
+defineExpose({ toggle, close, isOpen })
+
+onClickOutside(containerRef, closeFromOutside)
 </script>

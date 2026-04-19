@@ -119,53 +119,65 @@
           <div v-if="displayedSection === 'locales'" class="p-5 md:p-8">
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:earth" title="Locales" description="Region, language, and format preferences" />
-              <SettingsGroup title="Quick Preset">
-                <p class="text-xs text-gray-400 dark:text-gray-500 mb-3">Apply a regional preset to set all locale options at once</p>
-                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  <button v-for="(_preset, name) in presets" :key="name" type="button"
-                    class="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs font-medium border-2 transition-all"
-                    :class="activePreset === name
-                      ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-400 dark:border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
-                      : 'bg-gray-50 dark:bg-gray-800/60 border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'"
-                    @click="selectPreset(name)">
-                    <span class="text-lg leading-none">{{ presetEmojis[name] }}</span>
-                    <span>{{ name }}</span>
-                  </button>
+              <UiListMenu label="Quick Preset" preset="settings">
+                <div class="px-4 py-3">
+                  <p class="text-xs text-gray-400 dark:text-gray-500 mb-3">Apply a regional preset to set all locale options at once</p>
+                  <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    <button v-for="(_preset, name) in presets" :key="name" type="button"
+                      class="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs font-medium border-2 transition-all"
+                      :class="activePreset === name
+                        ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-400 dark:border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
+                        : 'bg-gray-50 dark:bg-gray-800/60 border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'"
+                      @click="selectPreset(name)">
+                      <span class="text-lg leading-none">{{ presetEmojis[name] }}</span>
+                      <span>{{ name }}</span>
+                    </button>
+                  </div>
+                  <p v-if="activePreset === 'Custom'" class="mt-2 text-xs text-gray-400 dark:text-gray-500 italic">Custom settings — doesn't match any preset</p>
                 </div>
-                <p v-if="activePreset === 'Custom'" class="mt-2 text-xs text-gray-400 dark:text-gray-500 italic">Custom settings — doesn't match any preset</p>
-              </SettingsGroup>
-              <SettingsGroup title="Language" class="mt-5">
-                <SettingsRow label="Display Language" icon="mdi:translate" :border="false">
-                  <UiSelect :model-value="currentLocaleCode" searchable
-                    :options="availableLocales.map((l) => ({ value: l.code, label: getLanguageEmoji(l.code) + ' ' + l.name }))"
-                    @update:model-value="changeLocale($event)" />
-                </SettingsRow>
-              </SettingsGroup>
-              <SettingsGroup title="Units" class="mt-5">
-                <SettingsRow label="Volume" icon="mdi:cup-water">
-                  <UiSelect :model-value="preferences.volume" :options="[{ value: 'litre', label: 'Litres' },{ value: 'us_gallon', label: 'US Gallons' },{ value: 'uk_gallon', label: 'UK Gallons (Imperial)' }]" @update:model-value="preferences.volume = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Fuel Economy" icon="mdi:gas-station-outline">
-                  <UiSelect :model-value="preferences.fuelEconomy" :options="[{ value: 'mpg', label: 'Miles per gallon (US)' },{ value: 'mpg_uk', label: 'Miles per gallon (UK)' },{ value: 'kpl', label: 'Km per litre' },{ value: 'l/100km', label: 'Litres per 100 km' },{ value: 'mpl', label: 'Miles per litre' },{ value: 'kpg', label: 'Km per gallon (US)' }]" @update:model-value="preferences.fuelEconomy = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Distance" icon="mdi:map-marker-distance">
-                  <UiSelect :model-value="preferences.distance" :options="[{ value: 'km', label: 'Kilometres' },{ value: 'miles', label: 'Miles' }]" @update:model-value="preferences.distance = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Temperature" icon="mdi:thermometer" :border="false">
-                  <UiSelect :model-value="preferences.temperature" :options="[{ value: 'celsius', label: 'Celsius (°C)' },{ value: 'fahrenheit', label: 'Fahrenheit (°F)' },{ value: 'kelvin', label: 'Kelvin (K)' }]" @update:model-value="preferences.temperature = $event; onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
-              <SettingsGroup title="Formats" class="mt-5">
-                <SettingsRow label="Date Format" icon="mdi:calendar-outline">
-                  <UiSelect :model-value="preferences.dateFormat" :options="[{ value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },{ value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },{ value: 'YYYY/MM/DD', label: 'YYYY/MM/DD' },{ value: 'DD.MM.YYYY', label: 'DD.MM.YYYY' },{ value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' }]" @update:model-value="preferences.dateFormat = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Time Format" icon="mdi:clock-outline">
-                  <UiSelect :model-value="preferences.timeFormat" :options="[{ value: '12h', label: '12-hour (3:30 PM)' },{ value: '24h', label: '24-hour (15:30)' }]" @update:model-value="preferences.timeFormat = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Number Format" icon="mdi:numeric" :border="false">
-                  <UiSelect :model-value="preferences.numberFormat" :options="[{ value: 'comma_dot', label: '1,000.00 (US/UK)' },{ value: 'dot_comma', label: '1.000,00 (DE/ES)' },{ value: 'space_comma', label: '1 000,00 (FR)' }]" @update:model-value="preferences.numberFormat = $event; onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
+              </UiListMenu>
+              <UiListMenu label="Language" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:translate" :select-ref="selectLocale">
+                  Display Language
+                  <template #suffix>
+                    <UiSelect ref="selectLocale" :model-value="currentLocaleCode" searchable
+                      :options="availableLocales.map((l) => ({ value: l.code, label: getLanguageEmoji(l.code) + ' ' + l.name }))"
+                      @update:model-value="changeLocale($event)" />
+                  </template>
+                </UiListMenuItem>
+              </UiListMenu>
+              <UiListMenu label="Units" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:cup-water" :select-ref="selectVolume">
+                  Volume
+                  <template #suffix><UiSelect ref="selectVolume" :model-value="preferences.volume" :options="[{ value: 'litre', label: 'Litres' },{ value: 'us_gallon', label: 'US Gallons' },{ value: 'uk_gallon', label: 'UK Gallons (Imperial)' }]" @update:model-value="preferences.volume = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:gas-station-outline" :select-ref="selectFuelEconomy">
+                  Fuel Economy
+                  <template #suffix><UiSelect ref="selectFuelEconomy" :model-value="preferences.fuelEconomy" :options="[{ value: 'mpg', label: 'Miles per gallon (US)' },{ value: 'mpg_uk', label: 'Miles per gallon (UK)' },{ value: 'kpl', label: 'Km per litre' },{ value: 'l/100km', label: 'Litres per 100 km' },{ value: 'mpl', label: 'Miles per litre' },{ value: 'kpg', label: 'Km per gallon (US)' }]" @update:model-value="preferences.fuelEconomy = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:map-marker-distance" :select-ref="selectDistance">
+                  Distance
+                  <template #suffix><UiSelect ref="selectDistance" :model-value="preferences.distance" :options="[{ value: 'km', label: 'Kilometres' },{ value: 'miles', label: 'Miles' }]" @update:model-value="preferences.distance = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:thermometer" :select-ref="selectTemperature">
+                  Temperature
+                  <template #suffix><UiSelect ref="selectTemperature" :model-value="preferences.temperature" :options="[{ value: 'celsius', label: 'Celsius (°C)' },{ value: 'fahrenheit', label: 'Fahrenheit (°F)' },{ value: 'kelvin', label: 'Kelvin (K)' }]" @update:model-value="preferences.temperature = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+              </UiListMenu>
+              <UiListMenu label="Formats" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:calendar-outline" :select-ref="selectDateFormat">
+                  Date Format
+                  <template #suffix><UiSelect ref="selectDateFormat" :model-value="preferences.dateFormat" :options="[{ value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },{ value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },{ value: 'YYYY/MM/DD', label: 'YYYY/MM/DD' },{ value: 'DD.MM.YYYY', label: 'DD.MM.YYYY' },{ value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' }]" @update:model-value="preferences.dateFormat = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:clock-outline" :select-ref="selectTimeFormat">
+                  Time Format
+                  <template #suffix><UiSelect ref="selectTimeFormat" :model-value="preferences.timeFormat" :options="[{ value: '12h', label: '12-hour (3:30 PM)' },{ value: '24h', label: '24-hour (15:30)' }]" @update:model-value="preferences.timeFormat = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:numeric" :select-ref="selectNumberFormat">
+                  Number Format
+                  <template #suffix><UiSelect ref="selectNumberFormat" :model-value="preferences.numberFormat" :options="[{ value: 'comma_dot', label: '1,000.00 (US/UK)' },{ value: 'dot_comma', label: '1.000,00 (DE/ES)' },{ value: 'space_comma', label: '1 000,00 (FR)' }]" @update:model-value="preferences.numberFormat = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+              </UiListMenu>
             </div>
           </div>
 
@@ -173,16 +185,18 @@
           <div v-if="displayedSection === 'typography'" class="p-5 md:p-8">
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:format-font" title="Typography" description="Font, size, and text rendering" />
-              <SettingsGroup title="Font">
-                <SettingsRow label="Font Family" hint="Custom fonts must be installed on your system" icon="mdi:format-font">
-                  <UiSelect :model-value="preferences.editorFontFamily" :options="[{ value: 'system', label: 'System Default' },{ value: 'fira-code', label: 'Fira Code' },{ value: 'jetbrains-mono', label: 'JetBrains Mono' },{ value: 'source-code-pro', label: 'Source Code Pro' },{ value: 'cascadia-code', label: 'Cascadia Code' },{ value: 'ibm-plex-mono', label: 'IBM Plex Mono' }]" @update:model-value="preferences.editorFontFamily = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Font Ligatures" hint="Enable ligatures for supported fonts (e.g. Fira Code)" icon="mdi:format-letter-matches" :border="false">
-                  <UiToggle v-model="preferences.editorLigatures" @update:model-value="onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
-              <SettingsGroup title="Size & Spacing" class="mt-5">
-                <div class="space-y-5 py-1">
+              <UiListMenu label="Font" preset="settings">
+                <UiListMenuItem icon="mdi:format-font" hint="Custom fonts must be installed on your system" :select-ref="selectFontFamily">
+                  Font Family
+                  <template #suffix><UiSelect ref="selectFontFamily" :model-value="preferences.editorFontFamily" :options="[{ value: 'system', label: 'System Default' },{ value: 'fira-code', label: 'Fira Code' },{ value: 'jetbrains-mono', label: 'JetBrains Mono' },{ value: 'source-code-pro', label: 'Source Code Pro' },{ value: 'cascadia-code', label: 'Cascadia Code' },{ value: 'ibm-plex-mono', label: 'IBM Plex Mono' }]" @update:model-value="preferences.editorFontFamily = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:format-letter-matches" hint="Enable ligatures for supported fonts (e.g. Fira Code)" :toggle="preferences.editorLigatures" @update:toggle="preferences.editorLigatures = $event; onSettingChange()">
+                  Font Ligatures
+                  <template #suffix><UiToggle :model-value="preferences.editorLigatures" readonly /></template>
+                </UiListMenuItem>
+              </UiListMenu>
+              <UiListMenu label="Size &amp; Spacing" preset="settings" class="mt-5">
+                <div class="px-4 py-3 space-y-5">
                   <div>
                     <div class="flex items-center justify-between mb-2">
                       <div class="flex items-center gap-2"><Icon name="mdi:format-size" class="w-4 h-4 text-gray-400 dark:text-gray-500" /><label class="text-sm text-gray-800 dark:text-gray-300">Font Size</label></div>
@@ -200,7 +214,7 @@
                     <div class="flex justify-between text-[11px] text-gray-400 mt-1"><span>14px</span><span>36px</span></div>
                   </div>
                 </div>
-              </SettingsGroup>
+              </UiListMenu>
             </div>
           </div>
 
@@ -208,22 +222,26 @@
           <div v-if="displayedSection === 'layout'" class="p-5 md:p-8">
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:page-layout-body" title="Layout" description="Editor chrome, gutters, and visual aids" />
-              <SettingsGroup title="Gutters">
-                <SettingsRow label="Line Numbers" icon="mdi:format-list-numbered">
-                  <UiSelect :model-value="preferences.editorLineNumbers" :options="[{ value: 'on', label: 'Absolute' },{ value: 'relative', label: 'Relative' },{ value: 'interval', label: 'Interval (every 10)' },{ value: 'off', label: 'Off' }]" @update:model-value="preferences.editorLineNumbers = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Line Highlight" icon="mdi:format-color-highlight" :border="false">
-                  <UiSelect :model-value="preferences.editorRenderLineHighlight" :options="[{ value: 'none', label: 'None' },{ value: 'line', label: 'Line' },{ value: 'all', label: 'Gutter + Line' }]" @update:model-value="preferences.editorRenderLineHighlight = $event; onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
-              <SettingsGroup title="Text Display" class="mt-5">
-                <SettingsRow label="Word Wrap" hint="Wrap long lines to fit the editor width" icon="mdi:wrap">
-                  <UiToggle v-model="preferences.editorWordWrap" @update:model-value="onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Code Folding" hint="Allow collapsing code regions" icon="mdi:code-braces" :border="false">
-                  <UiToggle v-model="preferences.editorFolding" @update:model-value="onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
+              <UiListMenu label="Gutters" preset="settings">
+                <UiListMenuItem icon="mdi:format-list-numbered" :select-ref="selectLineNumbers">
+                  Line Numbers
+                  <template #suffix><UiSelect ref="selectLineNumbers" :model-value="preferences.editorLineNumbers" :options="[{ value: 'on', label: 'Absolute' },{ value: 'relative', label: 'Relative' },{ value: 'interval', label: 'Interval (every 10)' },{ value: 'off', label: 'Off' }]" @update:model-value="preferences.editorLineNumbers = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:format-color-highlight" :select-ref="selectLineHighlight">
+                  Line Highlight
+                  <template #suffix><UiSelect ref="selectLineHighlight" :model-value="preferences.editorRenderLineHighlight" :options="[{ value: 'none', label: 'None' },{ value: 'line', label: 'Line' },{ value: 'all', label: 'Gutter + Line' }]" @update:model-value="preferences.editorRenderLineHighlight = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+              </UiListMenu>
+              <UiListMenu label="Text Display" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:wrap" hint="Wrap long lines to fit the editor width" :toggle="preferences.editorWordWrap" @update:toggle="preferences.editorWordWrap = $event; onSettingChange()">
+                  Word Wrap
+                  <template #suffix><UiToggle :model-value="preferences.editorWordWrap" readonly /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:code-braces" hint="Allow collapsing code regions" :toggle="preferences.editorFolding" @update:toggle="preferences.editorFolding = $event; onSettingChange()">
+                  Code Folding
+                  <template #suffix><UiToggle :model-value="preferences.editorFolding" readonly /></template>
+                </UiListMenuItem>
+              </UiListMenu>
             </div>
           </div>
 
@@ -231,16 +249,18 @@
           <div v-if="displayedSection === 'cursor'" class="p-5 md:p-8">
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:cursor-text" title="Cursor &amp; Scrolling" description="Cursor appearance and scroll behaviour" />
-              <SettingsGroup title="Cursor">
-                <SettingsRow label="Cursor Style" icon="mdi:cursor-text" :border="false">
-                  <UiSelect :model-value="preferences.editorCursorStyle" :options="[{ value: 'line', label: 'Line' },{ value: 'line-thin', label: 'Line (thin)' }]" @update:model-value="preferences.editorCursorStyle = $event; onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
-              <SettingsGroup title="Scrolling" class="mt-5">
-                <SettingsRow label="Scroll Past End" hint="Allow scrolling beyond the last line" icon="mdi:arrow-expand-down" :border="false">
-                  <UiToggle v-model="preferences.editorScrollPastEnd" @update:model-value="onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
+              <UiListMenu label="Cursor" preset="settings">
+                <UiListMenuItem icon="mdi:cursor-text" :select-ref="selectCursorStyle">
+                  Cursor Style
+                  <template #suffix><UiSelect ref="selectCursorStyle" :model-value="preferences.editorCursorStyle" :options="[{ value: 'line', label: 'Line' },{ value: 'line-thin', label: 'Line (thin)' }]" @update:model-value="preferences.editorCursorStyle = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+              </UiListMenu>
+              <UiListMenu label="Scrolling" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:arrow-expand-down" hint="Allow scrolling beyond the last line" :toggle="preferences.editorScrollPastEnd" @update:toggle="preferences.editorScrollPastEnd = $event; onSettingChange()">
+                  Scroll Past End
+                  <template #suffix><UiToggle :model-value="preferences.editorScrollPastEnd" readonly /></template>
+                </UiListMenuItem>
+              </UiListMenu>
             </div>
           </div>
 
@@ -248,17 +268,21 @@
           <div v-if="displayedSection === 'behaviour'" class="p-5 md:p-8">
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:cog-outline" title="Behaviour" description="Auto-close, indentation, and bracket matching" />
-              <SettingsGroup title="Brackets & Indentation">
-                <SettingsRow label="Auto-close Brackets" icon="mdi:code-brackets">
-                  <UiSelect :model-value="preferences.editorAutoClosingBrackets" :options="[{ value: 'always', label: 'Always' },{ value: 'never', label: 'Never' }]" @update:model-value="preferences.editorAutoClosingBrackets = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Tab Size" :border="false" icon="mdi:keyboard-tab">
-                  <div class="flex items-center gap-3">
-                    <span class="text-sm font-medium text-primary-600 dark:text-primary-400 tabular-nums w-16 text-right">{{ preferences.editorTabSize }} spaces</span>
-                    <div class="w-24"><UiSlider v-model="preferences.editorTabSize" min="1" max="8" step="1" @input="onSettingChange" /></div>
-                  </div>
-                </SettingsRow>
-              </SettingsGroup>
+              <UiListMenu label="Brackets &amp; Indentation" preset="settings">
+                <UiListMenuItem icon="mdi:code-brackets" :select-ref="selectAutoCloseBrackets">
+                  Auto-close Brackets
+                  <template #suffix><UiSelect ref="selectAutoCloseBrackets" :model-value="preferences.editorAutoClosingBrackets" :options="[{ value: 'always', label: 'Always' },{ value: 'never', label: 'Never' }]" @update:model-value="preferences.editorAutoClosingBrackets = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:keyboard-tab">
+                  Tab Size
+                  <template #suffix>
+                    <div class="flex items-center gap-3">
+                      <span class="text-sm font-medium text-primary-600 dark:text-primary-400 tabular-nums w-16 text-right">{{ preferences.editorTabSize }} spaces</span>
+                      <div class="w-24"><UiSlider v-model="preferences.editorTabSize" min="1" max="8" step="1" @input="onSettingChange" /></div>
+                    </div>
+                  </template>
+                </UiListMenuItem>
+              </UiListMenu>
             </div>
           </div>
 
@@ -266,14 +290,16 @@
           <div v-if="displayedSection === 'results'" class="p-5 md:p-8">
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:calculator-variant-outline" title="Results &amp; Display" description="Precision, formatting, and inline result behaviour" />
-              <SettingsGroup title="Precision">
-                <SettingsRow label="Precision Mode" icon="mdi:decimal">
-                  <UiSelect :model-value="preferences.precisionMode" :options="[{ value: 'auto', label: 'Auto (smart)' },{ value: 'decimals', label: 'Fixed decimals' },{ value: 'significant', label: 'Significant figures' }]" @update:model-value="preferences.precisionMode = $event; onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow v-if="preferences.precisionMode !== 'auto'" label="Rounding Mode" icon="mdi:decimal-decrease">
-                  <UiSelect :model-value="preferences.roundingMode" :options="[{ value: 'round', label: 'Round' },{ value: 'truncate', label: 'Truncate' }]" @update:model-value="preferences.roundingMode = $event; onSettingChange()" />
-                </SettingsRow>
-                <div v-if="preferences.precisionMode === 'decimals'" class="py-3 border-b border-gray-100 dark:border-gray-700/40">
+              <UiListMenu label="Precision" preset="settings">
+                <UiListMenuItem icon="mdi:decimal" :select-ref="selectPrecisionMode">
+                  Precision Mode
+                  <template #suffix><UiSelect ref="selectPrecisionMode" :model-value="preferences.precisionMode" :options="[{ value: 'auto', label: 'Auto (smart)' },{ value: 'decimals', label: 'Fixed decimals' },{ value: 'significant', label: 'Significant figures' }]" @update:model-value="preferences.precisionMode = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <UiListMenuItem v-if="preferences.precisionMode !== 'auto'" icon="mdi:decimal-decrease" :select-ref="selectRoundingMode">
+                  Rounding Mode
+                  <template #suffix><UiSelect ref="selectRoundingMode" :model-value="preferences.roundingMode" :options="[{ value: 'round', label: 'Round' },{ value: 'truncate', label: 'Truncate' }]" @update:model-value="preferences.roundingMode = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+                <div v-if="preferences.precisionMode === 'decimals'" class="px-4 py-3 border-t border-gray-100 dark:border-gray-700/40">
                   <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2"><Icon name="mdi:decimal-increase" class="w-4 h-4 text-gray-400 dark:text-gray-500" /><label class="text-sm text-gray-800 dark:text-gray-300">Decimal Places</label></div>
                     <span class="text-sm font-medium text-primary-600 dark:text-primary-400 tabular-nums">{{ preferences.decimalPlaces }}</span>
@@ -281,7 +307,7 @@
                   <UiSlider v-model="preferences.decimalPlaces" min="0" max="15" step="1" @input="onSettingChange" />
                   <div class="flex justify-between text-[11px] text-gray-400 mt-1"><span>0</span><span>15</span></div>
                 </div>
-                <div v-if="preferences.precisionMode === 'significant'" class="py-3 border-b border-gray-100 dark:border-gray-700/40">
+                <div v-if="preferences.precisionMode === 'significant'" class="px-4 py-3 border-t border-gray-100 dark:border-gray-700/40">
                   <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2"><Icon name="mdi:sigma" class="w-4 h-4 text-gray-400 dark:text-gray-500" /><label class="text-sm text-gray-800 dark:text-gray-300">Significant Figures</label></div>
                     <span class="text-sm font-medium text-primary-600 dark:text-primary-400 tabular-nums">{{ preferences.significantFigures }}</span>
@@ -289,18 +315,21 @@
                   <UiSlider v-model="preferences.significantFigures" min="1" max="15" step="1" @input="onSettingChange" />
                   <div class="flex justify-between text-[11px] text-gray-400 mt-1"><span>1</span><span>15</span></div>
                 </div>
-              </SettingsGroup>
-              <SettingsGroup title="Output" class="mt-5">
-                <SettingsRow label="Auto-copy Results" hint="Copy result to clipboard when clicked" icon="mdi:content-copy">
-                  <UiToggle v-model="preferences.autoCopyResult" @update:model-value="onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow label="Results in Code Blocks" hint="Evaluate and display results inside fenced code blocks" icon="mdi:code-tags" :border="preferences.autoCopyResult">
-                  <UiToggle v-model="preferences.showResultsInCodeBlocks" @update:model-value="onSettingChange()" />
-                </SettingsRow>
-                <SettingsRow v-if="preferences.autoCopyResult" label="Copy Animation" icon="mdi:animation-outline" :border="false">
-                  <UiSelect :model-value="preferences.copyAnimationStyle" :options="[{ value: 'float-up', label: 'Float up' },{ value: 'fade', label: 'Fade' },{ value: 'scale-pop', label: 'Scale pop' },{ value: 'slide-right', label: 'Slide' },{ value: 'bounce', label: 'Bounce' },{ value: 'glow', label: 'Glow' },{ value: 'none', label: 'None' }]" @update:model-value="preferences.copyAnimationStyle = $event; onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
+              </UiListMenu>
+              <UiListMenu label="Output" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:content-copy" hint="Copy result to clipboard when clicked" :toggle="preferences.autoCopyResult" @update:toggle="preferences.autoCopyResult = $event; onSettingChange()">
+                  Auto-copy Results
+                  <template #suffix><UiToggle :model-value="preferences.autoCopyResult" readonly /></template>
+                </UiListMenuItem>
+                <UiListMenuItem icon="mdi:code-tags" hint="Evaluate and display results inside fenced code blocks" :toggle="preferences.showResultsInCodeBlocks" @update:toggle="preferences.showResultsInCodeBlocks = $event; onSettingChange()">
+                  Results in Code Blocks
+                  <template #suffix><UiToggle :model-value="preferences.showResultsInCodeBlocks" readonly /></template>
+                </UiListMenuItem>
+                <UiListMenuItem v-if="preferences.autoCopyResult" icon="mdi:animation-outline" :select-ref="selectCopyAnimation">
+                  Copy Animation
+                  <template #suffix><UiSelect ref="selectCopyAnimation" :model-value="preferences.copyAnimationStyle" :options="[{ value: 'float-up', label: 'Float up' },{ value: 'fade', label: 'Fade' },{ value: 'scale-pop', label: 'Scale pop' },{ value: 'slide-right', label: 'Slide' },{ value: 'bounce', label: 'Bounce' },{ value: 'glow', label: 'Glow' },{ value: 'none', label: 'None' }]" @update:model-value="preferences.copyAnimationStyle = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+              </UiListMenu>
             </div>
           </div>
 
@@ -308,16 +337,20 @@
           <div v-if="displayedSection === 'general'" class="p-5 md:p-8">
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:tune-variant" title="General" description="Miscellaneous application settings" />
-              <SettingsGroup title="Setup">
-                <SettingsRow label="Welcome Wizard" hint="Show the first-time setup wizard again" icon="mdi:wizard-hat" :border="false">
-                  <UiButton variant="outline" color="gray" size="sm" @click="emit('relaunch-wizard')">Relaunch</UiButton>
-                </SettingsRow>
-              </SettingsGroup>
-              <SettingsGroup title="Updates" class="mt-5">
-                <SettingsRow label="Check Interval" hint="How often to check for new versions" icon="mdi:update" :border="false">
-                  <UiSelect :model-value="preferences.updateCheckInterval" :options="[{ value: 5, label: 'Every 5 min' },{ value: 15, label: 'Every 15 min' },{ value: 30, label: 'Every 30 min' },{ value: 60, label: 'Every hour' },{ value: 360, label: 'Every 6 hours' },{ value: 0, label: 'Manual only' }]" @update:model-value="preferences.updateCheckInterval = $event; onSettingChange()" />
-                </SettingsRow>
-              </SettingsGroup>
+              <UiListMenu label="Setup" preset="settings">
+                <UiListMenuItem icon="mdi:wizard-hat" hint="Show the first-time setup wizard again" clickable @click="emit('relaunch-wizard')">
+                  Welcome Wizard
+                  <template #suffix>
+                    <span class="text-xs font-medium text-primary-600 dark:text-primary-400">Relaunch</span>
+                  </template>
+                </UiListMenuItem>
+              </UiListMenu>
+              <UiListMenu label="Updates" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:update" hint="How often to check for new versions" :select-ref="selectUpdateInterval">
+                  Check Interval
+                  <template #suffix><UiSelect ref="selectUpdateInterval" :model-value="preferences.updateCheckInterval" :options="[{ value: 5, label: 'Every 5 min' },{ value: 15, label: 'Every 15 min' },{ value: 30, label: 'Every 30 min' },{ value: 60, label: 'Every hour' },{ value: 360, label: 'Every 6 hours' },{ value: 0, label: 'Manual only' }]" @update:model-value="preferences.updateCheckInterval = $event; onSettingChange()" /></template>
+                </UiListMenuItem>
+              </UiListMenu>
             </div>
           </div>
 
@@ -364,8 +397,8 @@
 
               <!-- Avatar sub-section -->
               <template v-if="profileSubSection === 'avatar'">
-                <SettingsGroup title="Change Avatar" class="mb-5">
-                  <div v-if="!avatarImageSrc" class="text-center space-y-3 py-2">
+                <UiListMenu label="Change Avatar" preset="settings" class="mb-5">
+                  <div v-if="!avatarImageSrc" class="text-center space-y-3 py-4 px-4">
                     <div class="w-24 h-24 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                       <Icon name="mdi:image-plus" class="w-10 h-10 text-gray-400" />
                     </div>
@@ -376,7 +409,7 @@
                     <UiButton v-if="user?.avatarUrl" variant="ghost" color="red" size="xs" class="block mx-auto mt-2" @click="removeAvatar">Remove current avatar</UiButton>
                     <UiButton variant="ghost" color="gray" size="sm" class="block mx-auto mt-1" @click="cancelProfileSubSection">Cancel</UiButton>
                   </div>
-                  <div v-else class="space-y-3">
+                  <div v-else class="space-y-3 p-4">
                     <AvatarEditor :image-source="avatarImageSrc" :canvas-size="editorCanvasSize" @update="onAvatarCropped" />
                     <div class="flex gap-2">
                       <UiButton variant="solid" color="gray" class="flex-1" @click="avatarImageSrc = null">Choose Different</UiButton>
@@ -384,13 +417,13 @@
                     </div>
                     <UiButton variant="ghost" color="gray" size="sm" block @click="cancelProfileSubSection">Cancel</UiButton>
                   </div>
-                </SettingsGroup>
+                </UiListMenu>
               </template>
 
               <!-- Edit profile sub-section -->
               <template v-if="profileSubSection === 'edit'">
-                <SettingsGroup title="Edit Profile" class="mb-5">
-                  <div class="space-y-4 py-1">
+                <UiListMenu label="Edit Profile" preset="settings" class="mb-5">
+                  <div class="space-y-4 p-4">
                     <UiFormField label="Name"><UiInput v-model="editName" type="text" placeholder="Your name" :validate="false" /></UiFormField>
                     <UiFormField label="Email"><UiInput v-model="editEmail" type="email" placeholder="you@example.com" /></UiFormField>
                     <div class="flex gap-2">
@@ -398,49 +431,46 @@
                       <UiButton variant="solid" color="primary" class="flex-1" :loading="profileSaving" @click="saveProfile">Save Changes</UiButton>
                     </div>
                   </div>
-                </SettingsGroup>
+                </UiListMenu>
               </template>
 
               <!-- Password sub-section -->
               <template v-if="profileSubSection === 'password'">
-                <SettingsGroup title="Change Password" class="mb-5">
-                  <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">Changing your password will re-encrypt all your notes. This may take a moment.</p>
-                  <div class="space-y-4">
-                    <UiFormField label="Current Password"><UiInput v-model="currentPassword" type="password" :validate="false" /></UiFormField>
-                    <UiFormField label="New Password" hint="At least 8 characters"><UiInput v-model="newPassword" type="password" :minlength="8" :validate="false" /></UiFormField>
-                    <div>
-                      <UiFormField label="Confirm New Password"><UiInput v-model="confirmNewPassword" type="password" :validate="false" /></UiFormField>
-                      <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
-                    </div>
-                    <UiProgressBar v-if="reEncryptProgress" label="Re-encrypting notes…" show-value :current="reEncryptProgress.current" :total="reEncryptProgress.total" />
-                    <div class="flex gap-2">
-                      <UiButton variant="outline" color="gray" class="flex-1" :disabled="profileSaving" @click="cancelProfileSubSection">Cancel</UiButton>
-                      <UiButton variant="solid" color="primary" class="flex-1" :loading="profileSaving" :disabled="!currentPassword || !newPassword || newPassword !== confirmNewPassword || newPassword.length < 8" @click="savePassword">Update Password</UiButton>
+                <UiListMenu label="Change Password" preset="settings" class="mb-5">
+                  <div class="p-4">
+                    <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">Changing your password will re-encrypt all your notes. This may take a moment.</p>
+                    <div class="space-y-4">
+                      <UiFormField label="Current Password"><UiInput v-model="currentPassword" type="password" :validate="false" /></UiFormField>
+                      <UiFormField label="New Password" hint="At least 8 characters"><UiInput v-model="newPassword" type="password" :minlength="8" :validate="false" /></UiFormField>
+                      <div>
+                        <UiFormField label="Confirm New Password"><UiInput v-model="confirmNewPassword" type="password" :validate="false" /></UiFormField>
+                        <p v-if="confirmNewPassword && newPassword !== confirmNewPassword" class="text-xs text-red-600 dark:text-red-400 mt-1">Passwords do not match</p>
+                      </div>
+                      <UiProgressBar v-if="reEncryptProgress" label="Re-encrypting notes…" show-value :current="reEncryptProgress.current" :total="reEncryptProgress.total" />
+                      <div class="flex gap-2">
+                        <UiButton variant="outline" color="gray" class="flex-1" :disabled="profileSaving" @click="cancelProfileSubSection">Cancel</UiButton>
+                        <UiButton variant="solid" color="primary" class="flex-1" :loading="profileSaving" :disabled="!currentPassword || !newPassword || newPassword !== confirmNewPassword || newPassword.length < 8" @click="savePassword">Update Password</UiButton>
+                      </div>
                     </div>
                   </div>
-                </SettingsGroup>
+                </UiListMenu>
               </template>
 
               <!-- Actions (when no sub-section is active) -->
               <template v-if="!profileSubSection">
-                <SettingsGroup title="Account" class="mb-5">
-                  <SettingsRow label="Edit Profile" icon="mdi:account-edit-outline">
-                    <UiButton variant="ghost" color="gray" size="sm" @click="enterEditProfile"><Icon name="mdi:chevron-right" class="w-4 h-4" /></UiButton>
-                  </SettingsRow>
-                  <SettingsRow label="Change Password" icon="mdi:lock-outline" :border="false">
-                    <UiButton variant="ghost" color="gray" size="sm" @click="profileSubSection = 'password'"><Icon name="mdi:chevron-right" class="w-4 h-4" /></UiButton>
-                  </SettingsRow>
-                </SettingsGroup>
-                <SettingsGroup title="Privacy">
-                  <SettingsRow label="Privacy Protection" :hint="privacyNoTracking ? 'Identity hidden on shared notes' : 'Sharers can see your name & device'" icon="mdi:shield-account-outline" :border="false">
-                    <UiToggle :model-value="privacyNoTracking" :disabled="savingPrivacy" size="sm" @update:model-value="togglePrivacy" />
-                  </SettingsRow>
-                </SettingsGroup>
-                <div class="flex justify-center pt-4">
-                  <UiButton variant="ghost" color="red" @click="emit('logout'); closeModal()">
-                    <Icon name="mdi:logout-variant" class="w-4 h-4" /> Sign out
-                  </UiButton>
-                </div>
+                <UiListMenu label="Account" preset="settings" class="mb-5">
+                  <UiListMenuItem icon="mdi:account-edit-outline" clickable @click="enterEditProfile">Edit Profile</UiListMenuItem>
+                  <UiListMenuItem icon="mdi:lock-outline" clickable @click="profileSubSection = 'password'">Change Password</UiListMenuItem>
+                </UiListMenu>
+                <UiListMenu label="Privacy" preset="settings">
+                  <UiListMenuItem icon="mdi:shield-account-outline" :hint="privacyNoTracking ? 'Identity hidden on shared notes' : 'Sharers can see your name & device'" :toggle="privacyNoTracking" :disabled="savingPrivacy" @update:toggle="togglePrivacy">
+                    Privacy Protection
+                    <template #suffix><UiToggle :model-value="privacyNoTracking" :disabled="savingPrivacy" size="sm" readonly /></template>
+                  </UiListMenuItem>
+                </UiListMenu>
+                <UiListMenu preset="settings" class="mt-5">
+                  <UiListMenuItem icon="mdi:logout-variant" danger clickable :chevron="false" @click="emit('logout'); closeModal()">Sign out</UiListMenuItem>
+                </UiListMenu>
               </template>
             </div>
           </div>
@@ -450,29 +480,34 @@
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:shield-lock-outline" title="Security" description="Session, app lock, and recovery settings" />
 
-              <SettingsGroup title="Session">
-                <SettingsRow label="Session Duration" hint="How long you stay logged in. Changes apply on next login." icon="mdi:timer-outline" :border="false">
-                  <UiSelect :model-value="sessionDuration" :disabled="savingSessionDuration" :block="false" size="sm"
-                    :options="[{ value: 3600, label: '1 hour' },{ value: 86400, label: '1 day' },{ value: 604800, label: '7 days' },{ value: 2592000, label: '30 days' }]"
-                    @update:model-value="sessionDuration = $event; saveSessionDuration()" />
-                </SettingsRow>
-              </SettingsGroup>
+              <UiListMenu label="Session" preset="settings">
+                <UiListMenuItem icon="mdi:timer-outline" hint="How long you stay logged in. Changes apply on next login." :select-ref="selectSessionDuration">
+                  Session Duration
+                  <template #suffix>
+                    <UiSelect ref="selectSessionDuration" :model-value="sessionDuration" :disabled="savingSessionDuration" :block="false" size="sm"
+                      :options="[{ value: 3600, label: '1 hour' },{ value: 86400, label: '1 day' },{ value: 604800, label: '7 days' },{ value: 2592000, label: '30 days' }]"
+                      @update:model-value="sessionDuration = $event; saveSessionDuration()" />
+                  </template>
+                </UiListMenuItem>
+              </UiListMenu>
 
               <!-- App Lock -->
-              <SettingsGroup title="App Lock" class="mt-5">
-                <SettingsRow label="App Lock" :hint="draft.enabled ? 'App is protected. Unlock required after timeout.' : 'Protect the app with a PIN, password, or biometrics.'" icon="mdi:lock-outline">
-                  <UiToggle :model-value="draft.enabled" size="sm" @click="draft.enabled = !draft.enabled" />
-                </SettingsRow>
+              <UiListMenu label="App Lock" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:lock-outline" :hint="draft.enabled ? 'App is protected. Unlock required after timeout.' : 'Protect the app with a PIN, password, or biometrics.'" :toggle="draft.enabled" @update:toggle="draft.enabled = $event">
+                  App Lock
+                  <template #suffix><UiToggle :model-value="draft.enabled" size="sm" readonly /></template>
+                </UiListMenuItem>
                 <template v-if="draft.enabled">
-                  <SettingsRow label="Lock Method" icon="mdi:key-outline">
-                    <UiSelect :model-value="draft.method" :block="false" size="sm" :options="appLockMethodOptions" @update:model-value="onDraftMethodChange" />
-                  </SettingsRow>
+                  <UiListMenuItem icon="mdi:key-outline" :select-ref="selectLockMethod">
+                    Lock Method
+                    <template #suffix><UiSelect ref="selectLockMethod" :model-value="draft.method" :block="false" size="sm" :options="appLockMethodOptions" @update:model-value="onDraftMethodChange" /></template>
+                  </UiListMenuItem>
                   <UiAlert v-if="showBiometricsChangeWarning" color="amber" icon="mdi:cellphone-remove" bordered size="md" class="my-2">
                     <p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
                       Biometrics is active on another device — switching to {{ draft.method === 'pin' ? 'PIN' : 'password' }} here will disable it everywhere. To avoid this, use the biometrics fallback option instead.
                     </p>
                   </UiAlert>
-                  <div v-if="draft.method === 'biometrics' && appLockAvailableBiometrics.length > 1" class="py-2 space-y-1.5">
+                  <div v-if="draft.method === 'biometrics' && appLockAvailableBiometrics.length > 1" class="px-4 py-2 space-y-1.5">
                     <span class="text-xs text-gray-600 dark:text-gray-400">Biometric methods</span>
                     <div class="flex flex-wrap gap-1.5">
                       <UiButton v-for="bio in appLockAvailableBiometrics" :key="bio.id" variant="ghost" shape="pill" size="xs"
@@ -482,13 +517,13 @@
                       </UiButton>
                     </div>
                   </div>
-                  <div v-if="draftShowPin" class="py-2 space-y-1.5">
+                  <div v-if="draftShowPin" class="px-4 py-2 space-y-1.5">
                     <label class="text-xs text-gray-600 dark:text-gray-400">{{ draft.method === 'biometrics' ? 'Fallback PIN' : 'PIN' }} <span class="text-gray-400">(4 digits)</span></label>
                     <UiInput :model-value="draft.pin" type="password" placeholder="Enter 4-digit PIN" :maxlength="4" inputmode="numeric" :validate="false" @update:model-value="draft.pin = $event.replace(/\D/g, '').slice(0, 4)" />
                     <UiInput :model-value="draft.pinConfirm" type="password" placeholder="Confirm PIN" :maxlength="4" inputmode="numeric" :validate="false" @update:model-value="draft.pinConfirm = $event.replace(/\D/g, '').slice(0, 4)" />
                     <p v-if="draft.pinConfirm && draft.pin !== draft.pinConfirm" class="text-xs text-red-600 dark:text-red-400">PINs do not match</p>
                   </div>
-                  <div v-if="draftShowPassword" class="py-2 space-y-1.5">
+                  <div v-if="draftShowPassword" class="px-4 py-2 space-y-1.5">
                     <label class="text-xs text-gray-600 dark:text-gray-400">{{ draft.method === 'biometrics' ? 'Fallback password' : 'Lock password' }}</label>
                     <UiInput v-model="draft.password" type="password" placeholder="Enter lock password" :validate="false" />
                     <UiInput v-model="draft.passwordConfirm" type="password" placeholder="Confirm password" :validate="false" />
@@ -501,36 +536,40 @@
                     >
                       <div v-if="fallbackGlow" class="absolute inset-0 z-10 pointer-events-none rounded-lg bg-primary-500/25 dark:bg-primary-400/20" />
                     </Transition>
-                    <SettingsRow label="Biometrics Fallback" icon="mdi:key-variant">
-                      <UiSelect v-model="draft.biometricsFallback" :block="false" size="sm" :options="[{ value: 'pin', label: 'PIN' },{ value: 'password', label: 'Password' }]" />
-                    </SettingsRow>
+                    <UiListMenuItem icon="mdi:key-variant" :select-ref="selectBiometricsFallback">
+                      Biometrics Fallback
+                      <template #suffix><UiSelect ref="selectBiometricsFallback" v-model="draft.biometricsFallback" :block="false" size="sm" :options="[{ value: 'pin', label: 'PIN' },{ value: 'password', label: 'Password' }]" /></template>
+                    </UiListMenuItem>
                   </div>
                   <UiAlert v-if="draft.method === 'biometrics' && biometricError" color="amber" icon="mdi:fingerprint-off" bordered size="md" class="my-2">
                     <p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">{{ biometricError.message }}</p>
                   </UiAlert>
-                  <SettingsRow label="Lock After" icon="mdi:timer-sand">
-                    <UiSelect v-model="draft.timeout" :block="false" size="sm" :options="[{ value: 0, label: 'Manual only' },{ value: 60, label: '1 minute' },{ value: 300, label: '5 minutes' },{ value: 900, label: '15 minutes' },{ value: 1800, label: '30 minutes' }]" />
-                  </SettingsRow>
-                  <div class="flex gap-2 pt-2">
+                  <UiListMenuItem icon="mdi:timer-sand" :select-ref="selectLockAfter">
+                    Lock After
+                    <template #suffix><UiSelect ref="selectLockAfter" v-model="draft.timeout" :block="false" size="sm" :options="[{ value: 0, label: 'Manual only' },{ value: 60, label: '1 minute' },{ value: 300, label: '5 minutes' },{ value: 900, label: '15 minutes' },{ value: 1800, label: '30 minutes' }]" /></template>
+                  </UiListMenuItem>
+                  <div class="flex gap-2 px-4 py-3">
                     <UiButton variant="outline" color="gray" class="flex-1" size="sm" :disabled="!draftHasChanges" @click="resetDraft">Cancel</UiButton>
                     <UiButton variant="solid" color="primary" class="flex-1" size="sm" :disabled="!canSaveAppLock" @click="saveAppLock">Save</UiButton>
                   </div>
                 </template>
-              </SettingsGroup>
+              </UiListMenu>
 
               <!-- Privacy Screen -->
-              <SettingsGroup v-if="isNativePlatform" title="Privacy Screen" class="mt-5">
-                <SettingsRow label="Privacy Screen" :hint="privacyScreenEnabled ? 'Content hidden in app switcher, screenshots blocked.' : 'Hide content in app switcher and prevent screenshots.'" icon="mdi:eye-off-outline" :border="false">
-                  <UiToggle :model-value="privacyScreenEnabled" :disabled="savingPrivacyScreen" size="sm" @click="togglePrivacyScreen" />
-                </SettingsRow>
-              </SettingsGroup>
+              <UiListMenu v-if="isNativePlatform" label="Privacy Screen" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:eye-off-outline" :hint="privacyScreenEnabled ? 'Content hidden in app switcher, screenshots blocked.' : 'Hide content in app switcher and prevent screenshots.'" :toggle="privacyScreenEnabled" :disabled="savingPrivacyScreen" @update:toggle="togglePrivacyScreen">
+                  Privacy Screen
+                  <template #suffix><UiToggle :model-value="privacyScreenEnabled" :disabled="savingPrivacyScreen" size="sm" readonly /></template>
+                </UiListMenuItem>
+              </UiListMenu>
 
               <!-- Password Recovery -->
-              <SettingsGroup title="Password Recovery" class="mt-5">
-                <SettingsRow label="Recovery by Email" :hint="passwordRecoveryEnabled ? 'You can recover your account via email.' : 'Recovery disabled — store your password safely.'" icon="mdi:email-lock-outline" :border="false">
-                  <UiToggle :model-value="passwordRecoveryEnabled" :disabled="savingSecurity" size="sm" @click="onPasswordRecoveryToggle" />
-                </SettingsRow>
-                <div v-if="confirmingRecoveryEnable" class="rounded-lg border p-3 space-y-2 mt-2 bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-800">
+              <UiListMenu label="Password Recovery" preset="settings" class="mt-5">
+                <UiListMenuItem icon="mdi:email-lock-outline" :hint="passwordRecoveryEnabled ? 'You can recover your account via email.' : 'Recovery disabled — store your password safely.'" :toggle="passwordRecoveryEnabled" :disabled="savingSecurity" @update:toggle="onPasswordRecoveryToggle">
+                  Recovery by Email
+                  <template #suffix><UiToggle :model-value="passwordRecoveryEnabled" :disabled="savingSecurity" size="sm" readonly /></template>
+                </UiListMenuItem>
+                <div v-if="confirmingRecoveryEnable" class="rounded-lg border p-3 space-y-2 mx-4 mb-3 bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-800">
                   <div class="flex gap-2">
                     <Icon name="mdi:shield-alert-outline" class="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
                     <p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">Enabling password recovery makes your account recoverable via email, but anyone with email access could reset your password and delete your notes.</p>
@@ -541,16 +580,16 @@
                   </div>
                 </div>
                 <template v-if="passwordRecoveryEnabled">
-                  <UiAlert color="amber" icon="mdi:shield-alert-outline" bordered size="md" class="mt-3">
+                  <UiAlert color="amber" icon="mdi:shield-alert-outline" bordered size="md" class="mx-4 mb-2">
                     <p class="font-semibold text-amber-800 dark:text-amber-200">Account access risk</p>
                     <p class="text-amber-700 dark:text-amber-300 leading-relaxed">Anyone with access to your email can trigger a password reset and take over your account.</p>
                   </UiAlert>
-                  <UiAlert color="red" icon="mdi:database-remove-outline" bordered size="md" class="mt-2">
+                  <UiAlert color="red" icon="mdi:database-remove-outline" bordered size="md" class="mx-4 mb-3">
                     <p class="font-semibold text-red-800 dark:text-red-200">All notes destroyed on recovery</p>
                     <p class="text-red-700 dark:text-red-300 leading-relaxed">A password reset means the encryption key is lost — <span class="font-semibold">all notes will be permanently deleted</span>.</p>
                   </UiAlert>
                 </template>
-              </SettingsGroup>
+              </UiListMenu>
             </div>
           </div>
 
@@ -635,34 +674,36 @@
           <div v-if="displayedSection === 'danger'" class="p-5 md:p-8">
             <div class="max-w-2xl mx-auto">
               <SettingsSectionHeader icon="mdi:alert-outline" title="Danger Zone" description="Irreversible account actions" />
-              <SettingsGroup>
-                <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">These actions are irreversible. Your password is required to confirm.</p>
-                <UiFormField label="Confirm Password"><UiInput v-model="dangerPassword" type="password" :validate="false" /></UiFormField>
-                <div v-if="confirmingAction" class="rounded-lg border p-4 space-y-3 mt-3"
-                  :class="confirmingAction === 'data' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-800' : 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800'">
-                  <div class="flex gap-2.5">
-                    <Icon :name="confirmingAction === 'data' ? 'mdi:database-remove-outline' : 'mdi:account-remove-outline'" class="w-5 h-5 flex-shrink-0 mt-0.5" :class="confirmingAction === 'data' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'" />
-                    <div class="text-xs space-y-1.5">
-                      <p class="font-semibold" :class="confirmingAction === 'data' ? 'text-amber-800 dark:text-amber-200' : 'text-red-800 dark:text-red-200'">{{ confirmingAction === 'data' ? 'Reset account data?' : 'Delete your account?' }}</p>
-                      <p :class="confirmingAction === 'data' ? 'text-amber-700 dark:text-amber-300' : 'text-red-700 dark:text-red-300'" class="leading-relaxed">{{ confirmingAction === 'data' ? 'This will permanently delete all your notes, shared notes, and related data. This cannot be undone.' : 'This will permanently delete your account and all associated data.' }}</p>
+              <UiListMenu preset="settings">
+                <div class="p-4">
+                  <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">These actions are irreversible. Your password is required to confirm.</p>
+                  <UiFormField label="Confirm Password"><UiInput v-model="dangerPassword" type="password" :validate="false" /></UiFormField>
+                  <div v-if="confirmingAction" class="rounded-lg border p-4 space-y-3 mt-3"
+                    :class="confirmingAction === 'data' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-800' : 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800'">
+                    <div class="flex gap-2.5">
+                      <Icon :name="confirmingAction === 'data' ? 'mdi:database-remove-outline' : 'mdi:account-remove-outline'" class="w-5 h-5 flex-shrink-0 mt-0.5" :class="confirmingAction === 'data' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'" />
+                      <div class="text-xs space-y-1.5">
+                        <p class="font-semibold" :class="confirmingAction === 'data' ? 'text-amber-800 dark:text-amber-200' : 'text-red-800 dark:text-red-200'">{{ confirmingAction === 'data' ? 'Reset account data?' : 'Delete your account?' }}</p>
+                        <p :class="confirmingAction === 'data' ? 'text-amber-700 dark:text-amber-300' : 'text-red-700 dark:text-red-300'" class="leading-relaxed">{{ confirmingAction === 'data' ? 'This will permanently delete all your notes, shared notes, and related data. This cannot be undone.' : 'This will permanently delete your account and all associated data.' }}</p>
+                      </div>
+                    </div>
+                    <div class="flex gap-2">
+                      <UiButton variant="outline" color="gray" class="flex-1" @click="confirmingAction = null">Cancel</UiButton>
+                      <UiButton variant="solid" :color="confirmingAction === 'data' ? 'amber' : 'red'" :loading="profileSaving" class="flex-1" @click="executeConfirmedAction">{{ confirmingAction === 'data' ? 'Delete All Data' : 'Delete Account' }}</UiButton>
                     </div>
                   </div>
-                  <div class="flex gap-2">
-                    <UiButton variant="outline" color="gray" class="flex-1" @click="confirmingAction = null">Cancel</UiButton>
-                    <UiButton variant="solid" :color="confirmingAction === 'data' ? 'amber' : 'red'" :loading="profileSaving" class="flex-1" @click="executeConfirmedAction">{{ confirmingAction === 'data' ? 'Delete All Data' : 'Delete Account' }}</UiButton>
+                  <div v-if="!confirmingAction" class="space-y-3 mt-3">
+                    <UiButton variant="solid" color="amber" block :loading="profileSaving" :disabled="!dangerPassword" @click="confirmingAction = 'data'">
+                      <Icon v-if="!profileSaving" name="mdi:database-remove-outline" class="w-4 h-4" /> Delete All Data
+                    </UiButton>
+                    <p class="text-xs text-gray-500 dark:text-gray-500">Resets your account. All notes and data permanently deleted.</p>
+                    <UiButton variant="solid" color="red" block :loading="profileSaving" :disabled="!dangerPassword" @click="confirmingAction = 'account'">
+                      <Icon v-if="!profileSaving" name="mdi:account-remove-outline" class="w-4 h-4" /> Delete Account
+                    </UiButton>
+                    <p class="text-xs text-gray-500 dark:text-gray-500">Permanently deletes your account and all data. Cannot be undone.</p>
                   </div>
                 </div>
-                <div v-if="!confirmingAction" class="space-y-3 mt-3">
-                  <UiButton variant="solid" color="amber" block :loading="profileSaving" :disabled="!dangerPassword" @click="confirmingAction = 'data'">
-                    <Icon v-if="!profileSaving" name="mdi:database-remove-outline" class="w-4 h-4" /> Delete All Data
-                  </UiButton>
-                  <p class="text-xs text-gray-500 dark:text-gray-500">Resets your account. All notes and data permanently deleted.</p>
-                  <UiButton variant="solid" color="red" block :loading="profileSaving" :disabled="!dangerPassword" @click="confirmingAction = 'account'">
-                    <Icon v-if="!profileSaving" name="mdi:account-remove-outline" class="w-4 h-4" /> Delete Account
-                  </UiButton>
-                  <p class="text-xs text-gray-500 dark:text-gray-500">Permanently deletes your account and all data. Cannot be undone.</p>
-                </div>
-              </SettingsGroup>
+              </UiListMenu>
             </div>
           </div>
 
@@ -720,6 +761,29 @@ const searchQuery = ref('')
 const isMobile = ref(false)
 const contentPanelRef = ref(null)
 const profileSubSection = ref(null) // 'edit' | 'password' | 'avatar' | null
+
+// Select refs for row-click-to-open
+const selectLocale = ref(null)
+const selectVolume = ref(null)
+const selectFuelEconomy = ref(null)
+const selectDistance = ref(null)
+const selectTemperature = ref(null)
+const selectDateFormat = ref(null)
+const selectTimeFormat = ref(null)
+const selectNumberFormat = ref(null)
+const selectFontFamily = ref(null)
+const selectLineNumbers = ref(null)
+const selectLineHighlight = ref(null)
+const selectCursorStyle = ref(null)
+const selectAutoCloseBrackets = ref(null)
+const selectPrecisionMode = ref(null)
+const selectRoundingMode = ref(null)
+const selectCopyAnimation = ref(null)
+const selectUpdateInterval = ref(null)
+const selectSessionDuration = ref(null)
+const selectLockMethod = ref(null)
+const selectBiometricsFallback = ref(null)
+const selectLockAfter = ref(null)
 
 const checkMobile = () => { isMobile.value = window.innerWidth < 768 }
 
