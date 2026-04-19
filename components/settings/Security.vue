@@ -258,26 +258,22 @@ const confirmPasswordRecovery = async () => {
 
 let biometricPollTimer = null
 
-const resetState = (user) => {
-  passwordRecoveryEnabled.value = user?.passwordRecoveryEnabled === true
-  sessionDuration.value = user?.sessionDuration || 604800
-  loadPrivacyScreen(user)
+const initFromUser = () => {
+  passwordRecoveryEnabled.value = props.user?.passwordRecoveryEnabled === true
+  sessionDuration.value = props.user?.sessionDuration || 604800
+  loadPrivacyScreen(props.user)
   confirmingRecoveryEnable.value = false
   resetDraft()
 }
 
-const startBiometricPolling = async () => {
+onMounted(async () => {
   await detectBiometrics()
-  resetDraft()
+  initFromUser()
   biometricPollTimer = setInterval(() => detectBiometrics(), 5000)
-}
+})
+watch(() => props.user, initFromUser)
 
-const stopBiometricPolling = () => {
+onBeforeUnmount(() => {
   if (biometricPollTimer) { clearInterval(biometricPollTimer); biometricPollTimer = null }
-}
-
-onMounted(() => detectBiometrics())
-onBeforeUnmount(() => stopBiometricPolling())
-
-defineExpose({ resetState, startBiometricPolling, stopBiometricPolling })
+})
 </script>

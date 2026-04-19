@@ -499,6 +499,14 @@ onMounted(async () => {
   privacyScreen.loadFromServer()
 })
 
+// Reload device-level settings when user logs in (login/register set auth.user)
+watch(() => auth.user.value, (newUser, oldUser) => {
+  if (newUser && !oldUser) {
+    appLock.loadFromServer()
+    privacyScreen.loadFromServer()
+  }
+})
+
 // Share note handler (needs currentNoteId)
 const handleShareNote = (noteId) => {
   currentNoteId.value = noteId

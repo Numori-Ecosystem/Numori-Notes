@@ -70,10 +70,9 @@ const executeConfirmedAction = () => {
   else if (confirmingAction.value === 'account') handleDeleteAccount()
 }
 
-const resetState = () => {
+// Self-reset on mount (fresh state each time section is displayed)
+onMounted(() => {
   dangerPassword.value = ''
   confirmingAction.value = null
-}
-
-defineExpose({ resetState })
+})
 </script>

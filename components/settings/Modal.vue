@@ -122,10 +122,10 @@
             <SettingsResults v-else-if="displayedSection === 'results'" :preferences="preferences" :on-setting-change="onSettingChange" />
             <SettingsGeneral v-else-if="displayedSection === 'general'" :preferences="preferences" :on-setting-change="onSettingChange" @relaunch-wizard="emit('relaunch-wizard')" />
             <SettingsProfile v-else-if="displayedSection === 'profile'" ref="profileRef" :user="user" :last-synced-at="lastSyncedAt" :auth-headers="authHeaders" @update-profile="emit('update-profile', $event)" @change-password="emit('change-password', $event)" @logout="emit('logout'); closeModal()" @sync-now="emit('sync-now')" @show-notes="emit('show-notes')" @navigate-section="selectSection" />
-            <SettingsSecurity v-else-if="displayedSection === 'security'" ref="securityRef" :user="user" :auth-headers="authHeaders" />
-            <SettingsSessions v-else-if="displayedSection === 'sessions'" ref="sessionsRef" :auth-headers="authHeaders" />
-            <SettingsSharedNotes v-else-if="displayedSection === 'shared'" ref="sharedNotesRef" :auth-headers="authHeaders" @unshare="emit('unshare', $event)" @open-analytics="emit('open-analytics', $event)" @close-modal="closeModal" />
-            <SettingsDangerZone v-else-if="displayedSection === 'danger'" ref="dangerZoneRef" :on-delete-data="onDeleteData" :on-delete-account="onDeleteAccount" />
+            <SettingsSecurity v-else-if="displayedSection === 'security'" :user="user" :auth-headers="authHeaders" />
+            <SettingsSessions v-else-if="displayedSection === 'sessions'" :auth-headers="authHeaders" />
+            <SettingsSharedNotes v-else-if="displayedSection === 'shared'" :auth-headers="authHeaders" @unshare="emit('unshare', $event)" @open-analytics="emit('open-analytics', $event)" @close-modal="closeModal" />
+            <SettingsDangerZone v-else-if="displayedSection === 'danger'" :on-delete-data="onDeleteData" :on-delete-account="onDeleteAccount" />
           </div>
         </div>
       </div>
@@ -166,10 +166,6 @@ const emit = defineEmits([
 
 // ── Child refs ──
 const profileRef = ref(null)
-const securityRef = ref(null)
-const sessionsRef = ref(null)
-const sharedNotesRef = ref(null)
-const dangerZoneRef = ref(null)
 
 // ── Navigation state ──
 const activeSection = ref(null)
@@ -336,7 +332,6 @@ const mobileBack = () => {
 const closeModal = () => {
   activeSection.value = null; displayedSection.value = null; transitionState.value = 'idle'
   searchQuery.value = ''
-  dangerZoneRef.value?.resetState()
   emit('close')
 }
 
@@ -350,25 +345,13 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleEscape)
   window.removeEventListener('resize', checkMobile)
-  securityRef.value?.stopBiometricPolling()
-})
-
-watch(activeSection, (section, oldSection) => {
-  if (section === 'security') nextTick(() => securityRef.value?.startBiometricPolling())
-  else if (oldSection === 'security') securityRef.value?.stopBiometricPolling()
 })
 
 watch(() => props.isOpen, (open) => {
   if (open) {
     checkMobile()
-    // Reset child states
-    profileRef.value?.resetState()
-    securityRef.value?.resetState(props.user)
-    dangerZoneRef.value?.resetState()
     const target = props.initialSection || (isMobile.value ? null : 'locales')
     activeSection.value = target
-  } else {
-    securityRef.value?.stopBiometricPolling()
   }
 })
 </script>

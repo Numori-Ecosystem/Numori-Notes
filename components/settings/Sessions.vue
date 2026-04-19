@@ -92,6 +92,4 @@ const closeOtherSessions = async () => {
 }
 
 onMounted(() => loadSessions())
-
-defineExpose({ loadSessions })
 </script>

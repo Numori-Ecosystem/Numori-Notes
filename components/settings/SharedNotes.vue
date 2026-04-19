@@ -100,6 +100,4 @@ const openAnalytics = (hash) => {
 }
 
 onMounted(() => loadSharedNotes())
-
-defineExpose({ loadSharedNotes })
 </script>

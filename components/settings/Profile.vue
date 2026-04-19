@@ -216,8 +216,8 @@ const togglePrivacy = async () => {
   finally { savingPrivacy.value = false }
 }
 
-// Reset state when parent tells us to
-const resetState = () => {
+// Self-initialize from props on mount and when user changes
+const initFromUser = () => {
   editName.value = props.user?.name || ''
   editEmail.value = props.user?.email || ''
   avatarImageSrc.value = null
@@ -229,5 +229,8 @@ const resetState = () => {
   privacyNoTracking.value = props.user?.privacyNoTracking !== false
 }
 
-defineExpose({ resetState, subSection })
+onMounted(initFromUser)
+watch(() => props.user, initFromUser)
+
+defineExpose({ subSection })
 </script>
