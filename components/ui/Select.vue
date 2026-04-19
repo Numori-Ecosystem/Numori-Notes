@@ -1,7 +1,7 @@
 <template>
   <div ref="containerRef" class="relative" :class="!block ? 'inline-block' : ''">
     <!-- Hidden sizer: measures the widest option label so the trigger never shrinks below it -->
-    <div v-if="!block" ref="sizerRef" aria-hidden="true" class="invisible absolute h-0 overflow-hidden pointer-events-none whitespace-nowrap" :class="sizerTextClass">
+    <div ref="sizerRef" aria-hidden="true" class="invisible absolute h-0 overflow-hidden pointer-events-none whitespace-nowrap" :class="sizerTextClass">
       <span v-for="opt in normalizedOptions" :key="opt.value" class="block">
         <span class="inline-flex items-center gap-2">
           <span v-if="opt.icon" class="w-4" />
@@ -248,16 +248,16 @@ const sizerTextClass = computed(() => {
 
 // Measure the widest option on mount and when options change
 const measureSizer = () => {
-  if (props.block || !sizerRef.value) { measuredWidth.value = 0; return }
+  if (!sizerRef.value) { measuredWidth.value = 0; return }
   measuredWidth.value = sizerRef.value.scrollWidth
 }
 
 onMounted(measureSizer)
 watch(() => props.options, () => nextTick(measureSizer), { deep: true })
 
-// Auto min-width style: only applied when block=false and no explicit width override
+// Auto min-width style: ensures trigger never shrinks below the widest option
 const autoMinWidth = computed(() => {
-  if (props.block || !measuredWidth.value) return undefined
+  if (!measuredWidth.value) return undefined
   // Add padding for the trigger's horizontal padding + border
   const padMap = { xs: 28, sm: 24, md: 30 }
   const pad = padMap[props.size] || 30
