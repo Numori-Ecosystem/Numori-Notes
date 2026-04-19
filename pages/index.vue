@@ -174,10 +174,16 @@
     <TemplatesModal :is-open="showTemplates" @close="showTemplates = false" @insert="insertTemplate" />
     <LanguageSwitcher :is-open="showLanguageModal" @close="showLanguageModal = false" />
     <SettingsModal
-      :is-open="showLocaleSettings" :preferences="localePrefs.preferences"
+      :is-open="showLocaleSettings" :initial-section="settingsInitialSection"
+      :preferences="localePrefs.preferences"
       :apply-preset="localePrefs.applyPreset" :set-preference="localePrefs.setPreference"
       :get-active-preset="localePrefs.getActivePreset" :save="localePrefs.save" :reset="localePrefs.reset"
-      @close="showLocaleSettings = false" @relaunch-wizard="showLocaleSettings = false; welcomeWizard.isOpen.value = true"
+      :user="auth.user.value" :last-synced-at="lastSyncedAt"
+      :auth-headers="auth.authHeaders.value" :on-delete-data="authHandlers.handleDeleteData" :on-delete-account="authHandlers.handleDeleteAccount"
+      @close="showLocaleSettings = false; settingsInitialSection = null" @relaunch-wizard="showLocaleSettings = false; welcomeWizard.isOpen.value = true"
+      @update-profile="authHandlers.handleUpdateProfile" @change-password="(...args) => { authHandlers.handleChangePassword(...args); showLocaleSettings = false }"
+      @logout="() => { showLocaleSettings = false; authHandlers.handleLogout() }" @unshare="shareManagement.handleProfileUnshare"
+      @open-analytics="shareManagement.handleOpenAnalytics" @sync-now="syncNow" @show-notes="handleShowNotes"
     />
 
     <ExportOptionsModal :is-open="noteActions.showExportOptions.value" @close="noteActions.showExportOptions.value = false" @confirm="noteActions.handleExportConfirm" />
@@ -212,15 +218,6 @@
     />
 
     <ShareAnalyticsModal :is-open="shareManagement.showAnalyticsModal.value" :hash="shareManagement.analyticsHash.value" :auth-headers="auth.authHeaders.value" @close="shareManagement.showAnalyticsModal.value = false" />
-
-    <ProfileModal
-      :is-open="authHandlers.showProfileModal.value" :user="auth.user.value" :last-synced-at="lastSyncedAt"
-      :auth-headers="auth.authHeaders.value" :on-delete-data="authHandlers.handleDeleteData" :on-delete-account="authHandlers.handleDeleteAccount"
-      @close="authHandlers.showProfileModal.value = false" @update-profile="authHandlers.handleUpdateProfile"
-      @change-password="authHandlers.handleChangePassword" @logout="authHandlers.handleLogout"
-      @unshare="shareManagement.handleProfileUnshare" @open-analytics="shareManagement.handleOpenAnalytics"
-      @sync-now="syncNow" @show-notes="handleShowNotes"
-    />
 
     <SyncIndicator :syncing="syncing" />
 
@@ -403,6 +400,7 @@ const showHelp = ref(false)
 const showTemplates = ref(false)
 const showLanguageModal = ref(false)
 const showLocaleSettings = ref(false)
+const settingsInitialSection = ref(null)
 const showAbout = ref(false)
 
 const showInlineResults = computed({
@@ -513,7 +511,7 @@ const handleShowProperties = (noteId) => { currentNoteId.value = noteId; showMet
 
 const sidebarGlow = ref(false)
 const handleShowNotes = () => {
-  authHandlers.showProfileModal.value = false
+  showLocaleSettings.value = false
   showSidebar.value = true
   setTimeout(() => { sidebarGlow.value = true }, 400)
   setTimeout(() => { sidebarGlow.value = false }, 1400)
@@ -599,7 +597,7 @@ const sidebarEvents = {
   'show-help': () => { showHelp.value = true }, 'show-language': () => { showLanguageModal.value = true },
   'show-locale-settings': () => { showLocaleSettings.value = true },
   'show-auth': () => { authHandlers.showAuthModal.value = true },
-  logout: authHandlers.handleLogout, 'edit-profile': authHandlers.handleShowProfile,
+  logout: authHandlers.handleLogout, 'edit-profile': () => { settingsInitialSection.value = 'profile'; showLocaleSettings.value = true },
   'lock-app': () => { appLock.lock() },
   'share-note': handleShareNote, 'show-properties': handleShowProperties,
   'unshare-note': shareManagement.handleUnshareNote, 'open-analytics': shareManagement.handleOpenAnalytics,
