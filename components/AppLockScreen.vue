@@ -83,8 +83,8 @@
 
             <!-- Number pad -->
             <UiNumpad
-              ref="numpadRef"
               :can-delete="enteredPin.length > 0"
+              capture-keyboard
               @digit="enterDigit"
               @delete="deleteDigit"
             >
@@ -180,7 +180,6 @@ const error = ref('')
 const shake = ref(false)
 const showBiometricPrompt = ref(false)
 const passwordInputRef = ref(null)
-const numpadRef = ref(null)
 
 const hasBiometrics = computed(() => settings.method === 'biometrics' && biometricsEnrolled.value)
 
@@ -260,12 +259,9 @@ watch(
       attemptBiometrics()
     } else {
       showBiometricPrompt.value = false
-      await nextTick()
       if (activeMethod.value === 'password') {
+        await nextTick()
         passwordInputRef.value?.$el?.querySelector('input')?.focus()
-      } else {
-        // Focus the numpad so keyboard events are captured
-        numpadRef.value?.focus()
       }
     }
   },
