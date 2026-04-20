@@ -9,7 +9,7 @@
   >
     <div class="space-y-3">
       <p class="text-sm text-gray-600 dark:text-gray-400">Configure print options:</p>
-      <div class="flex flex-col gap-2.5">
+      <div class="flex items-center gap-5">
         <label class="flex items-center gap-2 cursor-pointer">
           <UiCheckbox v-model="includeResults" size="sm" />
           <span class="text-xs text-gray-700 dark:text-gray-300">Include results</span>

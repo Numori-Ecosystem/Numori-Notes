@@ -1,6 +1,8 @@
 /**
  * File menu action handlers for notes (backup, import, duplicate, copy, print).
  */
+import { Capacitor } from '@capacitor/core'
+
 export function useNoteActions({
   notes,
   groups,
@@ -35,6 +37,8 @@ export function useNoteActions({
     printNote,
   } = fileActions
 
+  const isNative = Capacitor.isNativePlatform()
+
   const showExportOptions = ref(false)
   const pendingExportAction = ref(null)
 
@@ -60,13 +64,22 @@ export function useNoteActions({
   const showPrintModal = ref(false)
   const pendingPrintNote = ref(null)
 
-  const handlePrintConfirm = ({ withResults, blackAndWhite }) => {
+  const handlePrintConfirm = async ({ withResults, blackAndWhite }) => {
     showPrintModal.value = false
     const note = pendingPrintNote.value || currentNote.value
     pendingPrintNote.value = null
     if (!note) return
     const calc = withResults ? evaluateLines : null
-    printNote(note, calc, blackAndWhite)
+    try {
+      await printNote(note, calc, blackAndWhite)
+      if (toast && isNative) {
+        toast.show('Opened share sheet for printing', { type: 'success', icon: 'mdi:printer' })
+      }
+    } catch (err) {
+      if (toast) {
+        toast.show(err.message || 'Failed to print', { type: 'error', icon: 'mdi:alert-circle' })
+      }
+    }
   }
 
   const handleOpenFile = async () => {

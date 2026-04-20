@@ -919,8 +919,9 @@ ${bodyLines}
         }, 60000)
       }, 250)
     } else {
-      // Native: save as HTML for printing
-      downloadFile(`${sanitizeFilename(note.title)}.html`, html, 'text/html')
+      // Native: share HTML via system share sheet (allows printing via print services)
+      const filename = `${sanitizeFilename(note.title)}.html`
+      await shareFile(filename, html, 'text/html')
     }
     return true
   }
