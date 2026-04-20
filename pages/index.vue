@@ -398,6 +398,22 @@ const { isMac: _isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShort
 
 const showSidebar = ref(true)
 const focusMode = ref(false)
+
+// ── Back-button: close mobile sidebar when open ──
+const { register: registerBack, unregister: unregisterBack } = useBackButton()
+let sidebarBackId = null
+watch(showSidebar, (open) => {
+  // Register at priority -1 (below modals at 0) so modals close first
+  if (open && window.innerWidth < 1024) {
+    sidebarBackId = registerBack(() => {
+      if (!showSidebar.value) return false
+      showSidebar.value = false
+      return true
+    }, -1)
+  } else if (sidebarBackId !== null) {
+    unregisterBack(sidebarBackId); sidebarBackId = null
+  }
+})
 const showMetaModal = ref(false)
 const showHelp = ref(false)
 const showTemplates = ref(false)

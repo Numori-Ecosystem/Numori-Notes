@@ -337,6 +337,31 @@ const closeModal = () => {
 
 const handleEscape = (e) => { if (e.key === 'Escape' && props.isOpen) closeModal() }
 
+// ── Back-button interception (Capacitor) ──
+// Higher priority than UiModal's generic close handler so we can navigate back within sections first.
+const { register: registerBack, unregister: unregisterBack } = useBackButton()
+let backHandlerId = null
+
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    checkMobile()
+    const target = props.initialSection || (isMobile.value ? null : 'locales')
+    activeSection.value = target
+
+    backHandlerId = registerBack(() => {
+      if (!props.isOpen) return false
+      // If inside a profile sub-section, go back to profile
+      if (profileRef.value?.subSection) { profileRef.value.subSection = null; return true }
+      // If viewing a section on mobile, go back to section list
+      if (activeSection.value && isMobile.value) { mobileGoingBack.value = true; activeSection.value = null; return true }
+      // Otherwise let the UiModal's handler close it
+      return false
+    }, 10) // priority 10 > UiModal's default 0
+  } else {
+    if (backHandlerId !== null) { unregisterBack(backHandlerId); backHandlerId = null }
+  }
+}, { immediate: true })
+
 onMounted(() => {
   checkMobile(); window.addEventListener('resize', checkMobile)
   document.addEventListener('keydown', handleEscape)
@@ -345,13 +370,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleEscape)
   window.removeEventListener('resize', checkMobile)
-})
-
-watch(() => props.isOpen, (open) => {
-  if (open) {
-    checkMobile()
-    const target = props.initialSection || (isMobile.value ? null : 'locales')
-    activeSection.value = target
-  }
+  if (backHandlerId !== null) { unregisterBack(backHandlerId); backHandlerId = null }
 })
 </script>

@@ -125,7 +125,31 @@ const props = defineProps({
   padding: { type: String, default: 'md:p-4' },
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
+
+// ── Back-button interception (Capacitor) ──
+const { register: registerBack, unregister: unregisterBack } = useBackButton()
+let backHandlerId = null
+
+watch(() => props.show, (visible) => {
+  if (visible) {
+    backHandlerId = registerBack(() => {
+      if (props.persistent) return false
+      emit('close')
+      return true
+    })
+  } else if (backHandlerId !== null) {
+    unregisterBack(backHandlerId)
+    backHandlerId = null
+  }
+}, { immediate: true })
+
+onBeforeUnmount(() => {
+  if (backHandlerId !== null) {
+    unregisterBack(backHandlerId)
+    backHandlerId = null
+  }
+})
 
 const zClass = computed(() => props.z)
 const paddingClass = computed(() => props.padding)
