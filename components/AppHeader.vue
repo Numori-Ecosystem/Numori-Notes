@@ -157,7 +157,7 @@
 
           <UiDivider class="my-1 mb-3" />
 
-          <!-- Sign out / Lock -->
+          <!-- Sign out / Lock (logged in) or Sign In / Sign Up (logged out) -->
           <template v-if="isLoggedIn">
             <UiDropdownRow>
               <UiButton
@@ -178,6 +178,18 @@
               >
                 <Icon name="mdi:logout" class="w-4 h-4" />
                 Sign Out
+              </UiButton>
+            </UiDropdownRow>
+          </template>
+          <template v-else>
+            <UiDropdownRow>
+              <UiButton
+                variant="menu-item"
+                class="flex-1 justify-center"
+                @click="avatarAction('show-auth')"
+              >
+                <Icon name="mdi:login" class="w-4 h-4" />
+                Sign In / Sign Up
               </UiButton>
             </UiDropdownRow>
           </template>
