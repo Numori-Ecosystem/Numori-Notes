@@ -104,6 +104,35 @@
           With "Groups" checked, notes keep their group structure. Without it, notes export flat.
         </p>
       </div>
+
+      <!-- Destination (native only) -->
+      <div v-if="isNative" class="space-y-2.5">
+        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Destination
+        </p>
+        <div
+          class="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700 overflow-hidden"
+        >
+          <label
+            class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          >
+            <UiRadio v-model="destination" value="device" name="backup-dest" />
+            <div class="flex-1 min-w-0">
+              <span class="text-sm text-gray-800 dark:text-gray-200">Save to device</span>
+            </div>
+            <Icon name="mdi:cellphone" class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
+          </label>
+          <label
+            class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          >
+            <UiRadio v-model="destination" value="share" name="backup-dest" />
+            <div class="flex-1 min-w-0">
+              <span class="text-sm text-gray-800 dark:text-gray-200">Share</span>
+            </div>
+            <Icon name="mdi:share-variant-outline" class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
+          </label>
+        </div>
+      </div>
     </div>
 
     <template #actions>
@@ -117,6 +146,8 @@
 </template>
 
 <script setup>
+import { Capacitor } from '@capacitor/core'
+
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
   hasNote: { type: Boolean, default: false },
@@ -124,12 +155,14 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'confirm'])
 
+const isNative = Capacitor.isNativePlatform()
 const scope = ref('all')
 const includeGroups = ref(true)
 const includeArchive = ref(false)
 const includeBin = ref(false)
 const encrypt = ref(false)
 const password = ref('')
+const destination = ref('device')
 
 watch(() => props.isOpen, (open) => {
   if (open) {
@@ -139,6 +172,7 @@ watch(() => props.isOpen, (open) => {
     includeBin.value = false
     encrypt.value = false
     password.value = ''
+    destination.value = 'device'
   }
 })
 
@@ -152,6 +186,7 @@ const handleConfirm = () => {
     includeBin: includeBin.value,
     encrypt: encrypt.value,
     password: encrypt.value ? password.value : null,
+    destination: isNative ? destination.value : 'download',
   })
 }
 </script>

@@ -4,6 +4,7 @@
  * Supports both web (browser APIs) and native (Capacitor) platforms.
  */
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
+import { Share } from '@capacitor/share'
 import { Capacitor } from '@capacitor/core'
 
 export const useFileActions = () => {
@@ -39,9 +40,7 @@ export const useFileActions = () => {
 
   /**
    * Web: trigger a browser download via anchor element.
-   * Native: write to Documents directory using Capacitor Filesystem.
-   * On iOS: visible in Files app (requires UIFileSharingEnabled + LSSupportsOpeningDocumentsInPlace).
-   * On Android: Public Documents folder, accessible from file managers.
+   * Native: write directly to Documents folder on device.
    */
   const downloadFile = async (filename, content, mimeType = 'text/plain') => {
     if (!isNative) {
@@ -57,7 +56,6 @@ export const useFileActions = () => {
       return
     }
 
-    // On Android, check/request permissions for Directory.Documents
     if (Capacitor.getPlatform() === 'android') {
       const perms = await Filesystem.checkPermissions()
       if (perms.publicStorage !== 'granted') {
@@ -69,7 +67,7 @@ export const useFileActions = () => {
     }
 
     await Filesystem.writeFile({
-      path: filename,
+      path: `Numori/${filename}`,
       data: content,
       directory: Directory.Documents,
       encoding: Encoding.UTF8,
@@ -79,7 +77,7 @@ export const useFileActions = () => {
 
   /**
    * Download a Blob (binary data).
-   * Web: object URL download. Native: base64 write to Documents directory.
+   * Web: object URL download. Native: base64 write to Documents.
    */
   const downloadBlob = async (filename, blob) => {
     if (!isNative) {
@@ -94,7 +92,6 @@ export const useFileActions = () => {
       return
     }
 
-    // On Android, check/request permissions for Directory.Documents
     if (Capacitor.getPlatform() === 'android') {
       const perms = await Filesystem.checkPermissions()
       if (perms.publicStorage !== 'granted') {
@@ -114,11 +111,56 @@ export const useFileActions = () => {
     const base64 = btoa(binary)
 
     await Filesystem.writeFile({
-      path: filename,
+      path: `Numori/${filename}`,
       data: base64,
       directory: Directory.Documents,
       recursive: true,
     })
+  }
+
+  /**
+   * Share a file via the system share sheet (native only, falls back to download on web).
+   */
+  const shareFile = async (filename, content, mimeType = 'text/plain') => {
+    if (!isNative) {
+      return downloadFile(filename, content, mimeType)
+    }
+
+    const result = await Filesystem.writeFile({
+      path: filename,
+      data: content,
+      directory: Directory.Cache,
+      encoding: Encoding.UTF8,
+      recursive: true,
+    })
+
+    await Share.share({ files: [result.uri] })
+  }
+
+  /**
+   * Share a Blob via the system share sheet (native only, falls back to download on web).
+   */
+  const shareBlob = async (filename, blob) => {
+    if (!isNative) {
+      return downloadBlob(filename, blob)
+    }
+
+    const arrayBuffer = await blob.arrayBuffer()
+    const bytes = new Uint8Array(arrayBuffer)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    const base64 = btoa(binary)
+
+    const result = await Filesystem.writeFile({
+      path: filename,
+      data: base64,
+      directory: Directory.Cache,
+      recursive: true,
+    })
+
+    await Share.share({ files: [result.uri] })
   }
 
   // ── Export functions ────────────────────────────────────
@@ -328,6 +370,8 @@ export const useFileActions = () => {
   return {
     downloadFile,
     downloadBlob,
+    shareFile,
+    shareBlob,
     pickFile,
     sanitizeFilename,
     mergeContentWithResults,
