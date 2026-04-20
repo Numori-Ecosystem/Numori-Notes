@@ -58,6 +58,7 @@ npm run dev                 # http://localhost:3000
 
 ```
 ├── app.vue                        # Root app component
+├── error.vue                      # Error page component
 ├── db.js                          # Dexie (IndexedDB) database schema
 ├── pages/
 │   ├── index.vue                  # Main SPA page — editor, sidebar, modals
@@ -83,9 +84,11 @@ npm run dev                 # http://localhost:3000
 │   │   ├── ListMenu.vue           # Vertical list menu
 │   │   ├── ListMenuItem.vue       # Single item in a list menu
 │   │   ├── Modal.vue              # Modal dialog
+│   │   ├── Numpad.vue             # Numeric keypad
 │   │   ├── Popup.vue              # Popup / popover
 │   │   ├── ProgressBar.vue        # Progress bar
 │   │   ├── Prompt.vue             # Confirmation prompt dialog
+│   │   ├── Radio.vue              # Radio button input
 │   │   ├── Select.vue             # Select dropdown
 │   │   ├── Slider.vue             # Range slider
 │   │   ├── Stepper.vue            # Numeric stepper
@@ -107,14 +110,49 @@ npm run dev                 # http://localhost:3000
 │   │   ├── Sessions.vue           # Active sessions management
 │   │   ├── SharedNotes.vue        # Shared notes management
 │   │   └── Typography.vue         # Font and typography preferences
+│   ├── help/                      # In-app documentation sub-components
+│   │   ├── Basics.vue             # Basic usage guide
+│   │   ├── Bitwise.vue            # Bitwise operations help
+│   │   ├── CodeBlock.vue          # Code block renderer
+│   │   ├── Constants.vue          # Constants reference
+│   │   ├── CssUnits.vue           # CSS unit conversions help
+│   │   ├── Currency.vue           # Currency conversion help
+│   │   ├── DateTime.vue           # Date/time help
+│   │   ├── Formatting.vue         # Formatting guide
+│   │   ├── Fuel.vue               # Fuel conversion help
+│   │   ├── Functions.vue          # Math functions reference
+│   │   ├── Modal.vue              # Help modal shell
+│   │   ├── NumberFormats.vue      # Number format conversions
+│   │   ├── Operators.vue          # Operators reference
+│   │   ├── Percentages.vue        # Percentage operations help
+│   │   ├── Scales.vue             # Scales (k, M, billion) help
+│   │   ├── SectionHeader.vue      # Reusable help section header
+│   │   ├── Shortcuts.vue          # Keyboard shortcuts reference
+│   │   ├── SiPrefixes.vue         # SI prefixes help
+│   │   ├── Special.vue            # Special features help
+│   │   ├── Tips.vue               # Tips and tricks
+│   │   ├── Units.vue              # Unit conversions help
+│   │   └── Variables.vue          # Variables help
+│   ├── main-sidebar/             # Sidebar sub-components
+│   │   ├── AccountSection.vue     # Account menu section
+│   │   ├── NotesList.vue          # Notes list view
+│   │   ├── SearchAndFilters.vue   # Search bar and filter controls
+│   │   ├── SelectionToolbar.vue   # Bulk selection toolbar
+│   │   └── ViewSwitcher.vue       # List/grid view switcher
+│   ├── templates/                 # Templates modal sub-components
+│   │   ├── CategoryView.vue       # Template category browser
+│   │   ├── Modal.vue              # Templates modal shell
+│   │   └── SectionHeader.vue      # Reusable templates section header
 │   ├── AboutModal.vue             # About / credits modal
 │   ├── AddToGroupModal.vue        # Add note(s) to a group
 │   ├── AppHeader.vue              # Top bar with title, menus, and actions
 │   ├── AppLockScreen.vue          # PIN / biometric lock screen overlay
 │   ├── AuthModal.vue              # Login / register modal
 │   ├── AvatarEditor.vue           # Avatar upload / crop
+│   ├── BackupModal.vue            # Backup / restore modal
 │   ├── ConfirmBulkDeleteModal.vue # Bulk-delete confirmation
 │   ├── ConfirmDeleteModal.vue     # Single-delete confirmation
+│   ├── ConfirmPermanentDeleteModal.vue # Permanent delete confirmation
 │   ├── DeleteGroupModal.vue       # Group deletion confirmation
 │   ├── EmailVerificationBanner.vue # Email verification prompt banner
 │   ├── EmailVerificationModal.vue # Email verification OTP modal
@@ -123,17 +161,19 @@ npm run dev                 # http://localhost:3000
 │   ├── FormattingToolbar.vue      # Markdown formatting toolbar
 │   ├── GroupListItem.vue          # Single group row in the sidebar
 │   ├── GroupModal.vue             # Create / rename group modal
-│   ├── HelpModal.vue              # In-app documentation modal
 │   ├── MainSidebar.vue            # Notes list sidebar with search, tags, groups, CRUD, and account menu
 │   ├── NoteEditor.vue             # CodeMirror editor wrapper with calc integration
 │   ├── NoteListItem.vue           # Single note row in the sidebar
 │   ├── NoteMetaModal.vue          # Note rename / metadata / share modal
 │   ├── OfflineIndicator.vue       # Offline status indicator
+│   ├── PrintModal.vue             # Print preview / options modal
+│   ├── RestoreConfirmModal.vue    # Backup restore confirmation
+│   ├── RestorePasswordModal.vue   # Backup restore password prompt
+│   ├── SaveModal.vue              # Save / download modal
 │   ├── ShareAnalyticsModal.vue    # Shared note view analytics
 │   ├── SharedNoteToolbar.vue      # Toolbar for the public shared-note page
 │   ├── ShareModal.vue             # Share a note (password, link, analytics)
 │   ├── SyncIndicator.vue          # Sync status indicator
-│   ├── TemplatesModal.vue         # Calculation templates picker
 │   ├── ThemeSwitcher.vue          # Light / dark mode toggle
 │   ├── ToastNotification.vue      # Toast notification component
 │   ├── UpdateNotification.vue     # In-app update available notification
@@ -159,7 +199,7 @@ npm run dev                 # http://localhost:3000
 │   ├── useAppLock.js              # PIN / biometric app lock state and logic
 │   ├── useAuth.js                 # Auth state, key derivation, session persistence and validation
 │   ├── useAuthHandlers.js         # Auth event handlers (login, register, logout flows)
-│   ├── useNumoriLanguage.js       # Custom CodeMirror language (numori)
+│   ├── useBackButton.js           # Android back button handling
 │   ├── useCalculator.js           # Calculator composable (delegates to calculator/)
 │   ├── useCodeHighlight.js        # Syntax highlighting helpers
 │   ├── useDisplayFormatter.js     # Number / result display formatting
@@ -172,9 +212,11 @@ npm run dev                 # http://localhost:3000
 │   ├── useHasVirtualKeyboard.js   # Virtual keyboard detection
 │   ├── useKeyboardShortcuts.js    # Global keyboard shortcut bindings
 │   ├── useLocalePreferences.js    # Locale and display preferences state
-│   ├── useNativeKeyboardToolbar.ts # iOS native keyboard accessory bridge
+│   ├── useNativeKeyboardToolbar.js # Native keyboard accessory bridge
 │   ├── useNoteActions.js          # Note-level action handlers
 │   ├── useNotes.js                # Note CRUD + IndexedDB persistence
+│   ├── useNumoriHighlight.js      # Numori syntax highlighting
+│   ├── useNumoriLanguage.js       # Custom CodeMirror language (numori)
 │   ├── useOnlineStatus.js         # Online / offline status tracking
 │   ├── usePlatform.js             # Platform detection (web, ios, android)
 │   ├── usePrivacyScreen.js        # Privacy screen (hide content when backgrounded)
@@ -186,12 +228,14 @@ npm run dev                 # http://localhost:3000
 │   └── useWelcomeWizard.js        # First-run wizard state
 ├── utils/
 │   ├── crypto.js                  # E2E encryption: key derivation, AES-GCM encrypt/decrypt
-│   ├── keyboard-toolbar.ts        # Native keyboard toolbar utilities
+│   ├── keyboard-toolbar.js        # Native keyboard toolbar utilities
 │   └── normaliseName.js           # Name normalisation helpers
 ├── plugins/
-│   ├── deeplink.client.ts         # Deep link handler (Universal Links / App Links)
-│   ├── pwa.client.ts              # PWA service worker registration
-│   └── statusbar.client.ts        # Mobile status bar styling
+│   ├── backbutton.client.js       # Android back button handler
+│   ├── deeplink.client.js         # Deep link handler (Universal Links / App Links)
+│   ├── open-with.client.js        # Open-with / file association handler
+│   ├── pwa.client.js              # PWA service worker registration
+│   └── statusbar.client.js        # Mobile status bar styling
 ├── server/
 │   ├── api/
 │   │   ├── auth/
@@ -249,29 +293,40 @@ npm run dev                 # http://localhost:3000
 │       ├── migrate.js             # SQL migration runner
 │       ├── session.js             # Session creation, validation, revocation helpers
 │       └── syncBroadcast.js       # SSE broadcast to connected clients
+├── electron/
+│   ├── main.js                    # Electron main process entry
+│   └── preload.cjs                # Electron preload script
+├── modules/
+│   └── version.js                 # Build-time version injection module
 ├── i18n/                          # i18n translation files (managed by @nuxtjs/i18n)
 ├── public/
 │   ├── .well-known/
 │   │   ├── apple-app-site-association  # iOS Universal Links verification
 │   │   └── assetlinks.json             # Android App Links verification
+│   ├── icons/                     # App icons (various sizes)
 │   ├── favicon.ico
 │   ├── favicon.svg
 │   ├── manifest.webmanifest
 │   ├── robots.txt
 │   └── sw.js                      # Service worker for PWA
+├── docker/
+│   └── postgres/                  # PostgreSQL Docker configuration
 ├── nuxt.config.ts                 # Nuxt configuration (SSR disabled, modules, i18n)
 ├── tailwind.config.js             # Tailwind with custom color palette
+├── eslint.config.mjs              # ESLint flat config
 ├── vitest.config.js               # Vitest configuration
 ├── capacitor.config.ts            # Capacitor config (iOS + Android)
+├── electron-builder.config.js     # Electron Builder packaging config
 ├── Dockerfile                     # Multi-stage production build
 ├── docker-compose.yml             # Production Postgres
 ├── docker-compose.dev.yml         # Local dev Postgres
-└── mise.toml                      # Node.js version pinning
+├── tsconfig.json                  # TypeScript configuration
+└── mise.toml                      # Node.js + Java version pinning
 ```
 
 ## Architecture
 
-The app is a pure client-side SPA (`ssr: false` in `nuxt.config.ts`). All data is stored locally in IndexedDB via Dexie.js — there is no backend or database required for the current feature set.
+The app is a client-side SPA (`ssr: false` in `nuxt.config.ts`) with an optional server backend for cloud sync. All data is stored locally in IndexedDB via Dexie.js — no internet or account is required for core features. When a user opts into cloud sync, the server (Nuxt Nitro + PostgreSQL) handles authentication, session management, and stores end-to-end encrypted note blobs.
 
 ### Key modules
 

@@ -176,14 +176,26 @@
             </div>
             <div class="min-w-0 flex-1">
               <p class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{{ contributor.name }}</p>
-              <a
-                v-if="contributor.email"
-                :href="`mailto:${contributor.email}`"
-                class="inline-flex items-center gap-1 text-[11px] text-primary-600 dark:text-primary-400 hover:underline mt-0.5"
-              >
-                <Icon name="mdi:email-outline" class="w-3 h-3" />
-                {{ contributor.email }}
-              </a>
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+                <a
+                  v-if="contributor.email"
+                  :href="`mailto:${contributor.email}`"
+                  class="inline-flex items-center gap-1 text-[11px] text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  <Icon name="mdi:email-outline" class="w-3 h-3" />
+                  {{ contributor.email }}
+                </a>
+                <a
+                  v-if="contributor.url"
+                  :href="contributor.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1 text-[11px] text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  <Icon name="mdi:web" class="w-3 h-3" />
+                  {{ contributor.url.replace('https://', '') }}
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -284,6 +296,7 @@ const showDonate = ref(false)
 
 const contributors = [
   { name: 'Yaiza Wadhwani Valderas', email: 'yaizawv@proton.me' },
+  { name: 'TheProcedural Software Ltd', email: 'contact@theprocedural.com', url: 'https://theprocedural.com' },
 ]
 
 const donateLinks = [
@@ -343,6 +356,9 @@ const dependencies = [
   { name: '@nuxt/eslint', url: 'https://eslint.nuxt.com', license: 'MIT', description: 'ESLint integration with Nuxt-specific rules' },
   { name: 'tailwind-merge', url: 'https://github.com/dcastil/tailwind-merge', license: 'MIT', description: 'Merge Tailwind CSS classes without style conflicts' },
   { name: 'Nodemailer', url: 'https://nodemailer.com', license: 'MIT', description: 'Send emails from Node.js with SMTP and other transports' },
+  { name: 'jsPDF', url: 'https://github.com/parallax/jsPDF', license: 'MIT', description: 'Client-side PDF generation for note export' },
+  { name: 'docx', url: 'https://github.com/dolanmiu/docx', license: 'MIT', description: 'Generate Word documents (.docx) from JavaScript' },
+  { name: '@zip.js/zip.js', url: 'https://gildas-lormeau.github.io/zip.js/', license: 'BSD-3', description: 'JavaScript library for zipping and unzipping files' },
 ]
 
 const handleCheckUpdate = async () => {
