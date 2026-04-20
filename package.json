@@ -3,7 +3,7 @@
   "type": "module",
   "main": "electron/main.js",
   "private": true,
-  "version": "0.24.0",
+  "version": "0.25.0",
   "description": "Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.",
   "author": {
     "name": "Erik Bjerke",

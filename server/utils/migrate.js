@@ -418,5 +418,13 @@ export async function migrate() {
     END $do$
   `)
 
+  // Timestamp of last data wipe — used to reject stale notes from offline devices
+  await query(`
+    DO $do$ BEGIN
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS data_wiped_at TIMESTAMPTZ;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $do$
+  `)
+
   console.warn('[migrate] Database tables ready')
 }

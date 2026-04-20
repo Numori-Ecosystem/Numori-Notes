@@ -30,6 +30,12 @@ export default defineEventHandler(async (event) => {
 
   const deletedSet = new Set(deletedClientIds)
 
+  // 0. Fetch data_wiped_at — reject notes older than the last wipe
+  const userRow = await query('SELECT data_wiped_at FROM users WHERE id = $1', [auth.userId])
+  const dataWipedAt = userRow.rows[0]?.data_wiped_at
+    ? new Date(userRow.rows[0].data_wiped_at)
+    : null
+
   // 1. Hard-delete notes and record tombstones for multi-device sync
   if (deletedClientIds.length > 0) {
     await query('DELETE FROM notes WHERE user_id = $1 AND client_id = ANY($2)', [
@@ -51,6 +57,9 @@ export default defineEventHandler(async (event) => {
 
   for (const note of clientNotes) {
     if (!note.clientId || deletedSet.has(note.clientId)) continue
+
+    // Reject notes that predate the last data wipe (stale offline data)
+    if (dataWipedAt && note.updatedAt && new Date(note.updatedAt) < dataWipedAt) continue
 
     // Check if this note was deleted (tombstone exists)
     const tombstone = await query(

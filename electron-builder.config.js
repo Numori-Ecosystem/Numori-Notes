@@ -30,8 +30,10 @@ export default {
       'rpm',
       // 'pacman'
       // 'deb',
-      // 'AppImage',
+      'AppImage',
       // 'flatpak',
+      // 'tar.gz',
+      // 'tar.bz2'
     ],
     category: 'Utility',
   },

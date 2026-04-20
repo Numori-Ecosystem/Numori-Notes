@@ -17,6 +17,12 @@ export default defineEventHandler(async (event) => {
 
   const deletedSet = new Set(deletedClientIds)
 
+  // 0. Fetch data_wiped_at — reject groups older than the last wipe
+  const userRow = await query('SELECT data_wiped_at FROM users WHERE id = $1', [auth.userId])
+  const dataWipedAt = userRow.rows[0]?.data_wiped_at
+    ? new Date(userRow.rows[0].data_wiped_at)
+    : null
+
   // 1. Delete groups and record tombstones
   if (deletedClientIds.length > 0) {
     await query('DELETE FROM groups WHERE user_id = $1 AND client_id = ANY($2)', [
@@ -37,6 +43,9 @@ export default defineEventHandler(async (event) => {
 
   for (const group of clientGroups) {
     if (!group.clientId || deletedSet.has(group.clientId)) continue
+
+    // Reject groups that predate the last data wipe (stale offline data)
+    if (dataWipedAt && group.updatedAt && new Date(group.updatedAt) < dataWipedAt) continue
 
     // Check if this group was deleted (tombstone exists)
     const tombstone = await query(

@@ -26,12 +26,27 @@ export default defineEventHandler(async (event) => {
   }
 
   if (type === 'data') {
+    // Record tombstones for ALL existing notes/groups BEFORE deleting them.
+    // This prevents offline devices from reviving data when they sync later.
+    await query(
+      `INSERT INTO deleted_notes (user_id, client_id)
+       SELECT user_id, client_id FROM notes WHERE user_id = $1 AND client_id IS NOT NULL
+       ON CONFLICT DO NOTHING`,
+      [auth.userId],
+    )
+    await query(
+      `INSERT INTO deleted_groups (user_id, client_id)
+       SELECT user_id, client_id FROM groups WHERE user_id = $1 AND client_id IS NOT NULL
+       ON CONFLICT DO NOTHING`,
+      [auth.userId],
+    )
+
     await query('DELETE FROM notes WHERE user_id = $1', [auth.userId])
     await query('DELETE FROM groups WHERE user_id = $1', [auth.userId])
-    await query('DELETE FROM deleted_notes WHERE user_id = $1', [auth.userId])
-    await query('DELETE FROM deleted_groups WHERE user_id = $1', [auth.userId])
     await query('DELETE FROM shared_notes WHERE user_id = $1', [auth.userId])
-    await query('UPDATE users SET welcome_created = FALSE WHERE id = $1', [auth.userId])
+    await query(`UPDATE users SET welcome_created = FALSE, data_wiped_at = NOW() WHERE id = $1`, [
+      auth.userId,
+    ])
     notifyDataWipe(auth.userId, null)
     return { deleted: 'data' }
   }
