@@ -20,6 +20,14 @@
           </template>
         </UiListMenuItem>
       </UiListMenu>
+      <UiListMenu label="User Avatar" preset="settings" class="mt-5">
+        <UiListMenuItem icon="mdi:account-circle-outline" hint="Place the user avatar dropdown on the left or right side of the header" :select-ref="selectAvatarPosition">
+          Position
+          <template #suffix>
+            <UiSelect ref="selectAvatarPosition" :model-value="preferences.avatarPosition || 'right'" :options="avatarPositionOptions" @update:model-value="preferences.avatarPosition = $event; onSettingChange()" />
+          </template>
+        </UiListMenuItem>
+      </UiListMenu>
       <UiListMenu v-if="isElectron" label="Window Controls" preset="settings" class="mt-5">
         <UiListMenuItem icon="mdi:swap-horizontal" hint="Place window controls on the left or right side" :select-ref="selectWindowPosition">
           Position
@@ -55,6 +63,7 @@ defineProps({
 const emit = defineEmits(['relaunch-wizard'])
 
 const selectUpdateInterval = ref(null)
+const selectAvatarPosition = ref(null)
 const selectWindowPosition = ref(null)
 
 const updateIntervalOptions = [
@@ -64,6 +73,11 @@ const updateIntervalOptions = [
   { value: 60, label: 'Every hour' },
   { value: 360, label: 'Every 6 hours' },
   { value: 0, label: 'Manual only' },
+]
+
+const avatarPositionOptions = [
+  { value: 'left', label: 'Left' },
+  { value: 'right', label: 'Right' },
 ]
 
 const windowPositionOptions = [

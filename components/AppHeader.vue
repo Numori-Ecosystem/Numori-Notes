@@ -130,7 +130,7 @@
       </div>
 
       <!-- User avatar dropdown -->
-      <UiDropdown ref="avatarDropdownRef" align="right" width="w-64" class="mr-1.5">
+      <UiDropdown ref="avatarDropdownRef" :align="preferences.avatarPosition === 'left' ? 'left' : 'right'" width="w-64" :class="preferences.avatarPosition === 'left' ? 'order-first mr-2.5' : 'order-last mr-1.5'">
         <template #trigger="{ toggle }">
           <button
             class="flex-shrink-0 aspect-square h-full rounded-full focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-0 flex items-center justify-center"
