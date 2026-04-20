@@ -1,7 +1,7 @@
-import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
-import { join, extname } from 'node:path'
+import { app, BrowserWindow, shell, ipcMain, dialog, protocol, net } from 'electron'
+import { join, extname, normalize } from 'node:path'
 import { readFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
@@ -72,6 +72,24 @@ if (fileArg) {
   }
 }
 
+// The directory where the Nuxt static build lives
+const STATIC_DIR = join(__dirname, '..', '.output', 'public')
+
+// Register a custom protocol scheme to serve the Nuxt static build.
+// This allows absolute paths (e.g. /_nuxt/...) to resolve correctly,
+// which they cannot do under the file:// protocol.
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'app',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+    },
+  },
+])
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
@@ -107,11 +125,45 @@ function createWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL)
   } else {
-    win.loadFile(join(__dirname, '..', '.output', 'public', 'index.html'))
+    win.loadURL('app://.')
   }
 }
 
 app.whenReady().then(async () => {
+  // Handle the custom 'app://' protocol — serves files from the Nuxt static build directory.
+  // This makes absolute paths like /_nuxt/entry.js resolve to .output/public/_nuxt/entry.js
+  protocol.handle('app', (request) => {
+    const url = new URL(request.url)
+    // Decode and normalize the pathname to prevent directory traversal
+    let filePath = decodeURIComponent(url.pathname)
+    // Remove leading slash on Windows
+    if (process.platform === 'win32' && filePath.startsWith('/')) {
+      filePath = filePath.slice(1)
+    }
+    // Default to index.html for root
+    if (filePath === '/' || filePath === '') {
+      filePath = '/index.html'
+    }
+    const resolvedPath = normalize(join(STATIC_DIR, filePath))
+    // Security: ensure the resolved path is within STATIC_DIR
+    if (!resolvedPath.startsWith(STATIC_DIR)) {
+      return new Response('Forbidden', { status: 403 })
+    }
+    // SPA fallback: if the file doesn't exist, serve index.html
+    // This prevents 404s and lets the client-side router handle all routes
+    const fileUrl = pathToFileURL(resolvedPath).href
+    return net
+      .fetch(fileUrl)
+      .then((response) => {
+        if (response.ok) return response
+        // File not found — fall back to index.html (SPA catch-all)
+        return net.fetch(pathToFileURL(join(STATIC_DIR, 'index.html')).href)
+      })
+      .catch(() => {
+        return net.fetch(pathToFileURL(join(STATIC_DIR, 'index.html')).href)
+      })
+  })
+
   createWindow()
 
   // Send pending file once the renderer signals it's ready
