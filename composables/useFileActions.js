@@ -215,10 +215,10 @@ export const useFileActions = () => {
     return true
   }
 
-  const exportNoteAsPdf = async (note, evaluateLines = null) => {
+  const exportNoteAsPdf = async (note, evaluateLines = null, blackAndWhite = false) => {
     if (!note) return false
     const { jsPDF } = await import('jspdf')
-    const colouredLines = await parseColouredContent(note.content, evaluateLines)
+    const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
 
     const doc = new jsPDF({ unit: 'mm', format: 'a4' })
     const pageWidth = doc.internal.pageSize.getWidth()
@@ -304,7 +304,7 @@ export const useFileActions = () => {
    * Parse note content into coloured spans using the Numori language tokenizer.
    * Returns an array of lines, each line being an array of { text, color } spans.
    */
-  const parseColouredContent = async (content, evaluateLines = null) => {
+  const parseColouredContent = async (content, evaluateLines = null, blackAndWhite = false) => {
     if (!content) return []
     const { tokenizeLine } = await import('~/composables/useNumoriHighlight')
     const lines = content.split('\n')
@@ -315,13 +315,18 @@ export const useFileActions = () => {
       const spans = tokenizeLine(line)
       const lineSpans = spans.map((s) => ({
         text: s.text,
-        color: tokenColourMap[s.token] || defaultColour,
+        color: blackAndWhite ? '#000000' : tokenColourMap[s.token] || defaultColour,
         bold: s.token === 'heading' || s.token === 'keyword' || s.token === 'labelName',
         italic: s.token === 'comment',
       }))
       // Append result if present
       if (r && r.result) {
-        lineSpans.push({ text: `  = ${r.result}`, color: '#4D8C2A', bold: false, italic: false })
+        lineSpans.push({
+          text: `  = ${r.result}`,
+          color: blackAndWhite ? '#000000' : '#4D8C2A',
+          bold: false,
+          italic: false,
+        })
       }
       return lineSpans
     })
@@ -353,9 +358,9 @@ export const useFileActions = () => {
 
   // ── RTF export (with proper encoding and per-token colours) ──────────
 
-  const exportNoteAsRtf = async (note, evaluateLines = null) => {
+  const exportNoteAsRtf = async (note, evaluateLines = null, blackAndWhite = false) => {
     if (!note) return false
-    const colouredLines = await parseColouredContent(note.content, evaluateLines)
+    const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
 
     // Collect all unique colours used
     const colourSet = new Set()
@@ -419,9 +424,9 @@ export const useFileActions = () => {
 
   // ── ODT export (proper ODF structure with per-token colours) ────────
 
-  const exportNoteAsOdt = async (note, evaluateLines = null) => {
+  const exportNoteAsOdt = async (note, evaluateLines = null, blackAndWhite = false) => {
     if (!note) return false
-    const colouredLines = await parseColouredContent(note.content, evaluateLines)
+    const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
 
     const { BlobWriter, TextReader, ZipWriter } = await import('@zip.js/zip.js')
 
@@ -479,18 +484,31 @@ export const useFileActions = () => {
     const mimetype = 'application/vnd.oasis.opendocument.text'
 
     const manifest = `<?xml version="1.0" encoding="UTF-8"?>
-<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">
-  <manifest:file-entry manifest:media-type="application/vnd.oasis.opendocument.text" manifest:full-path="/"/>
-  <manifest:file-entry manifest:media-type="text/xml" manifest:full-path="content.xml"/>
-  <manifest:file-entry manifest:media-type="text/xml" manifest:full-path="styles.xml"/>
+<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.3">
+ <manifest:file-entry manifest:full-path="/" manifest:version="1.3" manifest:media-type="application/vnd.oasis.opendocument.text"/>
+ <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>
+ <manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>
+ <manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>
 </manifest:manifest>`
+
+    const meta = `<?xml version="1.0" encoding="UTF-8"?>
+<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+  xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  office:version="1.3">
+  <office:meta>
+    <meta:generator>Numori Notes</meta:generator>
+    <dc:title>${escapeXml(note.title || 'Untitled')}</dc:title>
+    <meta:creation-date>${new Date().toISOString()}</meta:creation-date>
+  </office:meta>
+</office:document-meta>`
 
     const styles = `<?xml version="1.0" encoding="UTF-8"?>
 <office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
   xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
   xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
-  xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
-  office:version="1.2">
+  xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+  office:version="1.3">
   <office:font-face-decls>
     <style:font-face style:name="Courier New" svg:font-family="'Courier New'" style:font-family-generic="modern" style:font-pitch="fixed"/>
   </office:font-face-decls>
@@ -507,7 +525,8 @@ export const useFileActions = () => {
   xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
   xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
   xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
-  office:version="1.2">
+  office:version="1.3">
+  <office:scripts/>
   <office:font-face-decls>
     <style:font-face style:name="Courier New" svg:font-family="'Courier New'" style:font-family-generic="modern" style:font-pitch="fixed"/>
   </office:font-face-decls>
@@ -527,8 +546,10 @@ export const useFileActions = () => {
     await zipWriter.add('mimetype', new TextReader(mimetype), {
       level: 0,
       extendedTimestamp: false,
+      dataDescriptor: false,
     })
     await zipWriter.add('META-INF/manifest.xml', new TextReader(manifest))
+    await zipWriter.add('meta.xml', new TextReader(meta))
     await zipWriter.add('content.xml', new TextReader(content))
     await zipWriter.add('styles.xml', new TextReader(styles))
     const blob = await zipWriter.close()
@@ -540,9 +561,9 @@ export const useFileActions = () => {
 
   // ── DOCX export (using docx library with per-token colours) ─────────
 
-  const exportNoteAsDocx = async (note, evaluateLines = null) => {
+  const exportNoteAsDocx = async (note, evaluateLines = null, blackAndWhite = false) => {
     if (!note) return false
-    const colouredLines = await parseColouredContent(note.content, evaluateLines)
+    const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
     const { Document, Paragraph, TextRun, Packer } = await import('docx')
 
     const paragraphs = colouredLines.map((line) => {

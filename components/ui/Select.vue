@@ -72,7 +72,7 @@
           >
         </div>
         <!-- Options list: ungrouped flat list or grouped sections -->
-        <ul class="max-h-48 overflow-y-auto py-1">
+        <ul class="max-h-64 overflow-y-auto py-1">
           <li
             v-if="filteredOptions.length === 0 && filteredGroups.length === 0"
             class="px-3 py-2 text-sm text-gray-400 dark:text-gray-500"
@@ -85,12 +85,15 @@
             <li
               v-for="opt in filteredOptions"
               :key="opt.value"
-              class="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer transition-colors"
-              :class="optionClass(opt.value)"
+              class="flex items-center gap-2 px-3 cursor-pointer transition-colors"
+              :class="[optionClass(opt.value), opt.subtitle ? 'py-1.5' : 'py-1.5']"
               @click="select(opt.value)"
             >
               <Icon v-if="opt.icon" :name="opt.icon" class="w-4 h-4 flex-shrink-0" />
-              <span class="truncate">{{ opt.label }}</span>
+              <div class="min-w-0">
+                <span class="block truncate text-sm">{{ opt.label }}</span>
+                <span v-if="opt.subtitle" class="block truncate text-[11px] text-gray-400 dark:text-gray-500 leading-tight">{{ opt.subtitle }}</span>
+              </div>
             </li>
           </template>
 
@@ -105,12 +108,15 @@
               <li
                 v-for="opt in group.options"
                 :key="opt.value"
-                class="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer transition-colors"
-                :class="optionClass(opt.value)"
+                class="flex items-center gap-2 px-3 cursor-pointer transition-colors"
+                :class="[optionClass(opt.value), opt.subtitle ? 'py-1.5' : 'py-1.5']"
                 @click="select(opt.value)"
               >
                 <Icon v-if="opt.icon" :name="opt.icon" class="w-4 h-4 flex-shrink-0" />
-                <span class="truncate">{{ opt.label }}</span>
+                <div class="min-w-0">
+                  <span class="block truncate text-sm">{{ opt.label }}</span>
+                  <span v-if="opt.subtitle" class="block truncate text-[11px] text-gray-400 dark:text-gray-500 leading-tight">{{ opt.subtitle }}</span>
+                </div>
               </li>
             </template>
           </template>
@@ -265,17 +271,18 @@ const autoMinWidth = computed(() => {
 })
 
 // ── Normalize options ────────────────────────────────────
-// Convert primitive options (string/number) into { value, label, icon, group } objects
+// Convert primitive options (string/number) into { value, label, subtitle, icon, group } objects
 const normalizedOptions = computed(() =>
   props.options.map((opt) =>
     typeof opt === 'object' && opt !== null
       ? {
           value: opt.value,
           label: opt.label ?? String(opt.value),
+          subtitle: opt.subtitle || '',
           icon: opt.icon || '',
           group: opt.group || '',
         }
-      : { value: opt, label: String(opt), icon: '', group: '' },
+      : { value: opt, label: String(opt), subtitle: '', icon: '', group: '' },
   ),
 )
 
@@ -284,7 +291,9 @@ const normalizedOptions = computed(() =>
 const filteredNormalized = computed(() => {
   if (!searchQuery.value) return normalizedOptions.value
   const q = searchQuery.value.toLowerCase()
-  return normalizedOptions.value.filter((opt) => opt.label.toLowerCase().includes(q))
+  return normalizedOptions.value.filter((opt) =>
+    opt.label.toLowerCase().includes(q) || opt.subtitle.toLowerCase().includes(q),
+  )
 })
 
 // ── Grouping ─────────────────────────────────────────────

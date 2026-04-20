@@ -450,11 +450,12 @@ export function useNoteActions({
   const showSaveModal = ref(false)
   const pendingSaveNote = ref(null)
 
-  const handleSave = ({ format, withResults }) => {
+  const handleSave = ({ format, withResults, blackAndWhite }) => {
     showSaveModal.value = false
     const note = pendingSaveNote.value || currentNote.value
     if (!note) return
     const calc = withResults ? evaluateLines : null
+    const bw = blackAndWhite || false
     switch (format) {
       case 'num':
         exportNoteAsText(note, calc, '.num')
@@ -466,16 +467,16 @@ export function useNoteActions({
         exportNoteAsMarkdown(note, calc)
         break
       case 'pdf':
-        exportNoteAsPdf(note, calc)
+        exportNoteAsPdf(note, calc, bw)
         break
       case 'rtf':
-        exportNoteAsRtf(note, calc)
+        exportNoteAsRtf(note, calc, bw)
         break
       case 'odt':
-        exportNoteAsOdt(note, calc)
+        exportNoteAsOdt(note, calc, bw)
         break
       case 'docx':
-        exportNoteAsDocx(note, calc)
+        exportNoteAsDocx(note, calc, bw)
         break
     }
     pendingSaveNote.value = null

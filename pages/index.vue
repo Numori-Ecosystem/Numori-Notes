@@ -578,8 +578,8 @@ const updateMeta = ({ title, description, tags, internalName }) => {
 
 const showBackup = ref(false)
 
-const handleSaveConfirm = ({ format, withResults }) => {
-  noteActions.handleSave({ format, withResults })
+const handleSaveConfirm = (options) => {
+  noteActions.handleSave(options)
 }
 
 const handleBackupConfirm = (options) => {
