@@ -308,6 +308,25 @@ const closeModal = () => {
 
 const handleEscape = (e) => { if (e.key === 'Escape' && props.isOpen) closeModal() }
 
+// ── Back-button interception (Capacitor) ──
+const { register: registerBack, unregister: unregisterBack } = useBackButton()
+let backHandlerId = null
+
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    checkMobile()
+    activeSection.value = isMobile.value ? null : 'basics'
+
+    backHandlerId = registerBack(() => {
+      if (!props.isOpen) return false
+      if (activeSection.value && isMobile.value) { mobileGoingBack.value = true; activeSection.value = null; return true }
+      return false
+    }, 10)
+  } else {
+    if (backHandlerId !== null) { unregisterBack(backHandlerId); backHandlerId = null }
+  }
+}, { immediate: true })
+
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
@@ -317,12 +336,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleEscape)
   window.removeEventListener('resize', checkMobile)
-})
-
-watch(() => props.isOpen, (open) => {
-  if (open) {
-    checkMobile()
-    activeSection.value = isMobile.value ? null : 'basics'
-  }
+  if (backHandlerId !== null) { unregisterBack(backHandlerId); backHandlerId = null }
 })
 </script>
