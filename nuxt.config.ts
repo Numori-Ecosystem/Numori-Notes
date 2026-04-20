@@ -8,10 +8,14 @@ export default defineNuxtConfig({
   // (safe to remove once the upstream fix lands)
   hooks: {
     'nitro:config'(nitroConfig) {
-      if (nitroConfig.imports?.imports) {
-        nitroConfig.imports.imports = nitroConfig.imports.imports.filter(
-          (i: { name?: string; from?: string }) =>
-            !(i?.name === 'useAppConfig' && String(i?.from || '').includes('nitro-server')),
+      const imports = nitroConfig.imports
+      if (imports && typeof imports === 'object' && 'imports' in imports && imports.imports) {
+        imports.imports = imports.imports.filter(
+          (i) =>
+            !(
+              (i as { name?: string })?.name === 'useAppConfig' &&
+              String((i as { from?: string })?.from || '').includes('nitro-server')
+            ),
         )
       }
     },
