@@ -31,7 +31,7 @@
         :filters="filters"
         :all-tags="allTags"
         :selected-tags="selectedTags"
-        @new-note="$emit('new-note')"
+        @new-note="handleNewNote"
         @toggle-select-mode="toggleSelectMode"
         @update:search-query="searchQuery = $event"
         @toggle-filters="showFilters = !showFilters"
@@ -194,6 +194,22 @@ const binCount = computed(() => props.notes.filter((n) => !!n.deletedAt).length)
 // Auto-exit archive view when no archived notes remain
 watch(hasArchivedNotes, (has) => {
   if (!has && sidebarView.value === 'archive') sidebarView.value = 'notes'
+})
+
+// Switch to notes view when creating a new note from the sidebar button
+const handleNewNote = () => {
+  if (sidebarView.value !== 'notes') sidebarView.value = 'notes'
+  emit('new-note')
+}
+
+// Switch to notes view when a new note is created from outside (header, keyboard shortcut)
+// and the current view is archive or bin
+watch(() => props.currentNoteId, (newId) => {
+  if (!newId || sidebarView.value === 'notes') return
+  const note = props.notes.find((n) => n.id === newId)
+  if (note && !note.archived && !note.deletedAt) {
+    sidebarView.value = 'notes'
+  }
 })
 
 // ── Filters ──────────────────────────────────────────────
