@@ -1,7 +1,7 @@
 <template>
   <div
     ref="listRef"
-    class="flex-1 overflow-y-auto"
+    class="flex-1 overflow-y-auto bg-white dark:bg-gray-800/50"
     @dragover.prevent="$emit('drag-over-list', $event)"
     @drop.prevent="$emit('drop')"
   >
