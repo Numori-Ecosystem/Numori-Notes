@@ -1,5 +1,5 @@
 <template>
-  <UiModal :show="isOpen" max-width="lg" panel-class="max-h-[85vh]" @close="$emit('close')">
+  <UiModal :show="isOpen" max-width="lg" :fullscreen-mobile="false" panel-class="max-h-[85vh]" @close="$emit('close')">
     <!-- Header -->
     <div
       class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0"

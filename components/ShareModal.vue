@@ -1,5 +1,5 @@
 <template>
-  <UiModal :show="isOpen" max-width="sm" panel-class="max-h-[85vh]" @close="$emit('close')">
+  <UiModal :show="isOpen" max-width="sm" :fullscreen-mobile="false" panel-class="max-h-[85vh]" @close="$emit('close')">
     <div class="p-4 sm:p-5 overflow-y-auto overflow-x-hidden">
       <!-- Header -->
       <div class="flex items-center justify-between mb-4">
