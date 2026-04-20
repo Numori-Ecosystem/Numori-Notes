@@ -165,13 +165,14 @@ export const useFileActions = () => {
 
   // ── Export functions ────────────────────────────────────
 
-  const exportNoteAsText = (note, evaluateLines = null, ext = '.num') => {
+  const exportNoteAsText = (note, evaluateLines = null, ext = '.num', destination = 'download') => {
     if (!note) return false
     const filename = `${sanitizeFilename(note.title)}${ext}`
     const content = evaluateLines
       ? mergeContentWithResults(note.content, evaluateLines)
       : note.content || ''
-    downloadFile(filename, content, 'text/plain')
+    const saveFn = destination === 'share' ? shareFile : downloadFile
+    saveFn(filename, content, 'text/plain')
     return true
   }
 
@@ -204,18 +205,24 @@ export const useFileActions = () => {
     return true
   }
 
-  const exportNoteAsMarkdown = (note, evaluateLines = null) => {
+  const exportNoteAsMarkdown = (note, evaluateLines = null, destination = 'download') => {
     if (!note) return false
     const filename = `${sanitizeFilename(note.title)}.md`
     const body = evaluateLines
       ? mergeContentWithResults(note.content, evaluateLines)
       : note.content || ''
     const header = `# ${note.title}\n\n`
-    downloadFile(filename, header + body, 'text/markdown')
+    const saveFn = destination === 'share' ? shareFile : downloadFile
+    saveFn(filename, header + body, 'text/markdown')
     return true
   }
 
-  const exportNoteAsPdf = async (note, evaluateLines = null, blackAndWhite = false) => {
+  const exportNoteAsPdf = async (
+    note,
+    evaluateLines = null,
+    blackAndWhite = false,
+    destination = 'download',
+  ) => {
     if (!note) return false
     const { jsPDF } = await import('jspdf')
     const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
@@ -271,7 +278,8 @@ export const useFileActions = () => {
 
     const filename = `${sanitizeFilename(note.title)}.pdf`
     const blob = doc.output('blob')
-    await downloadBlob(filename, blob)
+    const saveBlobFn = destination === 'share' ? shareBlob : downloadBlob
+    await saveBlobFn(filename, blob)
     return true
   }
 
@@ -358,7 +366,12 @@ export const useFileActions = () => {
 
   // ── RTF export (with proper encoding and per-token colours) ──────────
 
-  const exportNoteAsRtf = async (note, evaluateLines = null, blackAndWhite = false) => {
+  const exportNoteAsRtf = async (
+    note,
+    evaluateLines = null,
+    blackAndWhite = false,
+    destination = 'download',
+  ) => {
     if (!note) return false
     const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
 
@@ -418,13 +431,19 @@ export const useFileActions = () => {
     const rtf = `{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0\\fmodern\\fcharset0 Courier New;}}${colourTableRtf}\\f0\\fs20\n${bodyParts.join('\\par\n')}\n}`
 
     const filename = `${sanitizeFilename(note.title)}.rtf`
-    downloadFile(filename, rtf, 'application/rtf')
+    const saveFn = destination === 'share' ? shareFile : downloadFile
+    saveFn(filename, rtf, 'application/rtf')
     return true
   }
 
   // ── ODT export (proper ODF structure with per-token colours) ────────
 
-  const exportNoteAsOdt = async (note, evaluateLines = null, blackAndWhite = false) => {
+  const exportNoteAsOdt = async (
+    note,
+    evaluateLines = null,
+    blackAndWhite = false,
+    destination = 'download',
+  ) => {
     if (!note) return false
     const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
 
@@ -555,13 +574,19 @@ export const useFileActions = () => {
     const blob = await zipWriter.close()
 
     const filename = `${sanitizeFilename(note.title)}.odt`
-    await downloadBlob(filename, blob)
+    const saveBlobFn = destination === 'share' ? shareBlob : downloadBlob
+    await saveBlobFn(filename, blob)
     return true
   }
 
   // ── DOCX export (using docx library with per-token colours) ─────────
 
-  const exportNoteAsDocx = async (note, evaluateLines = null, blackAndWhite = false) => {
+  const exportNoteAsDocx = async (
+    note,
+    evaluateLines = null,
+    blackAndWhite = false,
+    destination = 'download',
+  ) => {
     if (!note) return false
     const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
     const { Document, Paragraph, TextRun, Packer } = await import('docx')
@@ -590,13 +615,19 @@ export const useFileActions = () => {
 
     const blob = await Packer.toBlob(doc)
     const filename = `${sanitizeFilename(note.title)}.docx`
-    await downloadBlob(filename, blob)
+    const saveBlobFn = destination === 'share' ? shareBlob : downloadBlob
+    await saveBlobFn(filename, blob)
     return true
   }
 
   // ── HTML export (full colour with inline styles) ───────
 
-  const exportNoteAsHtml = async (note, evaluateLines = null, blackAndWhite = false) => {
+  const exportNoteAsHtml = async (
+    note,
+    evaluateLines = null,
+    blackAndWhite = false,
+    destination = 'download',
+  ) => {
     if (!note) return false
     const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
 
@@ -634,13 +665,14 @@ ${bodyLines}
 </html>`
 
     const filename = `${sanitizeFilename(note.title)}.html`
-    downloadFile(filename, html, 'text/html')
+    const saveFn = destination === 'share' ? shareFile : downloadFile
+    saveFn(filename, html, 'text/html')
     return true
   }
 
   // ── LaTeX export ──────────────────────────────────────
 
-  const exportNoteAsLatex = (note, evaluateLines = null) => {
+  const exportNoteAsLatex = (note, evaluateLines = null, destination = 'download') => {
     if (!note) return false
     const content = note.content || ''
     const lines = content.split('\n')
@@ -695,13 +727,14 @@ ${bodyLines}
 \\end{document}`
 
     const filename = `${sanitizeFilename(note.title)}.tex`
-    downloadFile(filename, latex, 'application/x-tex')
+    const saveFn = destination === 'share' ? shareFile : downloadFile
+    saveFn(filename, latex, 'application/x-tex')
     return true
   }
 
   // ── CSV export (expression, result columns) ───────────
 
-  const exportNoteAsCsv = (note, evaluateLines = null) => {
+  const exportNoteAsCsv = (note, evaluateLines = null, destination = 'download') => {
     if (!note) return false
     const content = note.content || ''
     const lines = content.split('\n')
@@ -724,7 +757,8 @@ ${bodyLines}
     ]
 
     const filename = `${sanitizeFilename(note.title)}.csv`
-    downloadFile(filename, csvLines.join('\n'), 'text/csv')
+    const saveFn = destination === 'share' ? shareFile : downloadFile
+    saveFn(filename, csvLines.join('\n'), 'text/csv')
     return true
   }
 

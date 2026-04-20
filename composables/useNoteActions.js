@@ -453,44 +453,63 @@ export function useNoteActions({
   const showSaveModal = ref(false)
   const pendingSaveNote = ref(null)
 
-  const handleSave = ({ format, withResults, blackAndWhite }) => {
+  const handleSave = async ({ format, withResults, blackAndWhite, destination }) => {
     showSaveModal.value = false
     const note = pendingSaveNote.value || currentNote.value
     if (!note) return
     const calc = withResults ? evaluateLines : null
     const bw = blackAndWhite || false
-    switch (format) {
-      case 'num':
-        exportNoteAsText(note, calc, '.num')
-        break
-      case 'txt':
-        exportNoteAsText(note, calc, '.txt')
-        break
-      case 'md':
-        exportNoteAsMarkdown(note, calc)
-        break
-      case 'pdf':
-        exportNoteAsPdf(note, calc, bw)
-        break
-      case 'rtf':
-        exportNoteAsRtf(note, calc, bw)
-        break
-      case 'odt':
-        exportNoteAsOdt(note, calc, bw)
-        break
-      case 'docx':
-        exportNoteAsDocx(note, calc, bw)
-        break
-      case 'html':
-        exportNoteAsHtml(note, calc, bw)
-        break
-      case 'tex':
-        exportNoteAsLatex(note, calc)
-        break
-      case 'csv':
-        exportNoteAsCsv(note, calc)
-        break
+    const dest = destination || 'download'
+
+    try {
+      switch (format) {
+        case 'num':
+          await exportNoteAsText(note, calc, '.num', dest)
+          break
+        case 'txt':
+          await exportNoteAsText(note, calc, '.txt', dest)
+          break
+        case 'md':
+          await exportNoteAsMarkdown(note, calc, dest)
+          break
+        case 'pdf':
+          await exportNoteAsPdf(note, calc, bw, dest)
+          break
+        case 'rtf':
+          await exportNoteAsRtf(note, calc, bw, dest)
+          break
+        case 'odt':
+          await exportNoteAsOdt(note, calc, bw, dest)
+          break
+        case 'docx':
+          await exportNoteAsDocx(note, calc, bw, dest)
+          break
+        case 'html':
+          await exportNoteAsHtml(note, calc, bw, dest)
+          break
+        case 'tex':
+          await exportNoteAsLatex(note, calc, dest)
+          break
+        case 'csv':
+          await exportNoteAsCsv(note, calc, dest)
+          break
+      }
+
+      if (toast) {
+        const msg =
+          dest === 'share'
+            ? 'Note shared'
+            : dest === 'device'
+              ? 'Saved to Documents/Numori'
+              : 'Note downloaded'
+        toast.show(msg, { type: 'success', icon: 'mdi:check-circle' })
+      }
+    } catch (err) {
+      if (toast) {
+        toast.show(err.message || 'Failed to save', { type: 'error', icon: 'mdi:alert-circle' })
+      }
     }
+
     pendingSaveNote.value = null
   }
 

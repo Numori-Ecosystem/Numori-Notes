@@ -1,5 +1,5 @@
 <template>
-  <UiModal :show="isOpen" max-width="sm" panel-class="!overflow-visible" @close="$emit('close')">
+  <UiModal :show="isOpen" max-width="sm" panel-class="!overflow-visible" :fullscreen-mobile="false" @close="$emit('close')">
     <div class="p-4 sm:p-5">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
@@ -33,6 +33,27 @@
             <span class="text-xs text-gray-700 dark:text-gray-300">Black &amp; white</span>
           </label>
         </div>
+
+        <!-- Destination (native only) -->
+        <div v-if="isNative" class="space-y-1.5">
+          <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Destination</p>
+          <div class="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700 overflow-hidden">
+            <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <UiRadio v-model="destination" value="device" name="save-dest" />
+              <div class="flex-1 min-w-0">
+                <span class="text-sm text-gray-800 dark:text-gray-200">Save to device</span>
+              </div>
+              <Icon name="mdi:cellphone" class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
+            </label>
+            <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <UiRadio v-model="destination" value="share" name="save-dest" />
+              <div class="flex-1 min-w-0">
+                <span class="text-sm text-gray-800 dark:text-gray-200">Share</span>
+              </div>
+              <Icon name="mdi:share-variant-outline" class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="flex justify-end gap-2 mt-5">
@@ -47,15 +68,20 @@
 </template>
 
 <script setup>
+import { Capacitor } from '@capacitor/core'
+
 defineProps({
   isOpen: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['close', 'confirm'])
 
+const isNative = Capacitor.isNativePlatform()
+
 const selectedFormat = ref('num')
 const includeResults = ref(false)
 const blackAndWhite = ref(false)
+const destination = ref('device')
 
 const formats = [
   { value: 'num', label: 'Numori (.num)', subtitle: 'Native format, plain text' },
@@ -78,6 +104,7 @@ const handleSave = () => {
     format: selectedFormat.value,
     withResults: includeResults.value,
     blackAndWhite: blackAndWhite.value,
+    destination: isNative ? destination.value : 'download',
   })
 }
 </script>
