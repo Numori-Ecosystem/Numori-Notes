@@ -155,34 +155,34 @@
         </div>
       </div>
 
-      <!-- Collaborators -->
+      <!-- Contributors -->
       <div
         class="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-4 space-y-3"
       >
         <div class="flex items-center gap-2">
           <Icon name="mdi:account-group-outline" class="w-4 h-4 text-gray-400" />
           <p class="text-xs font-semibold text-gray-900 dark:text-gray-300 uppercase tracking-wider">
-            Collaborators
+            Contributors
           </p>
         </div>
         <div class="space-y-2">
           <div
-            v-for="collab in collaborators"
-            :key="collab.name"
+            v-for="contributor in contributors"
+            :key="contributor.name"
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800"
           >
             <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
               <Icon name="mdi:account" class="w-4 h-4 text-gray-400" />
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{{ collab.name }}</p>
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{{ contributor.name }}</p>
               <a
-                v-if="collab.email"
-                :href="`mailto:${collab.email}`"
+                v-if="contributor.email"
+                :href="`mailto:${contributor.email}`"
                 class="inline-flex items-center gap-1 text-[11px] text-primary-600 dark:text-primary-400 hover:underline mt-0.5"
               >
                 <Icon name="mdi:email-outline" class="w-3 h-3" />
-                {{ collab.email }}
+                {{ contributor.email }}
               </a>
             </div>
           </div>
@@ -282,7 +282,7 @@ const checking = ref(false)
 const showDeps = ref(false)
 const showDonate = ref(false)
 
-const collaborators = [
+const contributors = [
   { name: 'Yaiza Wadhwani Valderas', email: 'yaizawv@proton.me' },
 ]
 
@@ -331,6 +331,8 @@ const dependencies = [
   { name: 'nuxt-codemirror', url: 'https://nuxt.com/modules/nuxt-codemirror', license: 'MIT', description: 'CodeMirror editor integration for Nuxt' },
   { name: 'CodeMirror', url: 'https://codemirror.net', license: 'MIT', description: 'Extensible code editor component for the web' },
   { name: 'Capacitor', url: 'https://capacitorjs.com', license: 'MIT', description: 'Cross-platform native runtime for web apps on iOS, Android, and desktop' },
+  { name: 'Electron', url: 'https://www.electronjs.org', license: 'MIT', description: 'Build cross-platform desktop apps with JavaScript, HTML, and CSS' },
+  { name: 'electron-builder', url: 'https://www.electron.build', license: 'MIT', description: 'Complete solution to package and build Electron apps for distribution' },
   { name: '@capacitor/privacy-screen', url: 'https://github.com/nickvdyck/capacitor-privacy-screen', license: 'MIT', description: 'Hide app content when backgrounded on iOS and Android' },
   { name: '@capgo/capacitor-native-biometric', url: 'https://github.com/nickvdyck/capacitor-native-biometric', license: 'MIT', description: 'Native biometric authentication (Face ID, Touch ID, fingerprint)' },
   { name: 'Dexie.js', url: 'https://dexie.org', license: 'Apache-2.0', description: 'Minimalistic IndexedDB wrapper with a friendly API' },

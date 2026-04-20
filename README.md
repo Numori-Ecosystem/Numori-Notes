@@ -17,7 +17,7 @@ Do math with natural language and get results in real time as you type. Just wri
 - **Cloud sync with E2E encryption** — optional account, end-to-end encrypted, the server never sees your notes
 - **Session management** — view active sessions across devices, revoke any session remotely, automatic logout on revoked devices
 - **Email verification & password recovery** — verify your email, recover your account with OTP-based password reset
-- **Works everywhere** — PWA for desktop and mobile browsers, plus native iOS and Android via Capacitor
+- **Works everywhere** — PWA for desktop and mobile browsers, native iOS and Android via Capacitor, and desktop Linux/macOS/Windows via Electron
 - **Offline-first** — everything runs client-side with IndexedDB; no internet required for core features
 - **Share notes** — password-protected shared links with view analytics
 - **App lock** — optional PIN/biometric lock for the native mobile apps with configurable auto-lock timeout
@@ -44,14 +44,15 @@ npm run dev                 # http://localhost:3000
 
 ## Scripts
 
-| Command              | Description                              |
-| -------------------- | ---------------------------------------- |
-| `npm run dev`        | Start dev server with HMR                |
-| `npm run build`      | Production build (outputs to `.output/`) |
-| `npm run preview`    | Preview production build locally         |
-| `npm run generate`   | Static site generation                   |
-| `npm run test`       | Run all tests once (vitest)              |
-| `npm run test:watch` | Run tests in watch mode                  |
+| Command                  | Description                                     |
+| ------------------------ | ----------------------------------------------- |
+| `npm run dev`            | Start dev server with HMR                       |
+| `npm run build`          | Production build (outputs to `.output/`)        |
+| `npm run build:electron` | Build desktop app (outputs to `dist-electron/`) |
+| `npm run preview`        | Preview production build locally                |
+| `npm run generate`       | Static site generation                          |
+| `npm run test`           | Run all tests once (vitest)                     |
+| `npm run test:watch`     | Run tests in watch mode                         |
 
 ## Project structure
 
@@ -560,6 +561,52 @@ To add a new locale:
 Uses `@nuxtjs/color-mode` with `class` strategy (adds `dark` class to `<html>`). System preference is detected automatically.
 
 Custom color palette is defined in `tailwind.config.js` with semantic names: `primary`, `success`, `warning`, `error`, and an extended `gray` scale optimized for dark mode.
+
+## Electron (Desktop Build)
+
+The desktop app wraps the static Nuxt output in Electron and produces platform-specific packages via `electron-builder`.
+
+```bash
+npm run build:electron
+```
+
+This runs `nuxt generate` then `electron-builder`, outputting to `dist-electron/`.
+
+### Linux targets
+
+AppImage, deb, rpm, flatpak, and pacman packages are built by default. Each target has system-level dependencies that must be installed first.
+
+### System dependencies
+
+Use `mise run check-electron-deps` to verify everything is in place, or install manually:
+
+**Fedora:**
+
+```bash
+sudo dnf install flatpak flatpak-builder libxcrypt-compat libarchive
+```
+
+**Ubuntu/Debian:**
+
+```bash
+sudo apt install flatpak flatpak-builder libarchive-tools
+```
+
+**Flatpak runtimes (all distros):**
+
+```bash
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.electronjs.Electron2.BaseApp//25.08
+```
+
+| Dependency                                | Required for             | Notes                                                        |
+| ----------------------------------------- | ------------------------ | ------------------------------------------------------------ |
+| `flatpak` + `flatpak-builder`             | flatpak target           | Build tooling                                                |
+| `org.freedesktop.Platform//25.08`         | flatpak target           | Runtime                                                      |
+| `org.freedesktop.Sdk//25.08`              | flatpak target           | SDK                                                          |
+| `org.electronjs.Electron2.BaseApp//25.08` | flatpak target           | Electron base app (provides zypak)                           |
+| `libxcrypt-compat`                        | deb, rpm, pacman targets | Provides `libcrypt.so.1` for fpm's bundled Ruby (Fedora 39+) |
+| `libarchive` / `bsdtar`                   | pacman target            | Archive tool for pacman `.MTREE`                             |
 
 ## Docker
 

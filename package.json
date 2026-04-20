@@ -5,22 +5,20 @@
   "private": true,
   "version": "0.21.0",
   "description": "Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.",
-  "authors": [
+  "author": {
+    "name": "Erik Bjerke",
+    "email": "contact@erikbjerke.com",
+    "url": "https://erikbjerke.com"
+  },
+  "contributors": [
     {
-      "name": "Erik Bjerke",
-      "email": "contact@erikbjerke.com",
-      "url": "https://erikbjerke.com"
+      "name": "Yaiza Wadhwani Valderas",
+      "email": "yaizawv@proton.me"
     },
     {
       "name": "TheProcedural Software Ltd",
       "email": "contact@theprocedural.com",
       "url": "https://theprocedural.com"
-    }
-  ],
-  "collaborators": [
-    {
-      "name": "Yaiza Wadhwani Valderas",
-      "email": "yaizawv@proton.me"
     }
   ],
   "license": "AGPL-3.0",
