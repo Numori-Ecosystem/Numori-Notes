@@ -128,11 +128,36 @@
               Sign In / Sign Up
             </UiButton>
           </template>
+          <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-locale-settings-locales')">
+            <Icon name="mdi:translate" class="w-4 h-4" />
+            Language
+          </UiButton>
+          <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-locale-settings-shared-notes')">
+            <Icon name="mdi:share-variant-outline" class="w-4 h-4" />
+            Shared Notes
+          </UiButton>
+
+          <UiDivider class="my-1" />
+
+          <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-locale-settings-sessions')">
+            <Icon name="mdi:devices" class="w-4 h-4" />
+            Sessions
+          </UiButton>
+          <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-locale-settings-security')">
+            <Icon name="mdi:shield-lock-outline" class="w-4 h-4" />
+            Security
+          </UiButton>
+
+          <UiDivider class="my-1" />
+
           <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-locale-settings')">
             <Icon name="mdi:cog-outline" class="w-4 h-4" />
             Settings
           </UiButton>
+
           <UiDivider class="my-1 mb-3" />
+
+          <!-- Sign out / Lock -->
           <template v-if="isLoggedIn">
             <UiDropdownRow>
               <UiButton
@@ -242,6 +267,10 @@ const emit = defineEmits([
   'edit-profile',
   'show-auth',
   'show-locale-settings',
+  'show-locale-settings-locales',
+  'show-locale-settings-security',
+  'show-locale-settings-sessions',
+  'show-locale-settings-shared-notes',
   'lock-app',
   'logout',
 ])

@@ -50,7 +50,11 @@
         @file-about="showAbout = true"
         @edit-profile="settingsInitialSection = 'profile'; showLocaleSettings = true"
         @show-auth="authHandlers.showAuthModal.value = true"
-        @show-locale-settings="showLocaleSettings = true"
+        @show-locale-settings="settingsInitialSection = 'general'; showLocaleSettings = true"
+        @show-locale-settings-locales="settingsInitialSection = 'locales'; showLocaleSettings = true"
+        @show-locale-settings-security="settingsInitialSection = 'security'; showLocaleSettings = true"
+        @show-locale-settings-sessions="settingsInitialSection = 'sessions'; showLocaleSettings = true"
+        @show-locale-settings-shared-notes="settingsInitialSection = 'shared'; showLocaleSettings = true"
         @lock-app="appLock.lock()"
         @logout="authHandlers.handleLogout"
       />

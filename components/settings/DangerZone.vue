@@ -8,7 +8,7 @@
           <div class="flex items-start gap-3 p-3 mb-4 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/40">
             <Icon name="mdi:shield-alert-outline" class="w-4 h-4 text-orange-500 dark:text-orange-400 mt-0.5 shrink-0" />
             <div class="flex-1 min-w-0">
-              <p class="text-xs text-orange-700 dark:text-orange-300">We recommend creating a backup before performing any destructive action.</p>
+              <p class="text-xs text-orange-700 dark:text-orange-300">It's recommend to create a backup before performing any destructive action.</p>
               <UiButton variant="ghost" color="gray" size="xs" class="mt-2 !text-orange-600 dark:!text-orange-400" @click="showBackupModal = true">
                 <Icon name="mdi:backup-restore" class="w-3.5 h-3.5" /> Create Backup
               </UiButton>

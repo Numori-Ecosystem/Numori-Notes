@@ -164,13 +164,13 @@ const contentPanelRef = ref(null)
 const checkMobile = () => { isMobile.value = window.innerWidth < 768 }
 
 const sections = [
+  { id: 'general', label: 'General', icon: 'mdi:tune-variant', description: 'App settings', keywords: 'general welcome wizard relaunch setup update check interval version' },
   { id: 'locales', label: 'Locales', icon: 'mdi:earth', description: 'Region & formats', keywords: 'locale language preset volume fuel economy distance temperature date time number format region' },
   { id: 'typography', label: 'Typography', icon: 'mdi:format-font', description: 'Font & sizing', keywords: 'font family size line height ligatures typography text' },
   { id: 'layout', label: 'Layout', icon: 'mdi:page-layout-body', description: 'Gutters & visual aids', keywords: 'layout line numbers word wrap folding highlight gutter' },
   { id: 'cursor', label: 'Cursor & Scrolling', icon: 'mdi:cursor-text', description: 'Cursor & scroll', keywords: 'cursor style scroll past end' },
   { id: 'behaviour', label: 'Behaviour', icon: 'mdi:cog-outline', description: 'Editing defaults', keywords: 'behaviour auto close brackets tab size indentation' },
   { id: 'results', label: 'Results & Display', icon: 'mdi:calculator-variant-outline', description: 'Precision & output', keywords: 'results display precision decimal significant copy animation code blocks' },
-  { id: 'general', label: 'General', icon: 'mdi:tune-variant', description: 'App settings', keywords: 'general welcome wizard relaunch setup update check interval version' },
   // Account sections (separated visually in sidebar)
   { id: 'profile', label: 'Profile', icon: 'mdi:account-circle-outline', description: 'Account info', keywords: 'profile account name email avatar photo' },
   { id: 'security', label: 'Security', icon: 'mdi:shield-lock-outline', description: 'Lock & recovery', keywords: 'security session app lock pin password biometrics recovery privacy screen' },

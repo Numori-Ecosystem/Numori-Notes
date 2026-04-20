@@ -171,8 +171,8 @@ const showBin = computed(() => sidebarView.value === 'bin')
 
 const sidebarViewOptions = computed(() => [
   { value: 'notes', label: 'Notes' },
-  { value: 'bin', label: binCount.value > 0 ? `Bin (${binCount.value})` : 'Bin' },
   { value: 'archive', label: archivedCount.value > 0 ? `Archive (${archivedCount.value})` : 'Archive' },
+  { value: 'bin', label: binCount.value > 0 ? `Bin (${binCount.value})` : 'Bin' },
 ])
 
 const hasArchivedNotes = computed(() => props.notes.some((n) => n.archived && !n.deletedAt))
