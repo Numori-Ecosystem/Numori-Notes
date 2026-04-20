@@ -20,11 +20,33 @@
           </template>
         </UiListMenuItem>
       </UiListMenu>
+      <UiListMenu v-if="isElectron" label="Window Controls" preset="settings" class="mt-5">
+        <UiListMenuItem icon="mdi:swap-horizontal" hint="Place window controls on the left or right side" :select-ref="selectWindowPosition">
+          Position
+          <template #suffix>
+            <UiSelect ref="selectWindowPosition" :model-value="preferences.windowControlPosition || 'left'" :options="windowPositionOptions" @update:model-value="preferences.windowControlPosition = $event; onSettingChange()" />
+          </template>
+        </UiListMenuItem>
+        <UiListMenuItem icon="mdi:close-circle" hint="Show the close button in the title bar" :toggle="preferences.windowControlClose !== false" @update:toggle="preferences.windowControlClose = $event; onSettingChange()">
+          Close Button
+          <template #suffix><UiToggle :model-value="preferences.windowControlClose !== false" readonly /></template>
+        </UiListMenuItem>
+        <UiListMenuItem icon="mdi:minus-circle" hint="Show the minimize button in the title bar" :toggle="preferences.windowControlMinimize !== false" @update:toggle="preferences.windowControlMinimize = $event; onSettingChange()">
+          Minimize Button
+          <template #suffix><UiToggle :model-value="preferences.windowControlMinimize !== false" readonly /></template>
+        </UiListMenuItem>
+        <UiListMenuItem icon="mdi:arrow-expand" hint="Show the maximize button in the title bar" :toggle="preferences.windowControlMaximize !== false" @update:toggle="preferences.windowControlMaximize = $event; onSettingChange()">
+          Maximize Button
+          <template #suffix><UiToggle :model-value="preferences.windowControlMaximize !== false" readonly /></template>
+        </UiListMenuItem>
+      </UiListMenu>
     </div>
   </div>
 </template>
 
 <script setup>
+const { isElectron } = usePlatform()
+
 defineProps({
   preferences: { type: Object, required: true },
   onSettingChange: { type: Function, required: true },
@@ -33,6 +55,7 @@ defineProps({
 const emit = defineEmits(['relaunch-wizard'])
 
 const selectUpdateInterval = ref(null)
+const selectWindowPosition = ref(null)
 
 const updateIntervalOptions = [
   { value: 5, label: 'Every 5 min' },
@@ -41,5 +64,10 @@ const updateIntervalOptions = [
   { value: 60, label: 'Every hour' },
   { value: 360, label: 'Every 6 hours' },
   { value: 0, label: 'Manual only' },
+]
+
+const windowPositionOptions = [
+  { value: 'left', label: 'Left' },
+  { value: 'right', label: 'Right' },
 ]
 </script>

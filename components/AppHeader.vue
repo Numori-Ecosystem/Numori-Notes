@@ -14,28 +14,41 @@
         <!-- Top row: Centered title -->
         <div class="flex items-center gap-1">
           <!-- Electron window controls -->
-          <div v-if="isElectron" class="flex items-center gap-1 mr-1.5 -webkit-app-region-no-drag">
+          <div
+            v-if="isElectron"
+            class="flex items-center gap-1.5 -webkit-app-region-no-drag group/traffic"
+            :class="preferences.windowControlPosition === 'right' ? 'order-2 ml-1.5 flex-row-reverse' : 'order-first mr-1.5'"
+          >
             <button
-              class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 focus:outline-none"
+              v-if="preferences.windowControlClose !== false"
+              class="w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 focus:outline-none flex items-center justify-center"
               title="Close"
               @click="electronClose"
-            />
+            >
+              <Icon name="mdi:close" class="w-2.5 h-2.5 text-red-900 opacity-0 group-hover/traffic:opacity-100 transition-opacity" />
+            </button>
             <button
-              class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 focus:outline-none"
+              v-if="preferences.windowControlMinimize !== false"
+              class="w-5 h-5 rounded-full bg-yellow-500 hover:bg-yellow-600 focus:outline-none flex items-center justify-center"
               title="Minimize"
               @click="electronMinimize"
-            />
+            >
+              <Icon name="mdi:minus" class="w-2.5 h-2.5 text-yellow-900 opacity-0 group-hover/traffic:opacity-100 transition-opacity" />
+            </button>
             <button
-              class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 focus:outline-none"
+              v-if="preferences.windowControlMaximize !== false"
+              class="w-5 h-5 rounded-full bg-green-500 hover:bg-green-600 focus:outline-none flex items-center justify-center"
               title="Maximize"
               @click="electronMaximize"
-            />
+            >
+              <Icon name="mdi:arrow-expand" class="w-2.5 h-2.5 text-green-900 opacity-0 group-hover/traffic:opacity-100 transition-opacity" />
+            </button>
           </div>
 
           <UiButton
             variant="ghost"
             color="gray"
-            class="text-center min-w-0 flex-1 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md"
+            class="text-center min-w-0 flex-1 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md order-1"
             @click="$emit('show-meta')"
           >
             <h1 class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-400 truncate">
@@ -229,6 +242,10 @@ const electronMaximize = () => window.electronAPI?.maximize()
 const electronClose = () => window.electronAPI?.close()
 
 defineProps({
+  preferences: {
+    type: Object,
+    default: () => ({}),
+  },
   currentNote: {
     type: Object,
     default: null,
@@ -327,11 +344,12 @@ const avatarAction = (action) => {
 .electron-drag {
   -webkit-app-region: drag;
 }
-.electron-drag button,
-.electron-drag a,
-.electron-drag input,
-.electron-drag select,
-.-webkit-app-region-no-drag {
+.electron-drag :deep(button),
+.electron-drag :deep(a),
+.electron-drag :deep(input),
+.electron-drag :deep(select),
+.electron-drag :deep([role="menu"]),
+.electron-drag :deep([role="listbox"]) {
   -webkit-app-region: no-drag;
 }
 </style>

@@ -22,6 +22,14 @@ function createWindow() {
 
   win.setMenuBarVisibility(false)
 
+  // Notify renderer when fullscreen state changes (e.g. user presses Escape on macOS)
+  win.on('enter-full-screen', () => {
+    win.webContents.send('window-fullscreen-changed', true)
+  })
+  win.on('leave-full-screen', () => {
+    win.webContents.send('window-fullscreen-changed', false)
+  })
+
   // Open external links in the default browser
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
@@ -48,6 +56,10 @@ ipcMain.on('window-maximize', (event) => {
 })
 ipcMain.on('window-close', (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close()
+})
+ipcMain.on('window-set-fullscreen', (event, flag) => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (win) win.setFullScreen(!!flag)
 })
 
 app.on('window-all-closed', () => {

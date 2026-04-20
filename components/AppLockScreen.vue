@@ -11,7 +11,43 @@
       <div
         v-if="show"
         class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-50 dark:bg-gray-950 overflow-hidden"
+        :class="{ 'electron-drag': isElectron }"
       >
+        <!-- Electron window controls -->
+        <div
+          v-if="isElectron"
+          class="absolute top-3 flex items-center gap-1.5 -webkit-app-region-no-drag group/traffic z-10"
+          :class="[
+            preferences.windowControlPosition === 'right' ? 'right-3 flex-row-reverse' : 'left-3',
+          ]"
+          :style="{ paddingTop: 'env(safe-area-inset-top, 0px)' }"
+        >
+          <button
+            v-if="preferences.windowControlClose !== false"
+            class="w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 focus:outline-none flex items-center justify-center"
+            title="Close"
+            @click="electronClose"
+          >
+            <Icon name="mdi:close" class="w-2.5 h-2.5 text-red-900 opacity-0 group-hover/traffic:opacity-100 transition-opacity" />
+          </button>
+          <button
+            v-if="preferences.windowControlMinimize !== false"
+            class="w-5 h-5 rounded-full bg-yellow-500 hover:bg-yellow-600 focus:outline-none flex items-center justify-center"
+            title="Minimize"
+            @click="electronMinimize"
+          >
+            <Icon name="mdi:minus" class="w-2.5 h-2.5 text-yellow-900 opacity-0 group-hover/traffic:opacity-100 transition-opacity" />
+          </button>
+          <button
+            v-if="preferences.windowControlMaximize !== false"
+            class="w-5 h-5 rounded-full bg-green-500 hover:bg-green-600 focus:outline-none flex items-center justify-center"
+            title="Maximize"
+            @click="electronMaximize"
+          >
+            <Icon name="mdi:arrow-expand" class="w-2.5 h-2.5 text-green-900 opacity-0 group-hover/traffic:opacity-100 transition-opacity" />
+          </button>
+        </div>
+
         <!-- Subtle background decoration -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div
@@ -141,8 +177,15 @@
 </template>
 
 <script setup>
+const { isElectron } = usePlatform()
+
+const electronMinimize = () => window.electronAPI?.minimize()
+const electronMaximize = () => window.electronAPI?.maximize()
+const electronClose = () => window.electronAPI?.close()
+
 const props = defineProps({
   show: { type: Boolean, default: false },
+  preferences: { type: Object, default: () => ({}) },
 })
 
 defineEmits(['logout'])
@@ -255,5 +298,14 @@ watch(hasBiometrics, async (available) => {
 
 .animate-shake {
   animation: shake 0.4s ease-in-out;
+}
+
+.electron-drag {
+  -webkit-app-region: drag;
+}
+.electron-drag :deep(button),
+.electron-drag :deep(a),
+.electron-drag :deep(input) {
+  -webkit-app-region: no-drag;
 }
 </style>

@@ -12,6 +12,7 @@
       :class="focusMode ? 'max-h-0 overflow-hidden opacity-0' : 'max-h-40 opacity-100'"
     >
       <AppHeader
+        :preferences="localePrefs.preferences"
         :current-note="currentNote"
         :inline-mode="showInlineResults"
         :markdown-mode="markdownMode"
@@ -266,7 +267,7 @@
       <Icon name="mdi:fullscreen-exit" class="w-4 h-4 block" />
     </UiButton>
 
-    <AppLockScreen :show="appLock.isLocked.value" @logout="authHandlers.handleLogout" />
+    <AppLockScreen :show="appLock.isLocked.value" :preferences="localePrefs.preferences" @logout="authHandlers.handleLogout" />
   </div>
 </template>
 
@@ -468,6 +469,16 @@ if (import.meta.client && platform === 'web') {
   })
   useEventListener(document, 'fullscreenchange', () => {
     if (!document.fullscreenElement) focusMode.value = false
+  })
+}
+
+// Electron: sync focus mode with native fullscreen
+if (import.meta.client && platform === 'electron') {
+  watch(focusMode, (on) => {
+    window.electronAPI?.setFullScreen(on)
+  })
+  window.electronAPI?.onFullScreenChange((isFullScreen) => {
+    focusMode.value = isFullScreen
   })
 }
 

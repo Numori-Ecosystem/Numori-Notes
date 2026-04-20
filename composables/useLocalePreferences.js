@@ -105,6 +105,11 @@ const DEFAULT_PREFERENCES = {
   updateCheckInterval: 30, // minutes
   // Bin (trash)
   binEnabled: true,
+  // Window controls (Electron)
+  windowControlClose: true,
+  windowControlMinimize: true,
+  windowControlMaximize: true,
+  windowControlPosition: 'left',
 }
 
 export const useLocalePreferences = () => {
