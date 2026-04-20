@@ -127,31 +127,38 @@
         </Transition>
       </div>
 
-      <!-- Author card -->
+      <!-- Author -->
       <div
-        class="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-4 space-y-2"
+        class="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 px-4 py-3"
       >
-        <div class="flex items-center gap-2">
-          <Icon name="mdi:account-outline" class="w-4 h-4 text-gray-400" />
-          <p class="text-xs font-semibold text-gray-900 dark:text-gray-300 uppercase tracking-wider">
-            Author
-          </p>
-        </div>
-        <p class="text-sm text-gray-700 dark:text-gray-400">
-          Erik Bjerke
-        </p>
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <a
-            v-for="link in authorLinks"
-            :key="link.href"
-            :href="link.href"
-            :target="link.external ? '_blank' : undefined"
-            :rel="link.external ? 'noopener noreferrer' : undefined"
-            class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline"
+        <div class="flex items-center gap-3">
+          <div
+            class="w-9 h-9 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center ring-1 ring-primary-200/50 dark:ring-primary-700/30 flex-shrink-0"
           >
-            <Icon :name="link.icon" class="w-3 h-3" />
-            {{ link.label }}
-          </a>
+            <Icon name="mdi:account" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">Erik Bjerke</p>
+            <p class="text-[11px] text-gray-500 dark:text-gray-500">Creator & Maintainer</p>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <a
+              href="https://erikbjerke.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 text-[11px] font-medium text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            >
+              <Icon name="mdi:web" class="w-3 h-3" />
+              Website
+            </a>
+            <a
+              href="mailto:contact@erikbjerke.com"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 text-[11px] font-medium text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            >
+              <Icon name="mdi:email-outline" class="w-3 h-3" />
+              Email
+            </a>
+          </div>
         </div>
       </div>
 
@@ -294,11 +301,6 @@ const checking = ref(false)
 const showDeps = ref(false)
 const showDonate = ref(false)
 
-const contributors = [
-  { name: 'Yaiza Wadhwani Valderas', email: 'yaizawv@proton.me' },
-  { name: 'TheProcedural Software Ltd', email: 'contact@theprocedural.com', url: 'https://theprocedural.com' },
-]
-
 const donateLinks = [
   { label: 'Ko-fi', icon: 'mdi:coffee-outline', url: 'https://ko-fi.com/numori', color: 'text-sky-500' },
   { label: 'Patreon', icon: 'mdi:patreon', url: 'https://patreon.com/numori', color: 'text-orange-500' },
@@ -308,14 +310,9 @@ const donateLinks = [
   { label: 'Liberapay', icon: 'mdi:currency-eur', url: 'https://liberapay.com/numori', color: 'text-yellow-500' },
 ]
 
-const authorLinks = [
-  { href: 'https://erikbjerke.com', label: 'erikbjerke.com', icon: 'mdi:web', external: true },
-  {
-    href: 'mailto:contact@erikbjerke.com',
-    label: 'contact@erikbjerke.com',
-    icon: 'mdi:email-outline',
-    external: false,
-  },
+const contributors = [
+  { name: 'Yaiza Wadhwani Valderas', email: 'yaizawv@proton.me' },
+  { name: 'TheProcedural Software Ltd', email: 'contact@theprocedural.com', url: 'https://theprocedural.com' },
 ]
 
 const dependencies = [
