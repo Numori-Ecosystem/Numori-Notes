@@ -284,13 +284,13 @@ export default defineNuxtConfig({
         dir: 'ltr',
         file: 'en-GB.json',
       },
-      {
-        code: 'es-ES',
-        language: 'es-ES',
-        name: 'Español',
-        dir: 'ltr',
-        file: 'es-ES.json',
-      },
+      // {
+      //   code: 'es-ES',
+      //   language: 'es-ES',
+      //   name: 'Español (ES)',
+      //   dir: 'ltr',
+      //   file: 'es-ES.json',
+      // },
     ],
   },
   nitro: {
