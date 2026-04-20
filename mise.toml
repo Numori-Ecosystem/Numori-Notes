@@ -1,5 +1,3 @@
 [tools]
 node = "22.20.0"
-
-[tasks]
-audit = "npm audit --omit=dev"
+java = "openjdk-21"

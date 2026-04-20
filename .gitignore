@@ -26,4 +26,3 @@ logs
 # Generated at build time by modules/version.js
 public/sw.js
 public/version.json
-NUMORI_ECOSYSTEM_PLAN.md
