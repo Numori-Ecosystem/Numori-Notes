@@ -3,6 +3,8 @@
  */
 import { Capacitor } from '@capacitor/core'
 
+const _isElectron = !!(typeof window !== 'undefined' && window.electronAPI?.isElectron)
+
 export function useNoteActions({
   notes,
   groups,
@@ -72,8 +74,9 @@ export function useNoteActions({
     const calc = withResults ? evaluateLines : null
     try {
       await printNote(note, calc, blackAndWhite)
-      if (toast && isNative) {
-        toast.show('Opened share sheet for printing', { type: 'success', icon: 'mdi:printer' })
+      if (toast && (isNative || _isElectron)) {
+        const printMsg = _isElectron ? 'Sent to printer' : 'Opened share sheet for printing'
+        toast.show(printMsg, { type: 'success', icon: 'mdi:printer' })
       }
     } catch (err) {
       if (toast) {
@@ -186,7 +189,12 @@ export function useNoteActions({
       }
 
       if (toast) {
-        const msg = destination === 'share' ? 'Back-up shared' : 'Back-up saved to Documents/Numori'
+        const msg =
+          destination === 'share'
+            ? 'Back-up shared'
+            : _isElectron
+              ? 'Back-up saved'
+              : 'Back-up saved to Documents/Numori'
         toast.show(msg, { type: 'success', icon: 'mdi:check-circle' })
       }
     } catch (err) {
@@ -524,7 +532,9 @@ export function useNoteActions({
             ? 'Note shared'
             : dest === 'device'
               ? 'Saved to Documents/Numori'
-              : 'Note downloaded'
+              : _isElectron
+                ? 'Note saved'
+                : 'Note downloaded'
         toast.show(msg, { type: 'success', icon: 'mdi:check-circle' })
       }
     } catch (err) {
