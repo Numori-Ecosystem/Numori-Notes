@@ -14,22 +14,26 @@ export const useFileActions = () => {
   // ── Helpers ──────────────────────────────────────────────
 
   const sanitizeFilename = (title) => {
-    return (title || 'untitled')
-      .replace(/[^a-zA-Z0-9_\-\s]/g, '')
-      .replace(/\s+/g, '_')
-      .toLowerCase()
-      .slice(0, 80) || 'untitled'
+    return (
+      (title || 'untitled')
+        .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+        .replace(/\s+/g, '_')
+        .toLowerCase()
+        .slice(0, 80) || 'untitled'
+    )
   }
 
   const mergeContentWithResults = (content, evaluateLines) => {
     if (!content || !evaluateLines) return content || ''
     const lines = content.split('\n')
     const results = evaluateLines(lines)
-    return lines.map((line, i) => {
-      const r = results[i]
-      if (r && r.result) return `${line}  = ${r.result}`
-      return line
-    }).join('\n')
+    return lines
+      .map((line, i) => {
+        const r = results[i]
+        if (r && r.result) return `${line}  = ${r.result}`
+        return line
+      })
+      .join('\n')
   }
 
   // ── Download / Save ──────────────────────────────────────
@@ -67,6 +71,44 @@ export const useFileActions = () => {
     })
   }
 
+  /**
+   * Download a Blob (binary data). Web: object URL download. Native: base64 write + share.
+   */
+  const downloadBlob = async (filename, blob) => {
+    if (!isNative) {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      return
+    }
+
+    // Native: convert blob to base64, write to cache, then share
+    const arrayBuffer = await blob.arrayBuffer()
+    const bytes = new Uint8Array(arrayBuffer)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    const base64 = btoa(binary)
+
+    const result = await Filesystem.writeFile({
+      path: filename,
+      data: base64,
+      directory: Directory.Cache,
+    })
+
+    await Share.share({
+      title: filename,
+      url: result.uri,
+      dialogTitle: `Save ${filename}`,
+    })
+  }
+
   // ── Export functions ────────────────────────────────────
 
   const exportNoteAsText = (note, evaluateLines = null) => {
@@ -74,7 +116,7 @@ export const useFileActions = () => {
     const filename = `${sanitizeFilename(note.title)}.num`
     const content = evaluateLines
       ? mergeContentWithResults(note.content, evaluateLines)
-      : (note.content || '')
+      : note.content || ''
     downloadFile(filename, content, 'text/plain')
     return true
   }
@@ -96,7 +138,7 @@ export const useFileActions = () => {
 
   const exportAllNotes = (notes) => {
     if (!notes || notes.length === 0) return false
-    const data = notes.map(n => ({
+    const data = notes.map((n) => ({
       title: n.title,
       description: n.description,
       tags: n.tags || [],
@@ -113,7 +155,7 @@ export const useFileActions = () => {
     const filename = `${sanitizeFilename(note.title)}.md`
     const body = evaluateLines
       ? mergeContentWithResults(note.content, evaluateLines)
-      : (note.content || '')
+      : note.content || ''
     const header = `# ${note.title}\n\n`
     downloadFile(filename, header + body, 'text/markdown')
     return true
@@ -123,7 +165,7 @@ export const useFileActions = () => {
     if (!note) return false
     const body = evaluateLines
       ? mergeContentWithResults(note.content, evaluateLines)
-      : (note.content || '')
+      : note.content || ''
     const escaped = body.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
     if (!isNative) {
@@ -204,7 +246,7 @@ export const useFileActions = () => {
     const parsed = JSON.parse(text)
 
     if (Array.isArray(parsed)) {
-      const notes = parsed.map(n => ({
+      const notes = parsed.map((n) => ({
         title: n.title || 'Imported Note',
         description: n.description || '',
         tags: n.tags || [],
@@ -215,12 +257,14 @@ export const useFileActions = () => {
 
     return {
       type: 'single',
-      notes: [{
-        title: parsed.title || 'Imported Note',
-        description: parsed.description || '',
-        tags: parsed.tags || [],
-        content: parsed.content || '',
-      }],
+      notes: [
+        {
+          title: parsed.title || 'Imported Note',
+          description: parsed.description || '',
+          tags: parsed.tags || [],
+          content: parsed.content || '',
+        },
+      ],
     }
   }
 
@@ -246,7 +290,7 @@ export const useFileActions = () => {
     if (!note) return false
     const body = evaluateLines
       ? mergeContentWithResults(note.content, evaluateLines)
-      : (note.content || '')
+      : note.content || ''
 
     if (!isNative) {
       const printWindow = window.open('', '_blank')
@@ -271,6 +315,8 @@ export const useFileActions = () => {
 
   return {
     downloadFile,
+    downloadBlob,
+    pickFile,
     sanitizeFilename,
     mergeContentWithResults,
     exportNoteAsText,

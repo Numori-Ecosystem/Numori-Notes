@@ -78,6 +78,8 @@ const EXPECTED_DEFAULTS = {
   markdownMode: 'edit',
   // Updates
   updateCheckInterval: 30,
+  // Features
+  binEnabled: true,
 }
 
 describe('Default Preferences', () => {

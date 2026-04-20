@@ -17,8 +17,9 @@ export function useNoteActions({
     exportNoteAsJson,
     exportNoteAsMarkdown,
     exportNoteAsPdf,
+    downloadFile,
+    downloadBlob,
     openFile,
-    importNotes,
     duplicateNote,
     copyToClipboard,
     printNote,
@@ -109,49 +110,158 @@ export function useNoteActions({
     }
 
     const payload = {
-      notes: backupNotes,
-      ...(includeGroups && { groups: JSON.parse(JSON.stringify(groups?.value || [])) }),
+      version: 1,
+      createdAt: new Date().toISOString(),
+      notes: backupNotes.map((n) => ({
+        id: n.id,
+        title: n.title,
+        description: n.description || '',
+        tags: n.tags || [],
+        content: n.content || '',
+        groupId: n.groupId || null,
+        archived: n.archived || false,
+        deletedAt: n.deletedAt || null,
+        sortOrder: n.sortOrder ?? 0,
+        createdAt: n.createdAt,
+        updatedAt: n.updatedAt,
+      })),
+      ...(includeGroups && {
+        groups: (groups?.value || []).map((g) => ({
+          id: g.id,
+          name: g.name,
+          internalName: g.internalName || '',
+          sortOrder: g.sortOrder ?? 0,
+          collapsed: g.collapsed || false,
+          createdAt: g.createdAt,
+          updatedAt: g.updatedAt,
+        })),
+      }),
     }
 
+    const jsonStr = JSON.stringify(payload, null, 2)
     const dateStr = new Date().toISOString().slice(0, 10)
 
     if (encrypt && password) {
       const { BlobWriter, TextReader, ZipWriter } = await import('@zip.js/zip.js')
       const blobWriter = new BlobWriter('application/zip')
       const zipWriter = new ZipWriter(blobWriter, { password })
-      await zipWriter.add('backup.json', new TextReader(JSON.stringify(payload, null, 2)))
+      await zipWriter.add('backup.json', new TextReader(jsonStr))
       const blob = await zipWriter.close()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `numori-backup-${dateStr}.zip`
-      a.click()
-      URL.revokeObjectURL(url)
+      await downloadBlob(`numori-backup-${dateStr}.zip`, blob)
     } else {
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `numori-backup-${dateStr}.json`
-      a.click()
-      URL.revokeObjectURL(url)
+      await downloadFile(`numori-backup-${dateStr}.json`, jsonStr, 'application/json')
     }
+  }
+
+  // Restore state
+  const showRestorePassword = ref(false)
+  const restorePasswordError = ref('')
+  let _restoreFile = null
+  let _restoreResolve = null
+
+  const requestRestorePassword = () => {
+    return new Promise((resolve) => {
+      _restoreResolve = resolve
+      restorePasswordError.value = ''
+      showRestorePassword.value = true
+    })
+  }
+
+  const handleRestorePasswordConfirm = (password) => {
+    showRestorePassword.value = false
+    if (_restoreResolve) _restoreResolve(password)
+    _restoreResolve = null
+  }
+
+  const handleRestorePasswordClose = () => {
+    showRestorePassword.value = false
+    if (_restoreResolve) _restoreResolve(null)
+    _restoreResolve = null
   }
 
   const handleImport = async () => {
     try {
-      const result = await importNotes()
-      for (const noteData of result.notes) {
+      // Pick raw File object to support both JSON text and binary zip
+      const file = await new Promise((resolve, reject) => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = '.json,.zip'
+        input.onchange = (e) => {
+          const f = e.target.files?.[0]
+          if (f) resolve(f)
+          else reject(new Error('No file'))
+        }
+        input.oncancel = () => reject(new Error('Cancelled'))
+        input.click()
+      })
+
+      let parsed
+
+      if (file.name.endsWith('.zip')) {
+        // Encrypted backup — show password modal
+        const password = await requestRestorePassword()
+        if (!password) return
+
+        try {
+          const { BlobReader, TextWriter, ZipReader } = await import('@zip.js/zip.js')
+          const reader = new ZipReader(new BlobReader(file), { password })
+          const entries = await reader.getEntries()
+          const entry = entries.find((e) => e.filename === 'backup.json')
+          if (!entry) {
+            await reader.close()
+            throw new Error('Invalid backup archive')
+          }
+          const jsonText = await entry.getData(new TextWriter())
+          await reader.close()
+          parsed = JSON.parse(jsonText)
+        } catch {
+          restorePasswordError.value = 'Incorrect password or invalid archive'
+          showRestorePassword.value = true
+          return
+        }
+      } else {
+        const text = await file.text()
+        parsed = JSON.parse(text)
+      }
+
+      // Restore notes
+      const notesToRestore = parsed.notes || (Array.isArray(parsed) ? parsed : [parsed])
+      for (const noteData of notesToRestore) {
         const newNote = createNote()
         updateNoteMeta(newNote.id, {
-          title: noteData.title,
-          description: noteData.description,
-          tags: noteData.tags,
+          title: noteData.title || 'Imported Note',
+          description: noteData.description || '',
+          tags: noteData.tags || [],
         })
-        updateNoteContent(newNote.id, noteData.content)
+        updateNoteContent(newNote.id, noteData.content || '')
+        // Preserve archived/deleted state if present
+        const note = notes.value.find((n) => n.id === newNote.id)
+        if (note) {
+          if (noteData.archived) note.archived = true
+          if (noteData.deletedAt) note.deletedAt = noteData.deletedAt
+          if (noteData.groupId && parsed.groups) note.groupId = noteData.groupId
+        }
+      }
+
+      // Restore groups if present
+      if (parsed.groups && Array.isArray(parsed.groups) && groups) {
+        for (const groupData of parsed.groups) {
+          const exists = groups.value.find((g) => g.id === groupData.id)
+          if (!exists) {
+            groups.value.push({
+              id: groupData.id,
+              name: groupData.name,
+              internalName: groupData.internalName || '',
+              sortOrder: groupData.sortOrder ?? 0,
+              collapsed: groupData.collapsed || false,
+              createdAt: groupData.createdAt || new Date().toISOString(),
+              updatedAt: groupData.updatedAt || new Date().toISOString(),
+            })
+          }
+        }
       }
     } catch {
-      // User cancelled or file read failed
+      // User cancelled or file read/parse failed
     }
   }
 
@@ -208,6 +318,10 @@ export function useNoteActions({
   return {
     showExportOptions,
     handleExportConfirm,
+    showRestorePassword,
+    restorePasswordError,
+    handleRestorePasswordConfirm,
+    handleRestorePasswordClose,
     handleOpenFile,
     handleDuplicate,
     handleBackup,
