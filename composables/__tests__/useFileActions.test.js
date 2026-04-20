@@ -85,30 +85,36 @@ beforeEach(() => {
 })
 
 describe('sanitizeFilename', () => {
-  it('converts title to lowercase with underscores', () => {
-    expect(sanitizeFilename('My Cool Note')).toBe('my_cool_note')
+  it('preserves title casing and spaces', () => {
+    expect(sanitizeFilename('My Cool Note')).toBe('My Cool Note')
   })
 
-  it('removes special characters', () => {
-    expect(sanitizeFilename('Note @#$% Test!')).toBe('note_test')
+  it('removes filesystem-unsafe characters', () => {
+    expect(sanitizeFilename('Note: Test/File')).toBe('Note TestFile')
   })
 
-  it('returns "untitled" for empty string', () => {
-    expect(sanitizeFilename('')).toBe('untitled')
+  it('returns "Untitled" for empty string', () => {
+    expect(sanitizeFilename('')).toBe('Untitled')
   })
 
-  it('returns "untitled" for null/undefined', () => {
-    expect(sanitizeFilename(null)).toBe('untitled')
-    expect(sanitizeFilename(undefined)).toBe('untitled')
+  it('returns "Untitled" for null/undefined', () => {
+    expect(sanitizeFilename(null)).toBe('Untitled')
+    expect(sanitizeFilename(undefined)).toBe('Untitled')
   })
 
-  it('truncates long titles to 80 chars', () => {
-    const longTitle = 'a'.repeat(100)
-    expect(sanitizeFilename(longTitle).length).toBeLessThanOrEqual(80)
+  it('truncates long titles to 100 chars', () => {
+    const longTitle = 'a'.repeat(120)
+    expect(sanitizeFilename(longTitle).length).toBeLessThanOrEqual(100)
   })
 
-  it('collapses multiple spaces into single underscore', () => {
-    expect(sanitizeFilename('hello   world')).toBe('hello_world')
+  it('collapses multiple spaces into single space', () => {
+    expect(sanitizeFilename('hello   world')).toBe('hello world')
+  })
+
+  it('preserves non-English characters', () => {
+    expect(sanitizeFilename('Cálculo rápido')).toBe('Cálculo rápido')
+    expect(sanitizeFilename('Über Nüsse')).toBe('Über Nüsse')
+    expect(sanitizeFilename('日本語ノート')).toBe('日本語ノート')
   })
 })
 
@@ -136,7 +142,7 @@ describe('exportNoteAsText', () => {
     const result = exportNoteAsText(note)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('test_note.num')
+    expect(createdElements[0].download).toBe('Test Note.num')
   })
 
   it('handles note with empty content', () => {
@@ -148,7 +154,7 @@ describe('exportNoteAsText', () => {
     const mockEval = (lines) => lines.map((l) => ({ result: l === '2 + 2' ? '4' : null }))
     const note = { title: 'Calc', content: '2 + 2' }
     expect(exportNoteAsText(note, mockEval)).toBe(true)
-    expect(createdElements[0].download).toBe('calc.num')
+    expect(createdElements[0].download).toBe('Calc.num')
   })
 })
 
@@ -168,7 +174,7 @@ describe('exportNoteAsJson', () => {
     const result = exportNoteAsJson(note)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('my_note.json')
+    expect(createdElements[0].download).toBe('My Note.json')
   })
 })
 
@@ -333,7 +339,7 @@ describe('exportNoteAsMarkdown', () => {
     const result = exportNoteAsMarkdown(note)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('my_note.md')
+    expect(createdElements[0].download).toBe('My Note.md')
   })
 
   it('exports with results when evaluateLines is provided', () => {
@@ -341,13 +347,13 @@ describe('exportNoteAsMarkdown', () => {
     const result = exportNoteAsMarkdown(note, mockEvaluateLines)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('calc.md')
+    expect(createdElements[0].download).toBe('Calc.md')
   })
 
   it('exports without results by default', () => {
     const note = { title: 'Plain', content: '2 + 2' }
     exportNoteAsMarkdown(note)
-    expect(createdElements[0].download).toBe('plain.md')
+    expect(createdElements[0].download).toBe('Plain.md')
   })
 })
 
@@ -478,13 +484,13 @@ describe('exportNoteAsText with custom extension', () => {
     const result = exportNoteAsText(note, null, '.txt')
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('test.txt')
+    expect(createdElements[0].download).toBe('Test.txt')
   })
 
   it('exports as .num by default', () => {
     const note = { title: 'Test', content: 'hello' }
     exportNoteAsText(note)
-    expect(createdElements[0].download).toBe('test.num')
+    expect(createdElements[0].download).toBe('Test.num')
   })
 })
 
@@ -498,7 +504,7 @@ describe('exportNoteAsHtml', () => {
     const result = await exportNoteAsHtml(note)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('html_test.html')
+    expect(createdElements[0].download).toBe('HTML Test.html')
   })
 
   it('exports with results when evaluateLines is provided', async () => {
@@ -506,7 +512,7 @@ describe('exportNoteAsHtml', () => {
     const result = await exportNoteAsHtml(note, mockEvaluateLines)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('calc.html')
+    expect(createdElements[0].download).toBe('Calc.html')
   })
 
   it('respects blackAndWhite flag', async () => {
@@ -527,7 +533,7 @@ describe('exportNoteAsLatex', () => {
     const result = exportNoteAsLatex(note)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('latex_test.tex')
+    expect(createdElements[0].download).toBe('LaTeX Test.tex')
   })
 
   it('converts headings to LaTeX sections', () => {
@@ -535,13 +541,13 @@ describe('exportNoteAsLatex', () => {
     exportNoteAsLatex(note)
 
     // Verify it was downloaded (content is in the blob)
-    expect(createdElements[0].download).toBe('doc.tex')
+    expect(createdElements[0].download).toBe('Doc.tex')
   })
 
   it('converts comments to LaTeX comments', () => {
     const note = { title: 'Doc', content: '// this is a comment' }
     exportNoteAsLatex(note)
-    expect(createdElements[0].download).toBe('doc.tex')
+    expect(createdElements[0].download).toBe('Doc.tex')
   })
 
   it('escapes LaTeX special characters', () => {
@@ -567,7 +573,7 @@ describe('exportNoteAsCsv', () => {
     const result = exportNoteAsCsv(note)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('csv_test.csv')
+    expect(createdElements[0].download).toBe('CSV Test.csv')
   })
 
   it('includes results in second column', () => {
@@ -575,7 +581,7 @@ describe('exportNoteAsCsv', () => {
     const result = exportNoteAsCsv(note, mockEvaluateLines)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('calc.csv')
+    expect(createdElements[0].download).toBe('Calc.csv')
   })
 
   it('escapes commas and quotes in CSV', () => {
@@ -595,7 +601,7 @@ describe('exportNoteAsRtf', () => {
     const result = await exportNoteAsRtf(note)
 
     expect(result).toBe(true)
-    expect(createdElements[0].download).toBe('rtf_test.rtf')
+    expect(createdElements[0].download).toBe('RTF Test.rtf')
   })
 
   it('exports with results', async () => {

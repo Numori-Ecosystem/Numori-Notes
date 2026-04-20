@@ -15,11 +15,12 @@ export const useFileActions = () => {
 
   const sanitizeFilename = (title) => {
     return (
-      (title || 'untitled')
-        .replace(/[^a-zA-Z0-9_\-\s]/g, '')
-        .replace(/\s+/g, '_')
-        .toLowerCase()
-        .slice(0, 80) || 'untitled'
+      (title || 'Untitled')
+        // eslint-disable-next-line no-control-regex
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 100) || 'Untitled'
     )
   }
 
