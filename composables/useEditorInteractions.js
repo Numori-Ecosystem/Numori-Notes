@@ -125,6 +125,12 @@ export function useEditorInteractions({
 
     copyResult(lineData.result, lineIndex)
     showCopiedToast(view, event.clientX, event.clientY, lineIndex)
+
+    // Ensure CodeMirror retains focus so the virtual keyboard stays up
+    requestAnimationFrame(() => {
+      if (!view.hasFocus) view.focus()
+    })
+
     return false
   }
 
@@ -160,9 +166,12 @@ export function useEditorInteractions({
     copyResult(lineData.result, lineIndex)
     showCopiedToast(view, touch.clientX, touch.clientY, lineIndex)
 
-    // The tap focused CodeMirror which would open the virtual keyboard.
-    // Blur immediately so the keyboard doesn't appear for a copy action.
-    view.contentDOM.blur()
+    // Keep focus on the editor so the virtual keyboard stays visible.
+    // Use requestAnimationFrame to ensure focus is retained after the
+    // browser processes the touch event.
+    requestAnimationFrame(() => {
+      if (!view.hasFocus) view.focus()
+    })
 
     return false
   }
