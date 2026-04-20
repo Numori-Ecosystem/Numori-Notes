@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, dialog, protocol, net } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, dialog, protocol, net, Menu } from 'electron'
 import { join, extname, normalize } from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -172,6 +172,20 @@ app.whenReady().then(async () => {
         return net.fetch(pathToFileURL(join(STATIC_DIR, 'index.html')).href)
       })
   })
+
+  // Build a custom macOS menu without File and View
+  if (process.platform === 'darwin') {
+    const template = [
+      { role: 'appMenu' },
+      { role: 'editMenu' },
+      { role: 'windowMenu' },
+      {
+        role: 'help',
+        submenu: [],
+      },
+    ]
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+  }
 
   createWindow()
 
