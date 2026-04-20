@@ -5,6 +5,7 @@ import db from '~/db.js'
  */
 export function useAuthHandlers({
   auth,
+  appLock,
   notes,
   currentNoteId,
   deletedIds,
@@ -98,6 +99,7 @@ export function useAuthHandlers({
   }
 
   const handleLogout = async () => {
+    await appLock.resetForLogout()
     await clearLocalData()
   }
 

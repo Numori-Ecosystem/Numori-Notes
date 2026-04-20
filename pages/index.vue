@@ -313,6 +313,7 @@ const {
 
 watch(() => auth.wasSessionInvalid.value, (invalid) => {
   if (invalid) {
+    appLock.resetForLogout()
     notes.value = []; currentNoteId.value = null; deletedIds.value = []
     deletedGroupIds.value = []; groups.value = []; lastSyncedAt.value = null
   }
@@ -340,7 +341,7 @@ localePrefs.ready.then(() => { sw.setPollInterval(localePrefs.preferences.update
 
 // --- Composable: Auth handlers ---
 const authHandlers = useAuthHandlers({
-  auth, notes, currentNoteId, deletedIds, deletedGroupIds, groups, lastSyncedAt,
+  auth, appLock, notes, currentNoteId, deletedIds, deletedGroupIds, groups, lastSyncedAt,
 })
 
 // --- Composable: Share management ---

@@ -304,6 +304,21 @@ export const useAppLock = () => {
     await saveToServer()
   }
 
+  /** Reset lock state for logout — clears local settings without touching the server. */
+  const resetForLogout = async () => {
+    settings.enabled = false
+    settings.pin = ''
+    settings.password = ''
+    settings.method = 'pin'
+    settings.timeout = 0
+    settings.biometricsFallback = 'pin'
+    settings.selectedBiometrics = []
+    isLocked.value = false
+    if (import.meta.client) {
+      await db.appState.delete(SETTINGS_KEY)
+    }
+  }
+
   return {
     isLocked: readonly(isLocked),
     settings: readonly(settings),
@@ -319,6 +334,7 @@ export const useAppLock = () => {
     loadFromServer,
     updateSettings,
     disable,
+    resetForLogout,
     initAppListeners,
     onBackground,
     onForeground,
