@@ -14,14 +14,18 @@ export default {
     { ext: 'md', name: 'Markdown File', mimeType: 'text/markdown' },
     { ext: 'csv', name: 'CSV File', mimeType: 'text/csv' },
   ],
+  icon: 'build/icon.png',
   mac: {
     category: 'public.app-category.productivity',
+    icon: 'build/icon.icns',
     target: ['dmg', 'zip'],
   },
   win: {
+    icon: 'build/icon.ico',
     target: ['nsis', 'portable'],
   },
   linux: {
+    icon: 'icons',
     target: ['AppImage', 'deb', 'rpm', 'flatpak', 'pacman'],
     category: 'Utility',
   },
