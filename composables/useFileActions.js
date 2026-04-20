@@ -4,7 +4,6 @@
  * Supports both web (browser APIs) and native (Capacitor) platforms.
  */
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
-import { Share } from '@capacitor/share'
 import { Capacitor } from '@capacitor/core'
 
 export const useFileActions = () => {
@@ -39,7 +38,10 @@ export const useFileActions = () => {
   // ── Download / Save ──────────────────────────────────────
 
   /**
-   * Web: trigger a browser download. Native: write to cache then present save/share dialog.
+   * Web: trigger a browser download via anchor element.
+   * Native: write to Documents directory using Capacitor Filesystem.
+   * On iOS: visible in Files app (requires UIFileSharingEnabled + LSSupportsOpeningDocumentsInPlace).
+   * On Android: Public Documents folder, accessible from file managers.
    */
   const downloadFile = async (filename, content, mimeType = 'text/plain') => {
     if (!isNative) {
@@ -55,24 +57,29 @@ export const useFileActions = () => {
       return
     }
 
-    // Native: write to cache, then present system save/share dialog
-    const result = await Filesystem.writeFile({
+    // On Android, check/request permissions for Directory.Documents
+    if (Capacitor.getPlatform() === 'android') {
+      const perms = await Filesystem.checkPermissions()
+      if (perms.publicStorage !== 'granted') {
+        const req = await Filesystem.requestPermissions()
+        if (req.publicStorage !== 'granted') {
+          throw new Error('Storage permission required to save files.')
+        }
+      }
+    }
+
+    await Filesystem.writeFile({
       path: filename,
       data: content,
-      directory: Directory.Cache,
+      directory: Directory.Documents,
       encoding: Encoding.UTF8,
       recursive: true,
-    })
-
-    await Share.share({
-      title: filename,
-      url: result.uri,
-      dialogTitle: `Save "${filename}"`,
     })
   }
 
   /**
-   * Download a Blob (binary data). Web: object URL download. Native: base64 write to cache + save dialog.
+   * Download a Blob (binary data).
+   * Web: object URL download. Native: base64 write to Documents directory.
    */
   const downloadBlob = async (filename, blob) => {
     if (!isNative) {
@@ -87,7 +94,17 @@ export const useFileActions = () => {
       return
     }
 
-    // Native: convert blob to base64, write to cache, then present save dialog
+    // On Android, check/request permissions for Directory.Documents
+    if (Capacitor.getPlatform() === 'android') {
+      const perms = await Filesystem.checkPermissions()
+      if (perms.publicStorage !== 'granted') {
+        const req = await Filesystem.requestPermissions()
+        if (req.publicStorage !== 'granted') {
+          throw new Error('Storage permission required to save files.')
+        }
+      }
+    }
+
     const arrayBuffer = await blob.arrayBuffer()
     const bytes = new Uint8Array(arrayBuffer)
     let binary = ''
@@ -96,17 +113,11 @@ export const useFileActions = () => {
     }
     const base64 = btoa(binary)
 
-    const result = await Filesystem.writeFile({
+    await Filesystem.writeFile({
       path: filename,
       data: base64,
-      directory: Directory.Cache,
+      directory: Directory.Documents,
       recursive: true,
-    })
-
-    await Share.share({
-      title: filename,
-      url: result.uri,
-      dialogTitle: `Save "${filename}"`,
     })
   }
 

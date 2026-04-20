@@ -144,15 +144,28 @@ export function useNoteActions({
     const jsonStr = JSON.stringify(payload, null, 2)
     const dateStr = new Date().toISOString().slice(0, 10)
 
-    if (encrypt && password) {
-      const { BlobWriter, TextReader, ZipWriter } = await import('@zip.js/zip.js')
-      const blobWriter = new BlobWriter('application/zip')
-      const zipWriter = new ZipWriter(blobWriter, { password })
-      await zipWriter.add('backup.json', new TextReader(jsonStr))
-      const blob = await zipWriter.close()
-      await downloadBlob(`numori-backup-${dateStr}.zip`, blob)
-    } else {
-      await downloadFile(`numori-backup-${dateStr}.json`, jsonStr, 'application/json')
+    try {
+      if (encrypt && password) {
+        const { BlobWriter, TextReader, ZipWriter } = await import('@zip.js/zip.js')
+        const blobWriter = new BlobWriter('application/zip')
+        const zipWriter = new ZipWriter(blobWriter, { password })
+        await zipWriter.add('backup.json', new TextReader(jsonStr))
+        const blob = await zipWriter.close()
+        await downloadBlob(`numori-backup-${dateStr}.zip`, blob)
+      } else {
+        await downloadFile(`numori-backup-${dateStr}.json`, jsonStr, 'application/json')
+      }
+
+      if (toast) {
+        toast.show('Back-up saved to Documents', { type: 'success', icon: 'mdi:check-circle' })
+      }
+    } catch (err) {
+      if (toast) {
+        toast.show(err.message || 'Failed to save back-up', {
+          type: 'error',
+          icon: 'mdi:alert-circle',
+        })
+      }
     }
   }
 
