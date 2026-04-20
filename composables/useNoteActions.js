@@ -296,12 +296,13 @@ export function useNoteActions({
         if (action === 'cancel') return
       }
 
-      // Restore unique notes
+      // Restore unique notes (reversed so createNote's unshift preserves original order)
       let restored = 0
       let overwritten = 0
       let skipped = duplicates.length
+      const restoredNoteIds = [] // track ids + original sortOrder
 
-      for (const noteData of unique) {
+      for (const noteData of [...unique].reverse()) {
         const newNote = createNote()
         updateNoteMeta(newNote.id, {
           title: noteData.title || 'Imported Note',
@@ -309,10 +310,11 @@ export function useNoteActions({
           tags: noteData.tags || [],
         })
         updateNoteContent(newNote.id, noteData.content || '')
-        if (noteData.groupId) {
-          const note = notes.value.find((n) => n.id === newNote.id)
-          if (note) note.groupId = noteData.groupId
+        const note = notes.value.find((n) => n.id === newNote.id)
+        if (note) {
+          if (noteData.groupId) note.groupId = noteData.groupId
         }
+        restoredNoteIds.push({ id: newNote.id, sortOrder: noteData.sortOrder ?? 0 })
         if (noteData.deletedAt) {
           softDeleteNote(newNote.id)
         } else if (noteData.archived) {
@@ -357,6 +359,15 @@ export function useNoteActions({
           }
         }
       }
+
+      // Reassign sortOrder from backup to restored notes
+      for (const { id, sortOrder } of restoredNoteIds) {
+        const note = notes.value.find((n) => n.id === id)
+        if (note) note.sortOrder = sortOrder
+      }
+
+      // Re-sort notes by sortOrder to restore original ordering
+      notes.value.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 
       // Show result toast
       if (toast) {

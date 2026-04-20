@@ -611,10 +611,10 @@ describe('handleImport (restore)', () => {
       await new Promise((r) => setTimeout(r, 10))
 
       expect(createdNotes).toHaveLength(2)
-      expect(createdNotes[0].title).toBe('Note A')
-      expect(createdNotes[0].content).toBe('content A')
-      expect(createdNotes[1].title).toBe('Note B')
-      expect(createdNotes[1].content).toBe('content B')
+      expect(createdNotes[0].title).toBe('Note B')
+      expect(createdNotes[0].content).toBe('content B')
+      expect(createdNotes[1].title).toBe('Note A')
+      expect(createdNotes[1].content).toBe('content A')
     })
 
     it('restores groups from backup', async () => {
@@ -754,8 +754,8 @@ describe('handleImport (restore)', () => {
       await new Promise((r) => setTimeout(r, 10))
 
       expect(createdNotes).toHaveLength(2)
-      expect(createdNotes[0].title).toBe('Legacy A')
-      expect(createdNotes[1].title).toBe('Legacy B')
+      expect(createdNotes[0].title).toBe('Legacy B')
+      expect(createdNotes[1].title).toBe('Legacy A')
     })
 
     it('handles single note object format', async () => {
