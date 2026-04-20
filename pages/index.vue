@@ -191,6 +191,7 @@
     <RestoreConfirmModal :is-open="noteActions.showRestoreConfirm.value" :duplicate-count="noteActions.restoreDuplicateCount.value" @close="noteActions.handleRestoreConfirmClose" @skip="noteActions.handleRestoreConfirmSkip" @overwrite="noteActions.handleRestoreConfirmOverwrite" />
     <ConfirmDeleteModal :is-open="showDeleteConfirm" :bin-enabled="binEnabled" @close="showDeleteConfirm = false" @confirm="handleDeleteConfirm" />
     <ConfirmBulkDeleteModal :is-open="showBulkDeleteConfirm" :count="pendingBulkDeleteIds.length" :bin-enabled="binEnabled" @close="showBulkDeleteConfirm = false" @confirm="handleBulkDeleteConfirm" />
+    <ConfirmPermanentDeleteModal :is-open="showPermanentDeleteConfirm" :count="pendingPermanentDeleteIds.length" @close="handlePermanentDeleteCancel" @confirm="handlePermanentDeleteConfirm" />
 
     <WelcomeWizard
       :is-open="welcomeWizard.isOpen.value" :preferences="localePrefs.preferences"
@@ -639,10 +640,26 @@ const handleBulkArchive = (ids) => { bulkArchive(ids); syncNow(); toast.show(`${
 const handleBulkUnarchive = (ids) => { bulkUnarchive(ids); syncNow(); toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} unarchived`, { type: 'success', icon: 'mdi:package-up' }) }
 
 // --- Bin handlers ---
+const showPermanentDeleteConfirm = ref(false)
+const pendingPermanentDeleteIds = ref([])
+
 const handleRestoreNote = (id) => { restoreNote(id); syncNow(id); toast.show('Note restored', { type: 'success', icon: 'mdi:restore' }) }
-const handlePermanentDelete = (id) => { permanentlyDeleteNote(id); syncNow(); toast.show('Note permanently deleted', { type: 'success', icon: 'mdi:delete-forever-outline' }) }
+const handlePermanentDelete = (id) => { pendingPermanentDeleteIds.value = [id]; showPermanentDeleteConfirm.value = true }
 const handleBulkRestore = (ids) => { for (const id of ids) restoreNote(id); syncNow(); toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} restored`, { type: 'success', icon: 'mdi:restore' }) }
-const handleBulkPermanentDelete = (ids) => { for (const id of ids) permanentlyDeleteNote(id); syncNow(); toast.show(`${ids.length} note${ids.length > 1 ? 's' : ''} permanently deleted`, { type: 'success', icon: 'mdi:delete-forever-outline' }) }
+const handleBulkPermanentDelete = (ids) => { pendingPermanentDeleteIds.value = ids; showPermanentDeleteConfirm.value = true }
+const handlePermanentDeleteConfirm = () => {
+  showPermanentDeleteConfirm.value = false
+  const ids = pendingPermanentDeleteIds.value
+  for (const id of ids) permanentlyDeleteNote(id)
+  syncNow()
+  toast.show(ids.length > 1 ? `${ids.length} notes permanently deleted` : 'Note permanently deleted', { type: 'success', icon: 'mdi:delete-forever-outline' })
+  pendingPermanentDeleteIds.value = []
+}
+const handlePermanentDeleteCancel = () => {
+  showPermanentDeleteConfirm.value = false
+  pendingPermanentDeleteIds.value = []
+  toast.show('Deletion cancelled', { type: 'info', icon: 'mdi:close-circle-outline' })
+}
 
 // --- Sidebar props/events (shared between desktop and mobile) ---
 const sidebarProps = computed(() => ({
