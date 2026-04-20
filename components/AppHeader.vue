@@ -1,6 +1,7 @@
 <template>
   <header
     class="bg-gray-100 dark:bg-gray-900 flex-shrink-0"
+    :class="{ 'electron-drag': isElectron }"
     :style="{
       paddingTop: 'env(safe-area-inset-top, 0px)',
       paddingLeft: 'env(safe-area-inset-left, 0px)',
@@ -11,16 +12,37 @@
       <!-- Left: Title + controls stack -->
       <div class="flex flex-col flex-1 min-w-0 gap-0.5">
         <!-- Top row: Centered title -->
-        <UiButton
-          variant="ghost"
-          color="gray"
-          class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md"
-          @click="$emit('show-meta')"
-        >
-          <h1 class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-400 truncate">
-            {{ currentNote?.title || 'Numori' }}
-          </h1>
-        </UiButton>
+        <div class="flex items-center gap-1">
+          <!-- Electron window controls -->
+          <div v-if="isElectron" class="flex items-center gap-1 mr-1.5 -webkit-app-region-no-drag">
+            <button
+              class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 focus:outline-none"
+              title="Close"
+              @click="electronClose"
+            />
+            <button
+              class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 focus:outline-none"
+              title="Minimize"
+              @click="electronMinimize"
+            />
+            <button
+              class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 focus:outline-none"
+              title="Maximize"
+              @click="electronMaximize"
+            />
+          </div>
+
+          <UiButton
+            variant="ghost"
+            color="gray"
+            class="text-center min-w-0 flex-1 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md"
+            @click="$emit('show-meta')"
+          >
+            <h1 class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-400 truncate">
+              {{ currentNote?.title || 'Numori' }}
+            </h1>
+          </UiButton>
+        </div>
 
       <!-- Bottom row: All controls -->
       <div class="flex items-center gap-1">
@@ -200,6 +222,12 @@
 </template>
 
 <script setup>
+const { isElectron } = usePlatform()
+
+const electronMinimize = () => window.electronAPI?.minimize()
+const electronMaximize = () => window.electronAPI?.maximize()
+const electronClose = () => window.electronAPI?.close()
+
 defineProps({
   currentNote: {
     type: Object,
@@ -294,3 +322,16 @@ const avatarAction = (action) => {
   emit(action)
 }
 </script>
+
+<style scoped>
+.electron-drag {
+  -webkit-app-region: drag;
+}
+.electron-drag button,
+.electron-drag a,
+.electron-drag input,
+.electron-drag select,
+.-webkit-app-region-no-drag {
+  -webkit-app-region: no-drag;
+}
+</style>

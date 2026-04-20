@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -11,12 +11,16 @@ function createWindow() {
     minWidth: 480,
     minHeight: 600,
     title: 'Numori Notes',
+    frame: false,
+    titleBarStyle: 'hidden',
     webPreferences: {
       preload: join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
+
+  win.setMenuBarVisibility(false)
 
   // Open external links in the default browser
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -32,6 +36,19 @@ function createWindow() {
 }
 
 app.whenReady().then(createWindow)
+
+// Window control IPC handlers
+ipcMain.on('window-minimize', (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.minimize()
+})
+ipcMain.on('window-maximize', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (win?.isMaximized()) win.unmaximize()
+  else win?.maximize()
+})
+ipcMain.on('window-close', (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.close()
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
