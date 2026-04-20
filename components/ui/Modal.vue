@@ -12,8 +12,8 @@
     >
       <div
         v-if="show"
-        class="fixed inset-0 flex items-center justify-center bg-transparent md:bg-black md:bg-opacity-50"
-        :class="[zClass, paddingClass]"
+        class="fixed inset-0 flex items-center justify-center"
+        :class="[zClass, paddingClass, backdropClass]"
         @click.self="!persistent && $emit('close')"
       >
         <Transition
@@ -27,8 +27,8 @@
         >
           <div
             v-if="show"
-            class="modal-panel bg-white dark:bg-gray-925 overflow-hidden flex flex-col fixed inset-0 md:static md:inset-auto"
-            :class="[panelClass, maxWidthClass, roundedClass]"
+            class="modal-panel bg-white dark:bg-gray-925 overflow-hidden flex flex-col"
+            :class="[panelClass, maxWidthClass, roundedClass, mobileLayoutClass]"
             @click.stop
           >
             <slot />
@@ -63,6 +63,11 @@
  *   <div class="h-full">Full screen content</div>
  * </UiModal>
  *
+ * @example Non-fullscreen on mobile
+ * <UiModal :show="isOpen" :fullscreen-mobile="false" @close="isOpen = false">
+ *   <div class="p-6">Centered on all screens</div>
+ * </UiModal>
+ *
  * @emits {void} close — Emitted when the modal should close (backdrop click or programmatic)
  *
  * @slot default — Modal content
@@ -82,6 +87,14 @@ const props = defineProps({
    * @values 'xs' (20rem) | 'sm' (24rem) | 'md' (28rem) | 'lg' (32rem) | 'xl' (36rem) | '2xl' (42rem) | '3xl' (48rem) | '4xl' (56rem) | '5xl' (64rem) | 'full'
    */
   maxWidth: { type: String, default: 'sm' },
+
+  /**
+   * Whether the modal goes fullscreen on mobile viewports.
+   * When true, the panel fills the screen on mobile and respects safe area insets.
+   * @type {boolean}
+   * @default true
+   */
+  fullscreenMobile: { type: Boolean, default: true },
 
   /**
    * Persistent mode — prevents closing when clicking the backdrop overlay.
@@ -117,6 +130,23 @@ defineEmits(['close'])
 const zClass = computed(() => props.z)
 const paddingClass = computed(() => props.padding)
 
+const backdropClass = computed(() => {
+  if (props.fullscreenMobile) {
+    return 'bg-transparent md:bg-black md:bg-opacity-50'
+  }
+  return 'bg-black bg-opacity-50 p-4'
+})
+
+const mobileLayoutClass = computed(() => {
+  if (props.maxWidth === 'full') return 'fixed inset-0'
+
+  if (props.fullscreenMobile) {
+    return 'fixed inset-0 modal-panel--safe-area md:static md:inset-auto'
+  }
+  // Non-fullscreen on mobile: centered dialog with max-height
+  return 'relative max-h-[calc(100vh-2rem)] md:static'
+})
+
 const maxWidthClass = computed(() => {
   if (props.maxWidth === 'full') return 'w-full h-full'
 
@@ -131,13 +161,21 @@ const maxWidthClass = computed(() => {
     '4xl': 'md:max-w-4xl',
     '5xl': 'md:max-w-5xl',
   }
-  return `md:w-full ${map[props.maxWidth] || map.sm}`
+
+  if (props.fullscreenMobile) {
+    return `md:w-full ${map[props.maxWidth] || map.sm}`
+  }
+  return `w-full ${map[props.maxWidth] || map.sm}`
 })
 
-// Full-screen on mobile (no rounding), rounded on md+ (except explicit full mode)
-const roundedClass = computed(() =>
-  props.maxWidth === 'full' ? 'rounded-none' : 'rounded-none md:rounded-lg',
-)
+const roundedClass = computed(() => {
+  if (props.maxWidth === 'full') return 'rounded-none'
+
+  if (props.fullscreenMobile) {
+    return 'rounded-none md:rounded-lg'
+  }
+  return 'rounded-lg'
+})
 </script>
 
 
@@ -145,6 +183,13 @@ const roundedClass = computed(() =>
 @media (max-width: 767px) {
   .modal-panel {
     max-height: 100% !important;
+  }
+
+  .modal-panel--safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }
 </style>

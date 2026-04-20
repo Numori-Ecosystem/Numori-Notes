@@ -1,5 +1,5 @@
 <template>
-  <UiModal :show="show" max-width="sm" @close="handleClose">
+  <UiModal :show="show" max-width="sm" :fullscreen-mobile="fullscreenMobile" @close="handleClose">
     <div ref="promptRef" class="p-4" @keydown="onKeydown">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
@@ -83,6 +83,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   /** Whether pressing Enter triggers confirm. Disable for form-based prompts. */
   confirmOnEnter: { type: Boolean, default: true },
+  /** Whether the prompt goes fullscreen on mobile viewports. */
+  fullscreenMobile: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['close', 'confirm'])
