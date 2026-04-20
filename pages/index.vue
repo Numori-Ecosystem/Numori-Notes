@@ -175,6 +175,7 @@
       :get-active-preset="localePrefs.getActivePreset" :save="localePrefs.save" :reset="localePrefs.reset"
       :user="auth.user.value" :last-synced-at="lastSyncedAt"
       :auth-headers="auth.authHeaders.value" :on-delete-data="authHandlers.handleDeleteData" :on-delete-account="authHandlers.handleDeleteAccount"
+      :on-backup="handleBackupConfirm"
       @close="showLocaleSettings = false; settingsInitialSection = null" @relaunch-wizard="showLocaleSettings = false; welcomeWizard.isOpen.value = true"
       @update-profile="authHandlers.handleUpdateProfile" @change-password="(...args) => { authHandlers.handleChangePassword(...args); showLocaleSettings = false }"
       @logout="() => { showLocaleSettings = false; authHandlers.handleLogout() }" @unshare="shareManagement.handleProfileUnshare"

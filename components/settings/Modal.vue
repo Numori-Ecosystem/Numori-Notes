@@ -125,7 +125,7 @@
             <SettingsSecurity v-else-if="displayedSection === 'security'" :user="user" :auth-headers="authHeaders" />
             <SettingsSessions v-else-if="displayedSection === 'sessions'" :auth-headers="authHeaders" />
             <SettingsSharedNotes v-else-if="displayedSection === 'shared'" :auth-headers="authHeaders" @unshare="emit('unshare', $event)" @open-analytics="emit('open-analytics', $event)" @close-modal="closeModal" />
-            <SettingsDangerZone v-else-if="displayedSection === 'danger'" :on-delete-data="onDeleteData" :on-delete-account="onDeleteAccount" />
+            <SettingsDangerZone v-else-if="displayedSection === 'danger'" :on-delete-data="onDeleteData" :on-delete-account="onDeleteAccount" :on-backup="onBackup" />
           </div>
         </div>
       </div>
@@ -150,6 +150,7 @@ const props = defineProps({
   authHeaders: { type: Object, default: () => ({}) },
   onDeleteData: { type: Function, default: null },
   onDeleteAccount: { type: Function, default: null },
+  onBackup: { type: Function, default: null },
 })
 
 const emit = defineEmits([
