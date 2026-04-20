@@ -550,8 +550,10 @@ onMounted(async () => {
 })
 
 // Reload device-level settings when user logs in (login/register set auth.user)
-watch(() => auth.user.value, (newUser, oldUser) => {
+watch(() => auth.user.value, async (newUser, oldUser) => {
   if (newUser && !oldUser) {
+    // Login/register responses don't include appLockSettings — fetch full profile
+    await auth.refreshUser()
     appLock.loadFromServer()
     privacyScreen.loadFromServer()
   }

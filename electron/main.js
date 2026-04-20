@@ -122,6 +122,14 @@ function createWindow() {
     return { action: 'deny' }
   })
 
+  // Prevent page reload via Ctrl+R, Cmd+R, F5, Ctrl+Shift+R, Cmd+Shift+R
+  win.webContents.on('before-input-event', (event, input) => {
+    const isReload = (input.key === 'r' && (input.control || input.meta)) || input.key === 'F5'
+    if (isReload) {
+      event.preventDefault()
+    }
+  })
+
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL)
   } else {
