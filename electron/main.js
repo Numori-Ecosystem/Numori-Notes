@@ -99,6 +99,7 @@ function createWindow() {
     title: 'Numori Notes',
     frame: false,
     titleBarStyle: 'hidden',
+    ...(process.platform === 'darwin' ? { trafficLightPosition: { x: -20, y: -20 } } : {}),
     webPreferences: {
       preload: join(__dirname, 'preload.cjs'),
       contextIsolation: true,
