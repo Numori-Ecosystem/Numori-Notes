@@ -67,6 +67,7 @@ const formats = [
   { value: 'odt', label: 'OpenDocument (.odt)', subtitle: 'LibreOffice / open standard' },
   { value: 'docx', label: 'Word (.docx)', subtitle: 'Microsoft Word document' },
   { value: 'tex', label: 'LaTeX (.tex)', subtitle: 'Academic typesetting format' },
+  { value: 'csv', label: 'CSV (.csv)', subtitle: 'Spreadsheet, expression & result columns' },
 ]
 
 const colourFormats = new Set(['html', 'pdf', 'rtf', 'odt', 'docx'])

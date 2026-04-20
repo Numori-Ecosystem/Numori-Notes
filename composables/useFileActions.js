@@ -699,6 +699,35 @@ ${bodyLines}
     return true
   }
 
+  // ── CSV export (expression, result columns) ───────────
+
+  const exportNoteAsCsv = (note, evaluateLines = null) => {
+    if (!note) return false
+    const content = note.content || ''
+    const lines = content.split('\n')
+    const results = evaluateLines ? evaluateLines(lines) : []
+
+    const escapeCsv = (str) => {
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`
+      }
+      return str
+    }
+
+    const csvLines = [
+      'Expression,Result',
+      ...lines.map((line, i) => {
+        const r = results[i]
+        const result = r && r.result ? String(r.result) : ''
+        return `${escapeCsv(line)},${escapeCsv(result)}`
+      }),
+    ]
+
+    const filename = `${sanitizeFilename(note.title)}.csv`
+    downloadFile(filename, csvLines.join('\n'), 'text/csv')
+    return true
+  }
+
   // ── File picking (open / import) ───────────────────────
 
   /**
@@ -840,6 +869,7 @@ ${bodyLines}
     exportNoteAsDocx,
     exportNoteAsHtml,
     exportNoteAsLatex,
+    exportNoteAsCsv,
     exportAllNotes,
     openFile,
     importNotes,
