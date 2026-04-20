@@ -7,18 +7,20 @@
       paddingRight: 'env(safe-area-inset-right, 0px)',
     }"
   >
-    <div class="flex flex-col px-3 py-1.5 gap-0.5">
-      <!-- Top row: Centered title -->
-      <UiButton
-        variant="ghost"
-        color="gray"
-        class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md"
-        @click="$emit('show-meta')"
-      >
-        <h1 class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-400 truncate">
-          {{ currentNote?.title || 'Numori' }}
-        </h1>
-      </UiButton>
+    <div class="flex items-stretch gap-1.5 px-3 py-1.5">
+      <!-- Left: Title + controls stack -->
+      <div class="flex flex-col flex-1 min-w-0 gap-0.5">
+        <!-- Top row: Centered title -->
+        <UiButton
+          variant="ghost"
+          color="gray"
+          class="text-center min-w-0 px-1 py-0.5 mb-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-md"
+          @click="$emit('show-meta')"
+        >
+          <h1 class="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-400 truncate">
+            {{ currentNote?.title || 'Numori' }}
+          </h1>
+        </UiButton>
 
       <!-- Bottom row: All controls -->
       <div class="flex items-center gap-1">
@@ -88,21 +90,74 @@
             ]"
             @update:model-value="$emit('update:inline-mode', $event)"
           />
-
-          <UiDivider direction="vertical" class="mx-0.5" />
-
-          <!-- Focus mode -->
-          <UiButton
-            variant="ghost"
-            color="gray"
-            icon-only
-            title="Focus mode"
-            @click="$emit('toggle-focus')"
-          >
-            <Icon name="mdi:fullscreen" class="w-5 h-5 block" />
-          </UiButton>
         </div>
       </div>
+      </div>
+
+      <!-- User avatar dropdown -->
+      <UiDropdown ref="avatarDropdownRef" align="right" width="w-64" class="mr-1.5">
+        <template #trigger="{ toggle }">
+          <button
+            class="flex-shrink-0 aspect-square h-full rounded-full focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-0 flex items-center justify-center"
+            @click="toggle"
+          >
+            <UiAvatar
+              v-if="isLoggedIn"
+              :src="user?.avatarUrl"
+              size="lg"
+            />
+            <UiAvatar
+              v-else
+              size="lg"
+              color="gray"
+              fallback-icon="mdi:account-circle-outline"
+            />
+          </button>
+        </template>
+
+        <div class="py-1">
+          <template v-if="isLoggedIn">
+            <UiButton variant="menu-item" class="px-4" @click="avatarAction('edit-profile')">
+              <Icon name="mdi:account-edit-outline" class="w-4 h-4" />
+              Edit Profile
+            </UiButton>
+          </template>
+          <template v-else>
+            <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-auth')">
+              <Icon name="mdi:login" class="w-4 h-4" />
+              Sign In / Sign Up
+            </UiButton>
+          </template>
+          <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-locale-settings')">
+            <Icon name="mdi:cog-outline" class="w-4 h-4" />
+            Settings
+          </UiButton>
+          <UiDivider class="my-1 mb-3" />
+          <template v-if="isLoggedIn">
+            <UiDropdownRow>
+              <UiButton
+                v-if="appLockEnabled"
+                variant="menu-item"
+                class="flex-1 justify-center"
+                @click="avatarAction('lock-app')"
+              >
+                <Icon name="mdi:lock" class="w-4 h-4" />
+                Lock
+              </UiButton>
+              <UiDivider v-if="appLockEnabled" direction="vertical" />
+              <UiButton
+                variant="menu-item"
+                color="red"
+                class="flex-1 justify-center"
+                @click="avatarAction('logout')"
+              >
+                <Icon name="mdi:logout" class="w-4 h-4" />
+                Sign Out
+              </UiButton>
+            </UiDropdownRow>
+          </template>
+        </div>
+      </UiDropdown>
     </div>
   </header>
 </template>
@@ -133,6 +188,14 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  user: {
+    type: Object,
+    default: null,
+  },
+  appLockEnabled: {
+    type: Boolean,
+    default: false,
+  },
   canUndo: {
     type: Boolean,
     default: false,
@@ -151,7 +214,7 @@ defineProps({
   },
 })
 
-defineEmits([
+const emit = defineEmits([
   'toggle-sidebar',
   'toggle-focus',
   'show-meta',
@@ -176,5 +239,17 @@ defineEmits([
   'file-copy',
   'file-print',
   'file-about',
+  'edit-profile',
+  'show-auth',
+  'show-locale-settings',
+  'lock-app',
+  'logout',
 ])
+
+const avatarDropdownRef = ref(null)
+
+const avatarAction = (action) => {
+  avatarDropdownRef.value?.close()
+  emit(action)
+}
 </script>

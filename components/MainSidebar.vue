@@ -97,18 +97,6 @@
       :sidebar-view-options="sidebarViewOptions"
       @update:sidebar-view="sidebarView = $event"
     />
-
-    <!-- User Account Section -->
-    <MainSidebarAccountSection
-      :is-logged-in="isLoggedIn"
-      :user="user"
-      :app-lock-enabled="appLockEnabled"
-      @edit-profile="$emit('edit-profile')"
-      @show-auth="$emit('show-auth')"
-      @show-locale-settings="$emit('show-locale-settings')"
-      @lock-app="$emit('lock-app')"
-      @logout="$emit('logout')"
-    />
   </div>
 </template>
 

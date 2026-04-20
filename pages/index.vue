@@ -18,6 +18,8 @@
         :mod-label="modLabel"
         :selection-count="selectedNoteIds.length"
         :is-logged-in="auth.isLoggedIn.value"
+        :user="auth.user.value"
+        :app-lock-enabled="appLock.settings.enabled"
         :can-undo="editorRef?.canUndo ?? false"
         :can-redo="editorRef?.canRedo ?? false"
         :editor-font-size="localePrefs.preferences.editorFontSize ?? 16"
@@ -46,6 +48,11 @@
         @file-copy="noteActions.handleCopy"
         @file-print="noteActions.handlePrint"
         @file-about="showAbout = true"
+        @edit-profile="settingsInitialSection = 'profile'; showLocaleSettings = true"
+        @show-auth="authHandlers.showAuthModal.value = true"
+        @show-locale-settings="showLocaleSettings = true"
+        @lock-app="appLock.lock()"
+        @logout="authHandlers.handleLogout"
       />
     </div>
 
