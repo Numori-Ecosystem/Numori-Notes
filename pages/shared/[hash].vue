@@ -125,7 +125,7 @@
             @update:results-position="resultsPosition = $event"
             @copy="copyNoteToClipboard"
             @export="handleExport"
-            @print="askExportOptions('print')"
+            @print="showPrintModal = true"
             @import="importNote"
           />
         </div>
@@ -160,6 +160,11 @@
         @close="showExportOptionsModal = false"
         @confirm="handleExportConfirm"
       />
+      <PrintModal
+        :is-open="showPrintModal"
+        @close="showPrintModal = false"
+        @confirm="handlePrintConfirm"
+      />
     </template>
   </div>
 </template>
@@ -188,6 +193,7 @@ const renderMarkdown = ref(true)
 const resultsPosition = ref('left')
 const copied = ref(false)
 const showExportOptionsModal = ref(false)
+const showPrintModal = ref(false)
 const pendingExportAction = ref(null)
 
 const {
@@ -236,11 +242,15 @@ const handleExportConfirm = (withResults) => {
     case 'pdf':
       exportNoteAsPdf(note.value, calc)
       break
-    case 'print':
-      printNote(note.value, calc)
-      break
   }
   pendingExportAction.value = null
+}
+
+const handlePrintConfirm = ({ withResults, blackAndWhite }) => {
+  showPrintModal.value = false
+  if (!note.value) return
+  const calc = withResults ? evaluateLines : null
+  printNote(note.value, calc, blackAndWhite)
 }
 
 onMounted(async () => {

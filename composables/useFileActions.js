@@ -858,28 +858,68 @@ ${bodyLines}
     return true
   }
 
-  const printNote = (note, evaluateLines = null) => {
+  const printNote = async (note, evaluateLines = null, blackAndWhite = false) => {
     if (!note) return false
-    const body = evaluateLines
-      ? mergeContentWithResults(note.content, evaluateLines)
-      : note.content || ''
+    const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
+
+    const escapeHtml = (str) =>
+      str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+    const bodyLines = colouredLines
+      .map((line) => {
+        if (line.length === 0) return '<br>'
+        const spans = line
+          .map((span) => {
+            let style = `color:${span.color}`
+            if (span.bold) style += ';font-weight:bold'
+            if (span.italic) style += ';font-style:italic'
+            return `<span style="${style}">${escapeHtml(span.text)}</span>`
+          })
+          .join('')
+        return `<div>${spans}</div>`
+      })
+      .join('\n')
+
+    const html = `<!DOCTYPE html>
+<html><head><title>${escapeHtml(note.title || 'Note')}</title>
+<style>
+@page { margin: 15mm; }
+body { font-family: 'Courier New', monospace; font-size: 10pt; white-space: pre-wrap; padding: 0; margin: 0; line-height: 1.6; }
+div { min-height: 1.6em; }
+</style>
+</head><body>
+${bodyLines}
+</body></html>`
 
     if (!isNative) {
-      const printWindow = window.open('', '_blank')
-      if (!printWindow) return false
-      printWindow.document.write(`<!DOCTYPE html>
-<html><head><title>${note.title || 'Note'}</title>
-<style>body{font-family:monospace;white-space:pre-wrap;padding:2rem;max-width:800px;margin:0 auto;line-height:1.6}</style>
-</head><body>${body.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</body></html>`)
-      printWindow.document.close()
-      printWindow.print()
+      // Use a hidden iframe to avoid browser showing URL in print headers
+      const iframe = document.createElement('iframe')
+      iframe.style.position = 'fixed'
+      iframe.style.right = '0'
+      iframe.style.bottom = '0'
+      iframe.style.width = '0'
+      iframe.style.height = '0'
+      iframe.style.border = 'none'
+      document.body.appendChild(iframe)
+
+      const iframeDoc = iframe.contentWindow.document
+      iframeDoc.open()
+      iframeDoc.write(html)
+      iframeDoc.close()
+
+      // Wait for content to render then print
+      iframe.contentWindow.onafterprint = () => {
+        document.body.removeChild(iframe)
+      }
+      setTimeout(() => {
+        iframe.contentWindow.print()
+        // Fallback cleanup if onafterprint doesn't fire
+        setTimeout(() => {
+          if (iframe.parentNode) document.body.removeChild(iframe)
+        }, 60000)
+      }, 250)
     } else {
-      // Native: share as HTML for printing
-      const escaped = body.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      const html = `<!DOCTYPE html>
-<html><head><title>${note.title || 'Note'}</title>
-<style>body{font-family:monospace;white-space:pre-wrap;padding:2rem;max-width:800px;margin:0 auto;line-height:1.6}</style>
-</head><body>${escaped}</body></html>`
+      // Native: save as HTML for printing
       downloadFile(`${sanitizeFilename(note.title)}.html`, html, 'text/html')
     }
     return true

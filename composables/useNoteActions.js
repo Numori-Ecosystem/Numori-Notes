@@ -38,11 +38,6 @@ export function useNoteActions({
   const showExportOptions = ref(false)
   const pendingExportAction = ref(null)
 
-  const askExportOptions = (action) => {
-    pendingExportAction.value = action
-    showExportOptions.value = true
-  }
-
   const handleExportConfirm = (withResults) => {
     showExportOptions.value = false
     const calc = withResults ? evaluateLines : null
@@ -57,11 +52,21 @@ export function useNoteActions({
       case 'pdf':
         exportNoteAsPdf(note, calc)
         break
-      case 'print':
-        printNote(note, calc)
-        break
     }
     pendingExportAction.value = null
+  }
+
+  // ── Print modal ────────────────────────────────────────
+  const showPrintModal = ref(false)
+  const pendingPrintNote = ref(null)
+
+  const handlePrintConfirm = ({ withResults, blackAndWhite }) => {
+    showPrintModal.value = false
+    const note = pendingPrintNote.value || currentNote.value
+    pendingPrintNote.value = null
+    if (!note) return
+    const calc = withResults ? evaluateLines : null
+    printNote(note, calc, blackAndWhite)
   }
 
   const handleOpenFile = async () => {
@@ -421,7 +426,10 @@ export function useNoteActions({
     }
   }
 
-  const handlePrint = () => askExportOptions('print')
+  const handlePrint = () => {
+    pendingPrintNote.value = null
+    showPrintModal.value = true
+  }
 
   // Per-note action handlers (receive note ID)
   const findNote = (id) => notes.value.find((n) => n.id === id)
@@ -533,13 +541,16 @@ export function useNoteActions({
   const handlePrintById = (id) => {
     const note = findNote(id)
     if (!note) return
-    printNote(note)
+    pendingPrintNote.value = note
+    showPrintModal.value = true
   }
 
   return {
     showExportOptions,
     handleExportConfirm,
     showSaveModal,
+    showPrintModal,
+    handlePrintConfirm,
     handleSave,
     handleSaveById,
     showRestorePassword,

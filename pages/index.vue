@@ -184,6 +184,7 @@
     />
 
     <ExportOptionsModal :is-open="noteActions.showExportOptions.value" @close="noteActions.showExportOptions.value = false" @confirm="noteActions.handleExportConfirm" />
+    <PrintModal :is-open="noteActions.showPrintModal.value" @close="noteActions.showPrintModal.value = false" @confirm="noteActions.handlePrintConfirm" />
     <SaveModal :is-open="noteActions.showSaveModal.value" @close="noteActions.showSaveModal.value = false" @confirm="handleSaveConfirm" />
     <BackupModal :is-open="showBackup" :has-note="!!currentNote" @close="showBackup = false" @confirm="handleBackupConfirm" />
     <RestorePasswordModal :is-open="noteActions.showRestorePassword.value" :error="noteActions.restorePasswordError.value" @close="noteActions.handleRestorePasswordClose" @confirm="noteActions.handleRestorePasswordConfirm" />

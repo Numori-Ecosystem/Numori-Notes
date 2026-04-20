@@ -1,7 +1,7 @@
 /**
  * Tests for the useFileActions composable.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 // Mock useClipboard from VueUse
 const mockCopy = vi.fn(() => Promise.resolve())
@@ -73,7 +73,32 @@ beforeEach(() => {
   // Mock document.createElement for anchor downloads
   globalThis.document = {
     createElement: vi.fn((tag) => {
-      const el = { tagName: tag, href: '', download: '', click: vi.fn() }
+      if (tag === 'iframe') {
+        return {
+          tagName: tag,
+          style: {},
+          contentWindow: {
+            document: {
+              open: vi.fn(),
+              write: vi.fn(),
+              close: vi.fn(),
+            },
+            print: vi.fn(),
+            onafterprint: null,
+          },
+          parentNode: true,
+        }
+      }
+      const el = {
+        tagName: tag,
+        type: '',
+        accept: '',
+        href: '',
+        download: '',
+        click: vi.fn(),
+        onchange: null,
+        oncancel: null,
+      }
       createdElements.push(el)
       return el
     }),
@@ -238,51 +263,58 @@ describe('copyToClipboard', () => {
 })
 
 describe('printNote', () => {
-  it('returns false for null note', () => {
-    expect(printNote(null)).toBe(false)
+  let originalSetTimeout
+
+  beforeEach(() => {
+    originalSetTimeout = globalThis.setTimeout
   })
 
-  it('opens a print window with note content', () => {
-    const mockWindow = {
-      document: {
-        write: vi.fn(),
-        close: vi.fn(),
-      },
-      print: vi.fn(),
-    }
-    globalThis.window = { open: vi.fn(() => mockWindow) }
+  afterEach(() => {
+    globalThis.setTimeout = originalSetTimeout
+  })
+
+  it('returns false for null note', async () => {
+    expect(await printNote(null)).toBe(false)
+  })
+
+  it('creates an iframe and prints with coloured content', async () => {
+    globalThis.setTimeout = vi.fn((fn) => {
+      fn()
+    })
 
     const note = { title: 'Test', content: 'Hello <world>' }
-    const result = printNote(note)
+    const result = await printNote(note)
 
     expect(result).toBe(true)
-    expect(window.open).toHaveBeenCalledWith('', '_blank')
-    expect(mockWindow.document.write).toHaveBeenCalledOnce()
-    // Verify HTML escaping
-    const html = mockWindow.document.write.mock.calls[0][0]
+    expect(document.createElement).toHaveBeenCalledWith('iframe')
+
+    // Find the iframe that was created
+    const iframeCall = document.createElement.mock.results.find(
+      (r) => r.value?.tagName === 'iframe',
+    )
+    const iframe = iframeCall.value
+    expect(iframe.contentWindow.document.write).toHaveBeenCalledOnce()
+    const html = iframe.contentWindow.document.write.mock.calls[0][0]
     expect(html).toContain('Hello &lt;world&gt;')
     expect(html).toContain('<title>Test</title>')
-    expect(mockWindow.print).toHaveBeenCalledOnce()
+    expect(iframe.contentWindow.print).toHaveBeenCalledOnce()
   })
 
-  it('returns false if popup is blocked', () => {
-    globalThis.window = { open: vi.fn(() => null) }
-    expect(printNote({ title: 'X', content: 'Y' })).toBe(false)
-  })
+  it('prints with results when evaluateLines is provided', async () => {
+    globalThis.setTimeout = vi.fn((fn) => {
+      fn()
+    })
 
-  it('prints with results when evaluateLines is provided', () => {
-    const mockWindow = {
-      document: { write: vi.fn(), close: vi.fn() },
-      print: vi.fn(),
-    }
-    globalThis.window = { open: vi.fn(() => mockWindow) }
     const mockEval = (lines) => lines.map((l) => ({ result: l === '5 + 5' ? '10' : null }))
     const note = { title: 'Calc', content: '5 + 5' }
-    const result = printNote(note, mockEval)
+    const result = await printNote(note, mockEval)
 
     expect(result).toBe(true)
-    const html = mockWindow.document.write.mock.calls[0][0]
-    expect(html).toContain('5 + 5  = 10')
+    const iframeCall = document.createElement.mock.results.find(
+      (r) => r.value?.tagName === 'iframe',
+    )
+    const html = iframeCall.value.contentWindow.document.write.mock.calls[0][0]
+    expect(html).toContain('= 10')
   })
 })
 
