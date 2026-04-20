@@ -184,8 +184,8 @@
     />
 
     <ExportOptionsModal :is-open="noteActions.showExportOptions.value" @close="noteActions.showExportOptions.value = false" @confirm="noteActions.handleExportConfirm" />
-    <PrintModal :is-open="noteActions.showPrintModal.value" @close="noteActions.showPrintModal.value = false" @confirm="noteActions.handlePrintConfirm" />
-    <SaveModal :is-open="noteActions.showSaveModal.value" @close="noteActions.showSaveModal.value = false" @confirm="handleSaveConfirm" />
+    <PrintModal :is-open="noteActions.showPrintModal.value" :note-title="currentNote?.title || ''" @close="noteActions.showPrintModal.value = false" @confirm="noteActions.handlePrintConfirm" />
+    <SaveModal :is-open="noteActions.showSaveModal.value" :note-title="currentNote?.title || ''" @close="noteActions.showSaveModal.value = false" @confirm="handleSaveConfirm" />
     <BackupModal :is-open="showBackup" :has-note="!!currentNote" @close="showBackup = false" @confirm="handleBackupConfirm" />
     <RestorePasswordModal :is-open="noteActions.showRestorePassword.value" :error="noteActions.restorePasswordError.value" @close="noteActions.handleRestorePasswordClose" @confirm="noteActions.handleRestorePasswordConfirm" />
     <RestoreConfirmModal :is-open="noteActions.showRestoreConfirm.value" :duplicate-count="noteActions.restoreDuplicateCount.value" @close="noteActions.handleRestoreConfirmClose" @skip="noteActions.handleRestoreConfirmSkip" @overwrite="noteActions.handleRestoreConfirmOverwrite" />
@@ -390,10 +390,10 @@ const handleReorderWithinGroup = ({ groupId: _groupId, orderedNoteIds }) => {
 }
 
 const { isMac: _isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShortcuts({
-  save: () => {},
+  save: () => { if (currentNote.value) noteActions.showSaveModal.value = true },
   newNote: () => createNote(),
   openFile: () => noteActions.handleOpenFile(),
-  print: () => noteActions.handlePrint(),
+  print: () => { if (currentNote.value) noteActions.handlePrint() },
   duplicate: () => noteActions.handleDuplicate(),
   exportText: () => { showBackup.value = true },
   help: () => { showHelp.value = true },

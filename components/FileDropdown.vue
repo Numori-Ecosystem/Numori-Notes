@@ -28,7 +28,7 @@
     <UiDropdownItem
       icon="mdi:content-duplicate"
       label="Duplicate Note"
-      :shortcut="`${modLabel}+D`"
+      :shortcut="`${modLabel}+⇧+D`"
       :disabled="!hasNote"
       @click="action('duplicate')"
     />
@@ -62,6 +62,7 @@
     <UiDropdownItem
       icon="mdi:backup-restore"
       label="Back-up"
+      :shortcut="`${modLabel}+⇧+S`"
       @click="action('backup')"
     />
     <UiDropdownItem

@@ -51,7 +51,7 @@
         :readonly="readonly"
         :rows="rows"
         :maxlength="maxlength"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm transition-colors [scrollbar-width:thin] [scrollbar-color:theme(colors.gray.300)_transparent] dark:[scrollbar-color:theme(colors.gray.600)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-500"
+        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm transition-colors [scrollbar-width:thin] [scrollbar-color:theme(colors.gray.300)_transparent] dark:[scrollbar-color:theme(colors.gray.600)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-500"
         :class="resizeClass"
         :style="textareaStyle"
         @input="onInput"
@@ -59,8 +59,15 @@
       />
 
       <!-- The actual input element (text, number, password, email, phone) -->
+      <!-- Left icon/image slot -->
+      <span v-if="!isTextarea && ($slots.left || iconLeft)" class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 dark:text-gray-500">
+        <slot name="left">
+          <Icon v-if="iconLeft" :name="iconLeft" class="w-4 h-4" />
+        </slot>
+      </span>
+
       <input
-        v-else
+        v-if="!isTextarea"
         ref="inputRef"
         :type="computedType"
         :value="modelValue"
@@ -76,12 +83,19 @@
         :max="max"
         :step="step"
         :pattern="pattern"
-        class="w-full py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm transition-colors"
+        class="w-full py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm transition-colors"
         :class="inputClasses"
         @input="onInput"
         @blur="onBlur"
         @keydown="onKeydown"
       >
+
+      <!-- Right icon/image slot (hidden when clear button or password toggle is shown) -->
+      <span v-if="!isTextarea && ($slots.right || iconRight) && !(clearable && modelValue) && !(isPassword && showToggle)" class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 dark:text-gray-500">
+        <slot name="right">
+          <Icon v-if="iconRight" :name="iconRight" class="w-4 h-4" />
+        </slot>
+      </span>
 
       <!-- Clear button -->
       <button
@@ -354,6 +368,20 @@ const props = defineProps({
   clearable: { type: Boolean, default: false },
 
   /**
+   * Icon name to display on the left side of the input.
+   * @type {string}
+   * @default undefined
+   */
+  iconLeft: { type: String, default: undefined },
+
+  /**
+   * Icon name to display on the right side of the input.
+   * @type {string}
+   * @default undefined
+   */
+  iconRight: { type: String, default: undefined },
+
+  /**
    * Enable built-in validation feedback shown below the input on blur.
    * @type {boolean}
    * @default true
@@ -421,6 +449,11 @@ const computedInputMode = computed(() => {
 
 const hasStepper = computed(() => isNumber.value && props.stepperLayout !== 'none')
 
+const slots = useSlots()
+
+const hasLeftIcon = computed(() => !!props.iconLeft || !!slots.left)
+const hasRightIcon = computed(() => !!props.iconRight || !!slots.right)
+
 const inputClasses = computed(() => {
   const classes = []
 
@@ -428,7 +461,9 @@ const inputClasses = computed(() => {
   if (hasStepper.value) {
     classes.push('px-1.5')
   } else {
-    classes.push('px-3')
+    // Adjust padding for icons/slots
+    classes.push(hasLeftIcon.value ? 'pl-9' : 'pl-3')
+    classes.push(hasRightIcon.value ? 'pr-9' : 'pr-3')
   }
 
   // Rounding based on stepper layout

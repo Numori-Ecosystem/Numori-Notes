@@ -474,10 +474,12 @@ export function useNoteActions({
   const showSaveModal = ref(false)
   const pendingSaveNote = ref(null)
 
-  const handleSave = async ({ format, withResults, blackAndWhite, destination }) => {
+  const handleSave = async ({ format, withResults, blackAndWhite, destination, filename }) => {
     showSaveModal.value = false
     const note = pendingSaveNote.value || currentNote.value
     if (!note) return
+    // Use custom filename if provided
+    const saveNote = filename ? { ...note, title: filename } : note
     const calc = withResults ? evaluateLines : null
     const bw = blackAndWhite || false
     const dest = destination || 'download'
@@ -485,34 +487,34 @@ export function useNoteActions({
     try {
       switch (format) {
         case 'num':
-          await exportNoteAsText(note, calc, '.num', dest)
+          await exportNoteAsText(saveNote, calc, '.num', dest)
           break
         case 'txt':
-          await exportNoteAsText(note, calc, '.txt', dest)
+          await exportNoteAsText(saveNote, calc, '.txt', dest)
           break
         case 'md':
-          await exportNoteAsMarkdown(note, calc, dest)
+          await exportNoteAsMarkdown(saveNote, calc, dest)
           break
         case 'pdf':
-          await exportNoteAsPdf(note, calc, bw, dest)
+          await exportNoteAsPdf(saveNote, calc, bw, dest)
           break
         case 'rtf':
-          await exportNoteAsRtf(note, calc, bw, dest)
+          await exportNoteAsRtf(saveNote, calc, bw, dest)
           break
         case 'odt':
-          await exportNoteAsOdt(note, calc, bw, dest)
+          await exportNoteAsOdt(saveNote, calc, bw, dest)
           break
         case 'docx':
-          await exportNoteAsDocx(note, calc, bw, dest)
+          await exportNoteAsDocx(saveNote, calc, bw, dest)
           break
         case 'html':
-          await exportNoteAsHtml(note, calc, bw, dest)
+          await exportNoteAsHtml(saveNote, calc, bw, dest)
           break
         case 'tex':
-          await exportNoteAsLatex(note, calc, dest)
+          await exportNoteAsLatex(saveNote, calc, dest)
           break
         case 'csv':
-          await exportNoteAsCsv(note, calc, dest)
+          await exportNoteAsCsv(saveNote, calc, dest)
           break
       }
 

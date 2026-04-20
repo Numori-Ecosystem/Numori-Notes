@@ -15,13 +15,12 @@ export const useKeyboardShortcuts = (handlers = {}) => {
     return navigator.userAgent?.toUpperCase().includes('MAC')
   })
 
-  const modLabel = computed(() => isMac.value ? '⌘' : 'Ctrl')
+  const modLabel = computed(() => (isMac.value ? '⌘' : 'Ctrl'))
 
   const shortcutMap = {
     s: 'save',
     o: 'openFile',
     p: 'print',
-    d: 'duplicate',
     e: 'exportText',
     h: 'help',
   }
@@ -29,6 +28,7 @@ export const useKeyboardShortcuts = (handlers = {}) => {
   const shiftShortcutMap = {
     n: 'newNote',
     s: 'exportAll',
+    d: 'duplicate',
   }
 
   const onKeydown = (e) => {
@@ -54,7 +54,6 @@ export const useKeyboardShortcuts = (handlers = {}) => {
   }
 
   if (import.meta.client) {
-    useEventListener(window, 'keydown', onKeydown, { capture: true })
     useEventListener(document, 'keydown', onKeydown, { capture: true })
   }
 

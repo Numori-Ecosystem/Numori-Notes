@@ -1,6 +1,6 @@
 <template>
-  <UiModal :show="show" max-width="sm" :fullscreen-mobile="fullscreenMobile" @close="handleClose">
-    <div ref="promptRef" class="flex flex-col overflow-hidden max-h-full" @keydown="onKeydown">
+  <UiModal :show="show" max-width="sm" :fullscreen-mobile="fullscreenMobile" :panel-class="panelClass" @close="handleClose">
+    <div ref="promptRef" class="flex flex-col max-h-full" :class="panelClass.includes('overflow-visible') ? 'overflow-visible' : 'overflow-hidden'" @keydown="onKeydown">
       <div class="flex items-center justify-between p-4 pb-0 mb-3 shrink-0">
         <div class="flex items-center gap-2">
           <Icon v-if="icon" :name="icon" class="w-5 h-5" :class="iconColorClass" />
@@ -11,7 +11,7 @@
         </UiButton>
       </div>
 
-      <div v-if="body || $slots.default" class="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed px-4 overflow-y-auto min-h-0">
+      <div v-if="body || $slots.default" class="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed px-4 min-h-0" :class="panelClass.includes('overflow-visible') ? 'overflow-visible' : 'overflow-y-auto'">
         <slot>{{ body }}</slot>
       </div>
 
@@ -85,6 +85,8 @@ const props = defineProps({
   confirmOnEnter: { type: Boolean, default: true },
   /** Whether the prompt goes fullscreen on mobile viewports. */
   fullscreenMobile: { type: Boolean, default: false },
+  /** Additional CSS class(es) applied to the modal panel element. */
+  panelClass: { type: String, default: '' },
 })
 
 const emit = defineEmits(['close', 'confirm'])

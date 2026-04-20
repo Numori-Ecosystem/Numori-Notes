@@ -40,27 +40,12 @@
           class="flex-shrink-0 w-full md:w-60 h-full bg-gray-50 dark:bg-gray-900 md:border-r border-gray-200 dark:border-gray-800 flex flex-col"
         >
           <div class="p-3 pb-2 flex-shrink-0">
-            <div class="relative">
-              <Icon
-                name="mdi:magnify"
-                class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-              />
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Search settings..."
-                class="w-full pl-8 pr-8 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder-gray-400"
-                @keydown.escape="searchQuery = ''"
-              >
-              <button
-                v-if="searchQuery"
-                type="button"
-                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                @click="searchQuery = ''"
-              >
-                <Icon name="mdi:close" class="block w-3.5 h-3.5" />
-              </button>
-            </div>
+            <UiInput
+              v-model="searchQuery"
+              placeholder="Search settings..."
+              icon-left="mdi:magnify"
+              clearable
+            />
           </div>
           <ul class="px-2 pb-3 space-y-0.5 overflow-y-auto flex-1 min-h-0">
             <template v-for="(section, idx) in filteredSections" :key="section.id">
