@@ -157,12 +157,6 @@
               Edit Profile
             </UiButton>
           </template>
-          <template v-else>
-            <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-auth')">
-              <Icon name="mdi:login" class="w-4 h-4" />
-              Sign In / Sign Up
-            </UiButton>
-          </template>
           <UiButton variant="menu-item" class="px-4" @click="avatarAction('show-locale-settings-locales')">
             <Icon name="mdi:translate" class="w-4 h-4" />
             Language
