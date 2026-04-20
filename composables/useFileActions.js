@@ -165,9 +165,9 @@ export const useFileActions = () => {
 
   // ── Export functions ────────────────────────────────────
 
-  const exportNoteAsText = (note, evaluateLines = null) => {
+  const exportNoteAsText = (note, evaluateLines = null, ext = '.num') => {
     if (!note) return false
-    const filename = `${sanitizeFilename(note.title)}.num`
+    const filename = `${sanitizeFilename(note.title)}${ext}`
     const content = evaluateLines
       ? mergeContentWithResults(note.content, evaluateLines)
       : note.content || ''
@@ -215,33 +215,361 @@ export const useFileActions = () => {
     return true
   }
 
-  const exportNoteAsPdf = (note, evaluateLines = null) => {
+  const exportNoteAsPdf = async (note, evaluateLines = null) => {
     if (!note) return false
-    const body = evaluateLines
-      ? mergeContentWithResults(note.content, evaluateLines)
-      : note.content || ''
-    const escaped = body.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const { jsPDF } = await import('jspdf')
+    const colouredLines = await parseColouredContent(note.content, evaluateLines)
 
-    if (!isNative) {
-      const printWindow = window.open('', '_blank')
-      if (!printWindow) return false
-      printWindow.document.write(`<!DOCTYPE html>
-<html><head><title>${note.title || 'Note'}</title>
-<style>
-  body { font-family: monospace; white-space: pre-wrap; padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
-  @media print { body { padding: 0; } }
-</style>
-</head><body>${escaped}</body></html>`)
-      printWindow.document.close()
-      printWindow.print()
-    } else {
-      // On native, export as HTML and share — user can open in browser/print from there
-      const html = `<!DOCTYPE html>
-<html><head><title>${note.title || 'Note'}</title>
-<style>body{font-family:monospace;white-space:pre-wrap;padding:2rem;max-width:800px;margin:0 auto;line-height:1.6}</style>
-</head><body>${escaped}</body></html>`
-      downloadFile(`${sanitizeFilename(note.title)}.html`, html, 'text/html')
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const margin = 15
+    const maxWidth = pageWidth - margin * 2
+    const lineHeight = 5
+    let y = margin
+
+    doc.setFontSize(10)
+
+    const hexToRgb = (hex) => {
+      const r = parseInt(hex.slice(1, 3), 16)
+      const g = parseInt(hex.slice(3, 5), 16)
+      const b = parseInt(hex.slice(5, 7), 16)
+      return [r, g, b]
     }
+
+    for (const line of colouredLines) {
+      // Concatenate line text for word-wrap calculation
+      const fullText = line.map((s) => s.text).join('')
+      const splitLines = doc.splitTextToSize(fullText || ' ', maxWidth)
+
+      // For simplicity with jsPDF (which doesn't support inline colour changes),
+      // use the colour of the first meaningful span for the whole line
+      const firstSpan = line.find((s) => s.text.trim()) ||
+        line[0] || { color: '#2D2A2E', bold: false, italic: false }
+      const [r, g, b] = hexToRgb(firstSpan.color)
+      doc.setTextColor(r, g, b)
+
+      const fontStyle =
+        firstSpan.bold && firstSpan.italic
+          ? 'bolditalic'
+          : firstSpan.bold
+            ? 'bold'
+            : firstSpan.italic
+              ? 'italic'
+              : 'normal'
+      doc.setFont('courier', fontStyle)
+
+      for (const sl of splitLines) {
+        if (y + lineHeight > pageHeight - margin) {
+          doc.addPage()
+          y = margin
+        }
+        doc.text(sl, margin, y)
+        y += lineHeight
+      }
+    }
+
+    const filename = `${sanitizeFilename(note.title)}.pdf`
+    const blob = doc.output('blob')
+    await downloadBlob(filename, blob)
+    return true
+  }
+
+  // ── Colour-coded content helpers ───────────────────────
+
+  /**
+   * Map numori token types to their light-mode hex colours.
+   * These match the Numori language highlighting in the editor.
+   */
+  const tokenColourMap = {
+    heading: '#2D2A2E',
+    comment: '#939293',
+    labelName: '#727072',
+    keyword: '#CC2D56',
+    operatorKeyword: '#939293',
+    typeName: '#1A8A9A',
+    'name.definition': '#4D8C2A',
+    atom: '#7B5FC4',
+    unit: '#C4621A',
+    number: '#A68A1B',
+    string: '#C4621A',
+    variableName: '#2D2A2E',
+    operator: '#727072',
+    bracket: '#727072',
+  }
+
+  const defaultColour = '#2D2A2E'
+
+  /**
+   * Parse note content into coloured spans using the Numori language tokenizer.
+   * Returns an array of lines, each line being an array of { text, color } spans.
+   */
+  const parseColouredContent = async (content, evaluateLines = null) => {
+    if (!content) return []
+    const { tokenizeLine } = await import('~/composables/useNumoriHighlight')
+    const lines = content.split('\n')
+    const results = evaluateLines ? evaluateLines(lines) : []
+
+    return lines.map((line, i) => {
+      const r = results[i]
+      const spans = tokenizeLine(line)
+      const lineSpans = spans.map((s) => ({
+        text: s.text,
+        color: tokenColourMap[s.token] || defaultColour,
+        bold: s.token === 'heading' || s.token === 'keyword' || s.token === 'labelName',
+        italic: s.token === 'comment',
+      }))
+      // Append result if present
+      if (r && r.result) {
+        lineSpans.push({ text: `  = ${r.result}`, color: '#4D8C2A', bold: false, italic: false })
+      }
+      return lineSpans
+    })
+  }
+
+  /**
+   * Flat version: returns array of { text, color } per line (single colour per line).
+   * Used by simpler formats. Takes the dominant colour of the first non-whitespace token.
+   */
+  const parseColouredLines = (content, evaluateLines = null) => {
+    if (!content) return []
+    const lines = content.split('\n')
+    const results = evaluateLines ? evaluateLines(lines) : []
+    return lines.map((line, i) => {
+      const r = results[i]
+      const displayLine = r && r.result ? `${line}  = ${r.result}` : line
+      const trimmed = line.trimStart()
+      let color = defaultColour
+      if (trimmed.startsWith('# ') || trimmed.startsWith('## ') || trimmed.startsWith('### ')) {
+        color = '#2D2A2E' // heading
+      } else if (trimmed.startsWith('//')) {
+        color = '#939293' // comment
+      } else if (r && r.result) {
+        color = '#4D8C2A' // result (function green)
+      }
+      return { text: displayLine, color }
+    })
+  }
+
+  // ── RTF export (with proper encoding and per-token colours) ──────────
+
+  const exportNoteAsRtf = async (note, evaluateLines = null) => {
+    if (!note) return false
+    const colouredLines = await parseColouredContent(note.content, evaluateLines)
+
+    // Collect all unique colours used
+    const colourSet = new Set()
+    for (const line of colouredLines) {
+      for (const span of line) {
+        colourSet.add(span.color)
+      }
+    }
+    const colours = [...colourSet]
+    const colourIndex = Object.fromEntries(colours.map((c, i) => [c, i + 1]))
+
+    // Build RTF colour table
+    const ctEntries = colours
+      .map((hex) => {
+        const r = parseInt(hex.slice(1, 3), 16)
+        const g = parseInt(hex.slice(3, 5), 16)
+        const b = parseInt(hex.slice(5, 7), 16)
+        return `\\red${r}\\green${g}\\blue${b};`
+      })
+      .join('')
+    const colourTableRtf = `{\\colortbl ;${ctEntries}}`
+
+    // Escape RTF special chars and handle Unicode
+    const escapeRtf = (str) => {
+      let result = ''
+      for (let i = 0; i < str.length; i++) {
+        const code = str.charCodeAt(i)
+        const ch = str[i]
+        if (ch === '\\') result += '\\\\'
+        else if (ch === '{') result += '\\{'
+        else if (ch === '}') result += '\\}'
+        else if (code > 127) result += `\\u${code}?`
+        else result += ch
+      }
+      return result
+    }
+
+    // Build body
+    const bodyParts = []
+    for (const line of colouredLines) {
+      const lineParts = []
+      for (const span of line) {
+        const cf = colourIndex[span.color] || 1
+        let prefix = `\\cf${cf}`
+        if (span.bold) prefix += '\\b'
+        if (span.italic) prefix += '\\i'
+        let suffix = ''
+        if (span.bold) suffix += '\\b0'
+        if (span.italic) suffix += '\\i0'
+        lineParts.push(`${prefix} ${escapeRtf(span.text)}${suffix}`)
+      }
+      bodyParts.push(lineParts.join(''))
+    }
+
+    const rtf = `{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0\\fmodern\\fcharset0 Courier New;}}${colourTableRtf}\\f0\\fs20\n${bodyParts.join('\\par\n')}\n}`
+
+    const filename = `${sanitizeFilename(note.title)}.rtf`
+    downloadFile(filename, rtf, 'application/rtf')
+    return true
+  }
+
+  // ── ODT export (proper ODF structure with per-token colours) ────────
+
+  const exportNoteAsOdt = async (note, evaluateLines = null) => {
+    if (!note) return false
+    const colouredLines = await parseColouredContent(note.content, evaluateLines)
+
+    const { BlobWriter, TextReader, ZipWriter } = await import('@zip.js/zip.js')
+
+    const escapeXml = (str) =>
+      str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+    // Collect unique style combinations (color + bold + italic)
+    const styleMap = new Map()
+    let styleCounter = 0
+    const getStyleName = (span) => {
+      const key = `${span.color}_${span.bold ? 'b' : ''}_${span.italic ? 'i' : ''}`
+      if (!styleMap.has(key)) {
+        styleMap.set(key, {
+          name: `T${styleCounter++}`,
+          color: span.color,
+          bold: span.bold,
+          italic: span.italic,
+        })
+      }
+      return styleMap.get(key).name
+    }
+
+    // Pre-process to collect styles
+    for (const line of colouredLines) {
+      for (const span of line) {
+        getStyleName(span)
+      }
+    }
+
+    // Build automatic styles XML
+    const autoStyles = [...styleMap.values()]
+      .map((s) => {
+        let props = `fo:color="${s.color}" style:font-name="Courier New" fo:font-size="10pt"`
+        if (s.bold) props += ' fo:font-weight="bold"'
+        if (s.italic) props += ' fo:font-style="italic"'
+        return `<style:style style:name="${s.name}" style:family="text"><style:text-properties ${props}/></style:style>`
+      })
+      .join('\n    ')
+
+    // Build paragraphs
+    const paragraphs = colouredLines
+      .map((line) => {
+        if (line.length === 0) return '<text:p text:style-name="Standard"/>'
+        const spans = line
+          .map((span) => {
+            const styleName = getStyleName(span)
+            const text = escapeXml(span.text).replace(/ {2}/g, ' <text:s/>')
+            return `<text:span text:style-name="${styleName}">${text}</text:span>`
+          })
+          .join('')
+        return `<text:p text:style-name="Standard">${spans}</text:p>`
+      })
+      .join('\n      ')
+
+    const mimetype = 'application/vnd.oasis.opendocument.text'
+
+    const manifest = `<?xml version="1.0" encoding="UTF-8"?>
+<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">
+  <manifest:file-entry manifest:media-type="application/vnd.oasis.opendocument.text" manifest:full-path="/"/>
+  <manifest:file-entry manifest:media-type="text/xml" manifest:full-path="content.xml"/>
+  <manifest:file-entry manifest:media-type="text/xml" manifest:full-path="styles.xml"/>
+</manifest:manifest>`
+
+    const styles = `<?xml version="1.0" encoding="UTF-8"?>
+<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+  xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+  xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+  xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+  office:version="1.2">
+  <office:font-face-decls>
+    <style:font-face style:name="Courier New" svg:font-family="'Courier New'" style:font-family-generic="modern" style:font-pitch="fixed"/>
+  </office:font-face-decls>
+  <office:styles>
+    <style:style style:name="Standard" style:family="paragraph">
+      <style:text-properties style:font-name="Courier New" fo:font-size="10pt"/>
+    </style:style>
+  </office:styles>
+</office:document-styles>`
+
+    const content = `<?xml version="1.0" encoding="UTF-8"?>
+<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+  xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+  xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+  xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+  xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+  office:version="1.2">
+  <office:font-face-decls>
+    <style:font-face style:name="Courier New" svg:font-family="'Courier New'" style:font-family-generic="modern" style:font-pitch="fixed"/>
+  </office:font-face-decls>
+  <office:automatic-styles>
+    ${autoStyles}
+  </office:automatic-styles>
+  <office:body>
+    <office:text>
+      ${paragraphs}
+    </office:text>
+  </office:body>
+</office:document-content>`
+
+    const blobWriter = new BlobWriter('application/vnd.oasis.opendocument.text')
+    const zipWriter = new ZipWriter(blobWriter)
+    // mimetype must be first entry, stored uncompressed without extra fields
+    await zipWriter.add('mimetype', new TextReader(mimetype), {
+      level: 0,
+      extendedTimestamp: false,
+    })
+    await zipWriter.add('META-INF/manifest.xml', new TextReader(manifest))
+    await zipWriter.add('content.xml', new TextReader(content))
+    await zipWriter.add('styles.xml', new TextReader(styles))
+    const blob = await zipWriter.close()
+
+    const filename = `${sanitizeFilename(note.title)}.odt`
+    await downloadBlob(filename, blob)
+    return true
+  }
+
+  // ── DOCX export (using docx library with per-token colours) ─────────
+
+  const exportNoteAsDocx = async (note, evaluateLines = null) => {
+    if (!note) return false
+    const colouredLines = await parseColouredContent(note.content, evaluateLines)
+    const { Document, Paragraph, TextRun, Packer } = await import('docx')
+
+    const paragraphs = colouredLines.map((line) => {
+      const children = line.map((span) => {
+        return new TextRun({
+          text: span.text,
+          font: 'Courier New',
+          size: 20, // half-points, 20 = 10pt
+          color: span.color.replace('#', ''),
+          bold: span.bold || false,
+          italics: span.italic || false,
+        })
+      })
+      // If line is empty, add an empty run to preserve the blank line
+      if (children.length === 0) {
+        children.push(new TextRun({ text: '', font: 'Courier New', size: 20 }))
+      }
+      return new Paragraph({ children })
+    })
+
+    const doc = new Document({
+      sections: [{ children: paragraphs }],
+    })
+
+    const blob = await Packer.toBlob(doc)
+    const filename = `${sanitizeFilename(note.title)}.docx`
+    await downloadBlob(filename, blob)
     return true
   }
 
@@ -277,7 +605,7 @@ export const useFileActions = () => {
    * Open a .num, .txt, or .md file as a new note.
    */
   const openFile = async () => {
-    const { name, text } = await pickFile('.num,.txt,.md,.json')
+    const { name, text } = await pickFile('.num,.txt,.md,.json,.rtf,.odt,.docx')
     let title = name.replace(/\.[^.]+$/, '') || 'Opened Note'
     let content = text
 
@@ -375,10 +703,15 @@ export const useFileActions = () => {
     pickFile,
     sanitizeFilename,
     mergeContentWithResults,
+    parseColouredLines,
+    parseColouredContent,
     exportNoteAsText,
     exportNoteAsJson,
     exportNoteAsMarkdown,
     exportNoteAsPdf,
+    exportNoteAsRtf,
+    exportNoteAsOdt,
+    exportNoteAsDocx,
     exportAllNotes,
     openFile,
     importNotes,

@@ -40,6 +40,7 @@
             @new-note="$emit('file-new')"
             @open-file="$emit('file-open')"
             @duplicate="$emit('file-duplicate')"
+            @save="$emit('file-save')"
             @backup="$emit('file-backup')"
             @restore="$emit('file-restore')"
             @copy="$emit('file-copy')"
@@ -168,6 +169,7 @@ defineEmits([
   'file-new',
   'file-open',
   'file-duplicate',
+  'file-save',
   'file-backup',
   'file-restore',
   'file-copy',

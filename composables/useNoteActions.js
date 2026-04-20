@@ -17,9 +17,11 @@ export function useNoteActions({
 }) {
   const {
     exportNoteAsText,
-    exportNoteAsJson,
     exportNoteAsMarkdown,
     exportNoteAsPdf,
+    exportNoteAsRtf,
+    exportNoteAsOdt,
+    exportNoteAsDocx,
     downloadFile,
     downloadBlob,
     shareFile,
@@ -439,7 +441,51 @@ export function useNoteActions({
   const handleExportById = (id) => {
     const note = findNote(id)
     if (!note) return
-    exportNoteAsJson(note)
+    pendingSaveNote.value = note
+    showSaveModal.value = true
+  }
+
+  // ── Save (multi-format) ────────────────────────────────
+
+  const showSaveModal = ref(false)
+  const pendingSaveNote = ref(null)
+
+  const handleSave = ({ format, withResults }) => {
+    showSaveModal.value = false
+    const note = pendingSaveNote.value || currentNote.value
+    if (!note) return
+    const calc = withResults ? evaluateLines : null
+    switch (format) {
+      case 'num':
+        exportNoteAsText(note, calc, '.num')
+        break
+      case 'txt':
+        exportNoteAsText(note, calc, '.txt')
+        break
+      case 'md':
+        exportNoteAsMarkdown(note, calc)
+        break
+      case 'pdf':
+        exportNoteAsPdf(note, calc)
+        break
+      case 'rtf':
+        exportNoteAsRtf(note, calc)
+        break
+      case 'odt':
+        exportNoteAsOdt(note, calc)
+        break
+      case 'docx':
+        exportNoteAsDocx(note, calc)
+        break
+    }
+    pendingSaveNote.value = null
+  }
+
+  const handleSaveById = (id) => {
+    const note = findNote(id)
+    if (!note) return
+    pendingSaveNote.value = note
+    showSaveModal.value = true
   }
 
   const handleCopyById = async (id) => {
@@ -461,6 +507,9 @@ export function useNoteActions({
   return {
     showExportOptions,
     handleExportConfirm,
+    showSaveModal,
+    handleSave,
+    handleSaveById,
     showRestorePassword,
     restorePasswordError,
     handleRestorePasswordConfirm,

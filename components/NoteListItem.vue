@@ -111,7 +111,7 @@
                 <Icon name="mdi:clipboard-text-outline" class="w-4 h-4" /> Copy to clipboard
               </UiButton>
               <UiButton variant="menu-item" @click.stop="handleAction('export')">
-                <Icon name="mdi:file-export-outline" class="w-4 h-4" /> Export
+                <Icon name="mdi:content-save-outline" class="w-4 h-4" /> Save
               </UiButton>
               <UiButton variant="menu-item" @click.stop="handleAction('print')">
                 <Icon name="mdi:printer-outline" class="w-4 h-4" /> Print

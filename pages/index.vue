@@ -40,6 +40,7 @@
         @file-new="createNote"
         @file-open="noteActions.handleOpenFile"
         @file-duplicate="noteActions.handleDuplicate"
+        @file-save="noteActions.showSaveModal.value = true"
         @file-backup="showBackup = true"
         @file-restore="noteActions.handleImport"
         @file-copy="noteActions.handleCopy"
@@ -183,6 +184,7 @@
     />
 
     <ExportOptionsModal :is-open="noteActions.showExportOptions.value" @close="noteActions.showExportOptions.value = false" @confirm="noteActions.handleExportConfirm" />
+    <SaveModal :is-open="noteActions.showSaveModal.value" @close="noteActions.showSaveModal.value = false" @confirm="handleSaveConfirm" />
     <BackupModal :is-open="showBackup" :has-note="!!currentNote" @close="showBackup = false" @confirm="handleBackupConfirm" />
     <RestorePasswordModal :is-open="noteActions.showRestorePassword.value" :error="noteActions.restorePasswordError.value" @close="noteActions.handleRestorePasswordClose" @confirm="noteActions.handleRestorePasswordConfirm" />
     <RestoreConfirmModal :is-open="noteActions.showRestoreConfirm.value" :duplicate-count="noteActions.restoreDuplicateCount.value" @close="noteActions.handleRestoreConfirmClose" @skip="noteActions.handleRestoreConfirmSkip" @overwrite="noteActions.handleRestoreConfirmOverwrite" />
@@ -575,6 +577,10 @@ const updateMeta = ({ title, description, tags, internalName }) => {
 }
 
 const showBackup = ref(false)
+
+const handleSaveConfirm = ({ format, withResults }) => {
+  noteActions.handleSave({ format, withResults })
+}
 
 const handleBackupConfirm = (options) => {
   showBackup.value = false

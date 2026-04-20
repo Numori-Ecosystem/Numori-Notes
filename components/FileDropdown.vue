@@ -36,6 +36,13 @@
     <UiDivider />
 
     <UiDropdownItem
+      icon="mdi:content-save-outline"
+      label="Save As…"
+      :shortcut="`${modLabel}+S`"
+      :disabled="!hasNote"
+      @click="action('save')"
+    />
+    <UiDropdownItem
       icon="mdi:content-copy"
       label="Copy to Clipboard"
       :disabled="!hasNote"
@@ -76,6 +83,7 @@ const emit = defineEmits([
   'new-note',
   'open-file',
   'duplicate',
+  'save',
   'backup',
   'restore',
   'copy',

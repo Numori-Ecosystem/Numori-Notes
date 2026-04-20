@@ -7,6 +7,31 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockCopy = vi.fn(() => Promise.resolve())
 vi.stubGlobal('useClipboard', () => ({ copy: mockCopy }))
 
+// Mock jsPDF for test environment (requires DOM APIs not available in Node)
+vi.mock('jspdf', () => ({
+  jsPDF: class {
+    constructor() {
+      this.internal = { pageSize: { getWidth: () => 210, getHeight: () => 297 } }
+    }
+    setFont() {}
+    setFontSize() {}
+    setTextColor() {}
+    splitTextToSize(text) {
+      return [text]
+    }
+    text() {}
+    addPage() {}
+    output() {
+      return new Blob(['mock-pdf'], { type: 'application/pdf' })
+    }
+  },
+}))
+
+// Mock useNumoriHighlight for test environment
+vi.mock('~/composables/useNumoriHighlight', () => ({
+  tokenizeLine: (line) => [{ text: line, token: null }],
+}))
+
 // We test the pure logic functions directly by importing the composable
 const { useFileActions } = await import('../useFileActions.js')
 
@@ -34,10 +59,10 @@ beforeEach(() => {
   revokedUrls = []
 
   // Mock URL.createObjectURL / revokeObjectURL
-  globalThis.URL = {
-    createObjectURL: vi.fn(() => 'blob:mock-url'),
-    revokeObjectURL: vi.fn((url) => revokedUrls.push(url)),
-  }
+  const MockURL = vi.fn(() => ({ href: 'http://mock' }))
+  MockURL.createObjectURL = vi.fn(() => 'blob:mock-url')
+  MockURL.revokeObjectURL = vi.fn((url) => revokedUrls.push(url))
+  globalThis.URL = MockURL
 
   // Mock document.createElement for anchor downloads
   globalThis.document = {
@@ -321,59 +346,25 @@ describe('exportNoteAsMarkdown', () => {
 })
 
 describe('exportNoteAsPdf', () => {
-  it('returns false for null note', () => {
-    expect(exportNoteAsPdf(null)).toBe(false)
+  it('returns false for null note', async () => {
+    expect(await exportNoteAsPdf(null)).toBe(false)
   })
 
-  it('opens print dialog for PDF export', () => {
-    const mockWindow = {
-      document: { write: vi.fn(), close: vi.fn() },
-      print: vi.fn(),
-    }
-    globalThis.window = { open: vi.fn(() => mockWindow) }
-
-    const note = { title: 'PDF Test', content: 'Hello' }
-    const result = exportNoteAsPdf(note)
+  it('generates a PDF blob and downloads it', async () => {
+    const note = { title: 'PDF Test', content: 'Hello\nWorld' }
+    const result = await exportNoteAsPdf(note)
 
     expect(result).toBe(true)
-    expect(mockWindow.print).toHaveBeenCalledOnce()
-    const html = mockWindow.document.write.mock.calls[0][0]
-    expect(html).toContain('<title>PDF Test</title>')
-    expect(html).toContain('Hello')
+    // Verify a download was triggered (blob URL created)
+    expect(globalThis.URL.createObjectURL).toHaveBeenCalled()
   })
 
-  it('exports with results when evaluateLines is provided', () => {
-    const mockWindow = {
-      document: { write: vi.fn(), close: vi.fn() },
-      print: vi.fn(),
-    }
-    globalThis.window = { open: vi.fn(() => mockWindow) }
-
+  it('exports with results when evaluateLines is provided', async () => {
     const note = { title: 'Calc', content: '2 + 2' }
-    const result = exportNoteAsPdf(note, mockEvaluateLines)
+    const result = await exportNoteAsPdf(note, mockEvaluateLines)
 
     expect(result).toBe(true)
-    const html = mockWindow.document.write.mock.calls[0][0]
-    expect(html).toContain('2 + 2  = 4')
-  })
-
-  it('returns false if popup is blocked', () => {
-    globalThis.window = { open: vi.fn(() => null) }
-    expect(exportNoteAsPdf({ title: 'X', content: 'Y' })).toBe(false)
-  })
-
-  it('escapes HTML in content', () => {
-    const mockWindow = {
-      document: { write: vi.fn(), close: vi.fn() },
-      print: vi.fn(),
-    }
-    globalThis.window = { open: vi.fn(() => mockWindow) }
-
-    const note = { title: 'XSS', content: '<script>alert(1)</script>' }
-    exportNoteAsPdf(note)
-    const html = mockWindow.document.write.mock.calls[0][0]
-    expect(html).toContain('&lt;script&gt;')
-    expect(html).not.toContain('<script>alert')
+    expect(globalThis.URL.createObjectURL).toHaveBeenCalled()
   })
 })
 
