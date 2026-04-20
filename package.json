@@ -45,7 +45,7 @@
     "open:ios": "npx cap open ios",
     "open": "npx cap open android && npx cap open ios",
     "dev": "rm -f public/version.json public/sw.js && nuxt cleanup && nuxt dev --host 0.0.0.0",
-    "dev:android": "npx cap run android -l --port 3000",
+    "dev:android": "npx cap run android -l --host localhost --port 3000 --forwardPorts 3000:3000",
     "dev:ios": "npx cap run ios -l --port 3000",
     "dev:phones": "concurrently -n android,ios -c green,yellow \"npm run dev:android\" \"npm run dev:ios\"",
     "dev:db": "docker compose -f docker-compose.dev.yml up -d",

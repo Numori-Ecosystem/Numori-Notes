@@ -28,6 +28,23 @@
  * ciphertext (including the 16-byte authentication tag appended by AES-GCM).
  */
 
+// ── Secure context guard ─────────────────────────────────────────────────
+// crypto.subtle is only available in secure contexts (HTTPS / localhost).
+// During Capacitor live-reload development the WebView may load over plain
+// HTTP from the host machine's LAN IP, which is NOT a secure context.
+// Using --forwardPorts with `cap run` ensures the WebView uses localhost.
+function getSubtle() {
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    return crypto.subtle
+  }
+  throw new Error(
+    '[crypto] Web Crypto API (crypto.subtle) is unavailable. ' +
+      'This usually means the page is not served over a secure context (HTTPS or localhost). ' +
+      'If running Capacitor live-reload, ensure the dev script uses: ' +
+      'npx cap run android -l --host localhost --forwardPorts 3000:3000',
+  )
+}
+
 // ── Salts (assumed pre-defined constants) ────────────────────────────────
 // These MUST be unique and stable. Changing them invalidates all derived keys.
 const AUTH_SALT = new TextEncoder().encode('w8765nygwhfmw98t:auth-key-salt:v1')
@@ -53,7 +70,7 @@ function fromBase64(str) {
  * Import a password string as a PBKDF2 base key.
  */
 async function importPasswordKey(password) {
-  return crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, [
+  return getSubtle().importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, [
     'deriveBits',
     'deriveKey',
   ])
@@ -67,7 +84,7 @@ async function importPasswordKey(password) {
  */
 export async function deriveAuthKey(password) {
   const baseKey = await importPasswordKey(password)
-  const bits = await crypto.subtle.deriveBits(
+  const bits = await getSubtle().deriveBits(
     { name: 'PBKDF2', salt: AUTH_SALT, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
     baseKey,
     256,
@@ -85,7 +102,7 @@ export async function deriveAuthKey(password) {
  */
 export async function deriveEncKey(password) {
   const baseKey = await importPasswordKey(password)
-  return crypto.subtle.deriveKey(
+  return getSubtle().deriveKey(
     { name: 'PBKDF2', salt: ENC_SALT, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
     baseKey,
     { name: 'AES-GCM', length: 256 },
@@ -98,7 +115,7 @@ export async function deriveEncKey(password) {
  * Export a CryptoKey as a base64 string (raw key bytes).
  */
 export async function exportKey(key) {
-  const raw = await crypto.subtle.exportKey('raw', key)
+  const raw = await getSubtle().exportKey('raw', key)
   return toBase64(raw)
 }
 
@@ -107,7 +124,7 @@ export async function exportKey(key) {
  */
 export async function importKey(base64) {
   const raw = fromBase64(base64)
-  return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM', length: 256 }, true, [
+  return getSubtle().importKey('raw', raw, { name: 'AES-GCM', length: 256 }, true, [
     'encrypt',
     'decrypt',
   ])
@@ -124,7 +141,7 @@ export async function importKey(base64) {
  */
 export async function deriveShareKey(sharePassword) {
   const baseKey = await importPasswordKey(sharePassword)
-  return crypto.subtle.deriveKey(
+  return getSubtle().deriveKey(
     { name: 'PBKDF2', salt: SHARE_SALT, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
     baseKey,
     { name: 'AES-GCM', length: 256 },
@@ -151,7 +168,7 @@ export function generateSharePassword() {
 export async function encrypt(plaintext, key) {
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const encoded = new TextEncoder().encode(plaintext)
-  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded)
+  const ciphertext = await getSubtle().encrypt({ name: 'AES-GCM', iv }, key, encoded)
   return JSON.stringify({
     iv: toBase64(iv),
     ct: toBase64(ciphertext),
@@ -165,7 +182,7 @@ export async function encrypt(plaintext, key) {
  */
 export async function decrypt(encryptedStr, key) {
   const { iv, ct } = JSON.parse(encryptedStr)
-  const decrypted = await crypto.subtle.decrypt(
+  const decrypted = await getSubtle().decrypt(
     { name: 'AES-GCM', iv: fromBase64(iv) },
     key,
     fromBase64(ct),
