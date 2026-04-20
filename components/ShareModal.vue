@@ -343,7 +343,12 @@ const handleShare = async () => {
     // Store the delete token locally so anonymous users can stop sharing later
     if (data.deleteToken) {
       try {
-        await db.shareTokens.put({ hash: data.hash, token: data.deleteToken })
+        await db.shareTokens.put({
+          hash: data.hash,
+          token: data.deleteToken,
+          noteId: props.note.id,
+          collectAnalytics: collectAnalytics.value,
+        })
       } catch {
         /* db unavailable */
       }
@@ -366,23 +371,22 @@ const handleUnshare = async () => {
   const hash = activeHash.value
   if (!hash) return
   try {
-    const headers = { ...props.authHeaders }
-
-    // If not logged in, use the stored delete token
+    // If not logged in, use the stored delete token as a query param
+    let tokenParam = ''
     if (!props.isLoggedIn) {
       try {
         const record = await db.shareTokens.get(hash)
         if (record?.token) {
-          headers['x-delete-token'] = record.token
+          tokenParam = `?_token=${encodeURIComponent(record.token)}`
         }
       } catch {
         /* db unavailable */
       }
     }
 
-    await apiFetch(`/api/share/${hash}`, {
+    await apiFetch(`/api/share/${hash}${tokenParam}`, {
       method: 'DELETE',
-      headers,
+      headers: props.authHeaders,
     })
 
     // Clean up stored delete token

@@ -16,8 +16,8 @@ import { query } from '../../utils/db.js'
 export default defineEventHandler(async (event) => {
   const auth = await optionalAuth(event)
   const hash = getRouterParam(event, 'hash')
-  const { purge } = getQuery(event)
-  const deleteToken = getHeader(event, 'x-delete-token')
+  const { purge, _token } = getQuery(event)
+  const deleteToken = getHeader(event, 'x-delete-token') || _token || null
 
   // Must have either auth or a delete token
   if (!auth && !deleteToken) {

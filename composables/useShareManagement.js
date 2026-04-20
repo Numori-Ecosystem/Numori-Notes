@@ -13,38 +13,59 @@ export function useShareManagement({ auth, notes, apiFetch }) {
   const analyticsHash = ref(null)
 
   const loadSharedNotes = async () => {
-    if (!auth.isLoggedIn.value) {
-      sharedNoteIds.value = []
-      sharedNotesMap.value = new Map()
-      analyticsNotesMap.value = new Map()
-      return
-    }
-    try {
-      const shared = await apiFetch('/api/share/my', { headers: auth.authHeaders.value })
-      const map = new Map()
-      const analyticsMap = new Map()
-      const ids = []
-      for (const sn of shared) {
-        const match = sn.sourceClientId
-          ? notes.value.find((n) => n.id === sn.sourceClientId)
-          : notes.value.find((n) => n.title === sn.title)
-        if (match) {
-          if (sn.isActive) {
-            ids.push(match.id)
-            map.set(match.id, sn.hash)
-          }
-          if (sn.collectAnalytics) {
-            analyticsMap.set(match.id, sn.hash)
+    if (auth.isLoggedIn.value) {
+      // Authenticated: fetch from server
+      try {
+        const shared = await apiFetch('/api/share/my', { headers: auth.authHeaders.value })
+        const map = new Map()
+        const analyticsMap = new Map()
+        const ids = []
+        for (const sn of shared) {
+          const match = sn.sourceClientId
+            ? notes.value.find((n) => n.id === sn.sourceClientId)
+            : notes.value.find((n) => n.title === sn.title)
+          if (match) {
+            if (sn.isActive) {
+              ids.push(match.id)
+              map.set(match.id, sn.hash)
+            }
+            if (sn.collectAnalytics) {
+              analyticsMap.set(match.id, sn.hash)
+            }
           }
         }
+        sharedNoteIds.value = ids
+        sharedNotesMap.value = map
+        analyticsNotesMap.value = analyticsMap
+      } catch {
+        sharedNoteIds.value = []
+        sharedNotesMap.value = new Map()
+        analyticsNotesMap.value = new Map()
       }
-      sharedNoteIds.value = ids
-      sharedNotesMap.value = map
-      analyticsNotesMap.value = analyticsMap
-    } catch {
-      sharedNoteIds.value = []
-      sharedNotesMap.value = new Map()
-      analyticsNotesMap.value = new Map()
+    } else {
+      // Anonymous: use locally stored share tokens
+      try {
+        const allTokens = await db.shareTokens.toArray()
+        const map = new Map()
+        const analyticsMap = new Map()
+        const ids = []
+        for (const record of allTokens) {
+          if (record.noteId) {
+            ids.push(record.noteId)
+            map.set(record.noteId, record.hash)
+            if (record.collectAnalytics) {
+              analyticsMap.set(record.noteId, record.hash)
+            }
+          }
+        }
+        sharedNoteIds.value = ids
+        sharedNotesMap.value = map
+        analyticsNotesMap.value = analyticsMap
+      } catch {
+        sharedNoteIds.value = []
+        sharedNotesMap.value = new Map()
+        analyticsNotesMap.value = new Map()
+      }
     }
   }
 
@@ -57,23 +78,22 @@ export function useShareManagement({ auth, notes, apiFetch }) {
     const hash = sharedNotesMap.value.get(noteId)
     if (!hash) return
     try {
-      const headers = { ...auth.authHeaders.value }
-
-      // If not logged in, use the stored delete token
+      // If not logged in, use the stored delete token as a query param
+      let tokenParam = ''
       if (!auth.isLoggedIn.value) {
         try {
           const record = await db.shareTokens.get(hash)
           if (record?.token) {
-            headers['x-delete-token'] = record.token
+            tokenParam = `?_token=${encodeURIComponent(record.token)}`
           }
         } catch {
           /* db unavailable */
         }
       }
 
-      await apiFetch(`/api/share/${hash}`, {
+      await apiFetch(`/api/share/${hash}${tokenParam}`, {
         method: 'DELETE',
-        headers,
+        headers: auth.authHeaders.value,
       })
 
       // Clean up stored delete token
@@ -91,12 +111,12 @@ export function useShareManagement({ auth, notes, apiFetch }) {
 
   const handleShareModalClose = () => {
     showShareModal.value = false
-    if (auth.isLoggedIn.value) loadSharedNotes()
+    loadSharedNotes()
   }
 
   const handleShareModalUnshare = () => {
     showShareModal.value = false
-    if (auth.isLoggedIn.value) loadSharedNotes()
+    loadSharedNotes()
   }
 
   const handleOpenAnalytics = (hash) => {

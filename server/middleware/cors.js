@@ -42,7 +42,7 @@ export default defineEventHandler((event) => {
   setResponseHeaders(event, {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Device-Info',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Device-Info, X-Delete-Token',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
   })

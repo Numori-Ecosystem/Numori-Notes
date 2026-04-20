@@ -437,12 +437,12 @@ const loadOwnerToken = async () => {
 
 // Build request headers: use authHeaders if available, otherwise include the
 // locally-stored owner/delete token for anonymous share ownership verification.
-const requestHeaders = computed(() => {
-  const headers = { ...props.authHeaders }
-  if (!headers.Authorization && ownerToken.value) {
-    headers['x-delete-token'] = ownerToken.value
-  }
-  return headers
+// Token is passed as a query param (_token) to avoid CORS preflight issues.
+const requestHeaders = computed(() => ({ ...props.authHeaders }))
+
+const tokenQueryParam = computed(() => {
+  if (props.authHeaders?.Authorization || !ownerToken.value) return ''
+  return `&_token=${encodeURIComponent(ownerToken.value)}`
 })
 
 const tabs = [
@@ -512,7 +512,7 @@ const refresh = () => {
 const loadData = async (page = 1) => {
   loading.value = true
   try {
-    data.value = await apiFetch(`/api/share/${props.hash}/analytics?page=${page}&limit=20`, {
+    data.value = await apiFetch(`/api/share/${props.hash}/analytics?page=${page}&limit=20${tokenQueryParam.value}`, {
       headers: requestHeaders.value,
     })
     currentPage.value = data.value.page
@@ -592,7 +592,7 @@ const deleteSelected = async () => {
 const confirmDeleteSelected = async () => {
   deleting.value = true
   try {
-    await apiFetch(`/api/share/${props.hash}/analytics`, {
+    await apiFetch(`/api/share/${props.hash}/analytics?${tokenQueryParam.value.replace(/^&/, '')}`, {
       method: 'DELETE',
       headers: requestHeaders.value,
       body: { ids: [...selectedIds.value] },
@@ -614,7 +614,7 @@ const deleteAll = async () => {
 const confirmDeleteAll = async () => {
   deleting.value = true
   try {
-    await apiFetch(`/api/share/${props.hash}/analytics`, {
+    await apiFetch(`/api/share/${props.hash}/analytics?${tokenQueryParam.value.replace(/^&/, '')}`, {
       method: 'DELETE',
       headers: requestHeaders.value,
     })

@@ -15,7 +15,7 @@ import { query } from '../../../utils/db.js'
 export default defineEventHandler(async (event) => {
   const auth = await optionalAuth(event)
   const hash = getRouterParam(event, 'hash')
-  const deleteToken = getHeader(event, 'x-delete-token')
+  const deleteToken = getHeader(event, 'x-delete-token') || getQuery(event)._token || null
 
   if (!auth && !deleteToken) {
     throw createError({ statusCode: 401, statusMessage: 'Authentication or owner token required' })
