@@ -1,8 +1,76 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
-import { join } from 'node:path'
+import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
+import { join, extname } from 'node:path'
+import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+const SUPPORTED_EXTENSIONS = ['.num', '.txt', '.md', '.csv']
+
+// Holds the file path passed via OS "open with" until the renderer is ready
+let pendingFilePath = null
+
+function isFileSupported(filePath) {
+  return SUPPORTED_EXTENSIONS.includes(extname(filePath).toLowerCase())
+}
+
+async function handleOpenFile(filePath) {
+  if (!isFileSupported(filePath)) {
+    dialog.showMessageBox({
+      type: 'warning',
+      title: 'File format not supported',
+      message: `The file "${filePath}" cannot be opened.\n\nSupported formats: ${SUPPORTED_EXTENSIONS.join(', ')}`,
+      buttons: ['OK'],
+    })
+    return
+  }
+
+  const win = BrowserWindow.getAllWindows()[0]
+  if (win) {
+    try {
+      const content = await readFile(filePath, 'utf-8')
+      win.webContents.send('open-file', { path: filePath, content })
+    } catch (err) {
+      dialog.showErrorBox('Error opening file', err.message)
+    }
+  } else {
+    pendingFilePath = filePath
+  }
+}
+
+// macOS: file opened via Finder / "Open With"
+app.on('open-file', (event, filePath) => {
+  event.preventDefault()
+  if (app.isReady()) {
+    handleOpenFile(filePath)
+  } else {
+    pendingFilePath = filePath
+  }
+})
+
+// Windows/Linux: file path passed as command-line argument
+const fileArg = process.argv.slice(1).find((arg) => {
+  if (arg.startsWith('-')) return false
+  if (arg === __dirname || arg.includes('electron')) return false
+  const ext = extname(arg).toLowerCase()
+  if (!ext) return false
+  return true
+})
+if (fileArg) {
+  if (isFileSupported(fileArg)) {
+    pendingFilePath = fileArg
+  } else {
+    // Will show dialog once app is ready
+    app.whenReady().then(() => {
+      dialog.showMessageBox({
+        type: 'warning',
+        title: 'File format not supported',
+        message: `The file "${fileArg}" cannot be opened.\n\nSupported formats: ${SUPPORTED_EXTENSIONS.join(', ')}`,
+        buttons: ['OK'],
+      })
+    })
+  }
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -43,7 +111,39 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(async () => {
+  createWindow()
+
+  // Send pending file once the renderer signals it's ready
+  ipcMain.on('renderer-ready', async () => {
+    if (pendingFilePath) {
+      await handleOpenFile(pendingFilePath)
+      pendingFilePath = null
+    }
+  })
+})
+
+// Windows/Linux: handle "Open With" when app is already running (single instance)
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', (_event, argv) => {
+    // Focus existing window
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.focus()
+    }
+    // Check if a file was passed
+    const filePath = argv.slice(1).find((arg) => {
+      if (arg.startsWith('-')) return false
+      const ext = extname(arg).toLowerCase()
+      return ext.length > 0
+    })
+    if (filePath) handleOpenFile(filePath)
+  })
+}
 
 // Window control IPC handlers
 ipcMain.on('window-minimize', (event) => {

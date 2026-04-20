@@ -6,6 +6,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    private static let supportedExtensions: Set<String> = ["num", "txt", "md", "csv"]
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         return true
@@ -34,8 +36,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        // Called when the app was launched with a url. Feel free to add additional processing here,
-        // but if you want the App API to support tracking app url opens, make sure to keep this call
+        // Handle file "Open With" from other apps or Files
+        if url.isFileURL {
+            let ext = url.pathExtension.lowercased()
+            if AppDelegate.supportedExtensions.contains(ext) {
+                handleIncomingFile(url: url)
+            } else {
+                showUnsupportedFileAlert(fileName: url.lastPathComponent)
+            }
+            return true
+        }
+
+        // Fallback to Capacitor's default URL handling (deep links)
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
 
@@ -46,4 +58,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
+    // MARK: - File handling
+
+    private func handleIncomingFile(url: URL) {
+        // Ensure we can access the file (it may be security-scoped)
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if accessing { url.stopAccessingSecurityScopedResource() }
+        }
+
+        guard let content = try? String(contentsOf: url, encoding: .utf8) else {
+            showUnsupportedFileAlert(fileName: url.lastPathComponent)
+            return
+        }
+
+        // Pass file to WebView via JavaScript
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            guard let vc = self.window?.rootViewController as? CAPBridgeViewController,
+                  let webView = vc.webView else { return }
+
+            let fileName = url.lastPathComponent.replacingOccurrences(of: "'", with: "\\'")
+            let escapedContent = content
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "'", with: "\\'")
+                .replacingOccurrences(of: "\n", with: "\\n")
+                .replacingOccurrences(of: "\r", with: "\\r")
+
+            let js = "window.dispatchEvent(new CustomEvent('open-with-file-content',{detail:{fileName:'\(fileName)',content:'\(escapedContent)'}}));"
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
+    }
+
+    private func showUnsupportedFileAlert(fileName: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(
+                title: "File format not supported",
+                message: "The file \"\(fileName)\" cannot be opened.\n\nSupported formats: .num, .txt, .md, .csv",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.window?.rootViewController?.present(alert, animated: true)
+        }
+    }
 }

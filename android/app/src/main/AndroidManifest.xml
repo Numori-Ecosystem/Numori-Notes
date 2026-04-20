@@ -27,6 +27,23 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="notes.numori.app" />
             </intent-filter>
+
+            <!-- Open With: handle supported file types -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/markdown" />
+                <data android:mimeType="text/csv" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:pathPattern=".*\\.num" />
+                <data android:pathPattern=".*\\.txt" />
+                <data android:pathPattern=".*\\.md" />
+                <data android:pathPattern=".*\\.csv" />
+            </intent-filter>
         </activity>
 
         <provider

@@ -1,5 +1,6 @@
 package notes.numori.app;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -21,14 +23,21 @@ import android.widget.LinearLayout;
 
 import com.getcapacitor.BridgeActivity;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends BridgeActivity {
 
     private View toolbarView;
     private boolean toolbarVisible = false;
     private boolean codemirrorFocused = false;
+
+    private static final Set<String> SUPPORTED_EXTENSIONS = new HashSet<>(
+        Arrays.asList(".num", ".txt", ".md", ".csv")
+    );
 
     // Button IDs in order — matches iOS / web FormattingToolbar
     private static final String[][] UNDO_REDO = {
@@ -70,6 +79,55 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         buildToolbar();
         setupKeyboardListener();
+        handleFileIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleFileIntent(intent);
+    }
+
+    private void handleFileIntent(Intent intent) {
+        if (intent == null) return;
+        String action = intent.getAction();
+        if (!Intent.ACTION_VIEW.equals(action)) return;
+
+        Uri uri = intent.getData();
+        if (uri == null) return;
+
+        String uriString = uri.toString();
+        // Check if the file extension is supported
+        String ext = getFileExtension(uriString);
+        if (!SUPPORTED_EXTENSIONS.contains(ext)) {
+            // Dispatch unsupported event to WebView
+            WebView wv = getBridge() != null ? getBridge().getWebView() : null;
+            if (wv != null) {
+                String fileName = uri.getLastPathSegment() != null ? uri.getLastPathSegment() : uriString;
+                wv.post(() -> wv.evaluateJavascript(
+                    "window.dispatchEvent(new CustomEvent('open-with-unsupported',{detail:{fileName:'" +
+                    fileName.replace("'", "\\'") + "'}}))", null));
+            }
+            return;
+        }
+
+        // Pass the URI to the WebView via appUrlOpen (Capacitor's App plugin will pick it up)
+        WebView wv = getBridge() != null ? getBridge().getWebView() : null;
+        if (wv != null) {
+            wv.post(() -> wv.evaluateJavascript(
+                "window.dispatchEvent(new CustomEvent('open-with-file',{detail:{uri:'" +
+                uriString.replace("'", "\\'") + "'}}))", null));
+        }
+    }
+
+    private String getFileExtension(String path) {
+        int dotIndex = path.lastIndexOf('.');
+        if (dotIndex == -1 || dotIndex == path.length() - 1) return "";
+        // Strip query params if present
+        String ext = path.substring(dotIndex);
+        int queryIndex = ext.indexOf('?');
+        if (queryIndex != -1) ext = ext.substring(0, queryIndex);
+        return ext.toLowerCase();
     }
 
     // ── Theme colors (matching iOS / tailwind palette) ──────────────────

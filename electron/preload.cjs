@@ -9,4 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setFullScreen: (flag) => ipcRenderer.send('window-set-fullscreen', flag),
   onFullScreenChange: (callback) =>
     ipcRenderer.on('window-fullscreen-changed', (_event, isFullScreen) => callback(isFullScreen)),
+  // "Open with" file handling
+  signalReady: () => ipcRenderer.send('renderer-ready'),
+  onOpenFile: (callback) => ipcRenderer.on('open-file', (_event, data) => callback(data)),
 })

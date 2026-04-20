@@ -8,6 +8,12 @@ export default {
     output: 'dist-electron',
   },
   files: ['.output/public/**/*', 'electron/**/*', 'package.json'],
+  fileAssociations: [
+    { ext: 'num', name: 'Numori Note', mimeType: 'application/x-numori-note' },
+    { ext: 'txt', name: 'Text File', mimeType: 'text/plain' },
+    { ext: 'md', name: 'Markdown File', mimeType: 'text/markdown' },
+    { ext: 'csv', name: 'CSV File', mimeType: 'text/csv' },
+  ],
   mac: {
     category: 'public.app-category.productivity',
     target: ['dmg', 'zip'],

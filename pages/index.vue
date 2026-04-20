@@ -586,6 +586,22 @@ onMounted(async () => {
   }
 })
 
+// Check for pending "Open With" file from OS
+onMounted(() => {
+  const consumePending = () => {
+    if (window.__pendingOpenWithNote) {
+      const data = window.__pendingOpenWithNote
+      window.__pendingOpenWithNote = null
+      const newNote = createNote()
+      updateNoteMeta(newNote.id, { title: data.title, description: data.description })
+      updateNoteContent(newNote.id, data.content)
+    }
+  }
+  consumePending()
+  // Also listen for future open-with events while the page is active
+  window.addEventListener('open-with-file-content', () => nextTick(consumePending))
+})
+
 const selectNote = (id) => {
   currentNoteId.value = id
   if (window.innerWidth < 1024) showSidebar.value = false
