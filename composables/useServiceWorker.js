@@ -97,6 +97,22 @@ export const useServiceWorker = () => {
   }
 
   /**
+   * Compare two semver-like version strings (e.g. "0.18.0" vs "0.20.0").
+   * Returns true if `a` is newer than `b`.
+   */
+  function isNewerVersion(a, b) {
+    const pa = a.split('.').map(Number)
+    const pb = b.split('.').map(Number)
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const na = pa[i] || 0
+      const nb = pb[i] || 0
+      if (na > nb) return true
+      if (na < nb) return false
+    }
+    return false
+  }
+
+  /**
    * Compare the build version against the server.
    * Respects the dismissed version — won't re-show a dismissed update
    * unless a newer version appears.
@@ -106,7 +122,7 @@ export const useServiceWorker = () => {
   async function checkForUpdate(manual = false) {
     try {
       const data = await fetchLatestVersion()
-      if (!data?.version || data.version === buildVersion) {
+      if (!data?.version || !isNewerVersion(data.version, buildVersion)) {
         if (manual) updateAvailable.value = false
         return 'up-to-date'
       }
