@@ -1,7 +1,7 @@
 <template>
   <UiModal :show="show" max-width="sm" :fullscreen-mobile="fullscreenMobile" @close="handleClose">
-    <div ref="promptRef" class="p-4" @keydown="onKeydown">
-      <div class="flex items-center justify-between mb-3">
+    <div ref="promptRef" class="flex flex-col overflow-hidden max-h-full" @keydown="onKeydown">
+      <div class="flex items-center justify-between p-4 pb-0 mb-3 shrink-0">
         <div class="flex items-center gap-2">
           <Icon v-if="icon" :name="icon" class="w-5 h-5" :class="iconColorClass" />
           <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-200 leading-none">{{ title }}</h2>
@@ -11,11 +11,11 @@
         </UiButton>
       </div>
 
-      <div v-if="body || $slots.default" class="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
+      <div v-if="body || $slots.default" class="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed px-4 overflow-y-auto min-h-0">
         <slot>{{ body }}</slot>
       </div>
 
-      <div class="flex justify-end gap-2">
+      <div class="flex justify-end gap-2 p-4 pt-0 shrink-0">
         <slot name="actions">
           <UiButton variant="ghost" color="gray" :disabled="loading" @click="handleClose">
             {{ cancelLabel }}
