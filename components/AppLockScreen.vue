@@ -40,32 +40,8 @@
             </div>
           </div>
 
-          <!-- Biometric prompt (shown first for biometrics method) -->
-          <div v-if="showBiometricPrompt" class="space-y-4">
-            <UiButton
-              variant="solid"
-              color="primary"
-              block
-              size="lg"
-              shape="pill"
-              @click="attemptBiometrics"
-            >
-              <Icon name="mdi:fingerprint" class="w-5 h-5" />
-              Unlock with biometrics
-            </UiButton>
-            <UiButton
-              variant="ghost"
-              color="gray"
-              block
-              size="sm"
-              @click="showBiometricPrompt = false"
-            >
-              Use {{ fallbackLabel }} instead
-            </UiButton>
-          </div>
-
           <!-- PIN input -->
-          <div v-else-if="activeMethod === 'pin'" class="space-y-6">
+          <div v-if="activeMethod === 'pin'" class="space-y-6">
             <!-- PIN dots -->
             <div class="flex justify-center gap-3">
               <div
@@ -91,7 +67,7 @@
               <template v-if="hasBiometrics" #bottom-left>
                 <button
                   class="h-16 w-full rounded-2xl transition-all duration-150 flex items-center justify-center text-primary-500 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:scale-95"
-                  @click="showBiometricPrompt = true"
+                  @click="attemptBiometrics"
                 >
                   <Icon name="mdi:fingerprint" class="w-6 h-6" />
                 </button>
@@ -127,7 +103,7 @@
               variant="ghost"
               color="primary"
               size="sm"
-              @click="showBiometricPrompt = true"
+              @click="attemptBiometrics"
             >
               <Icon name="mdi:fingerprint" class="w-4 h-4" />
               Use biometrics
@@ -178,26 +154,20 @@ const enteredPin = ref('')
 const enteredPassword = ref('')
 const error = ref('')
 const shake = ref(false)
-const showBiometricPrompt = ref(false)
 const passwordInputRef = ref(null)
 
 const hasBiometrics = computed(() => settings.method === 'biometrics' && biometricsEnrolled.value)
 
 const activeMethod = computed(() => {
   if (settings.method === 'biometrics') {
-    return showBiometricPrompt.value ? 'biometrics' : settings.biometricsFallback
+    return settings.biometricsFallback
   }
   return settings.method
 })
 
 const unlockLabel = computed(() => {
-  if (settings.method === 'biometrics' && showBiometricPrompt.value) return 'Authenticate to continue'
   if (activeMethod.value === 'pin') return 'Enter your PIN to unlock'
   return 'Enter your password to unlock'
-})
-
-const fallbackLabel = computed(() => {
-  return settings.biometricsFallback === 'pin' ? 'PIN' : 'password'
 })
 
 const enterDigit = (digit) => {
@@ -237,8 +207,7 @@ const attemptBiometrics = async () => {
   error.value = ''
   const success = await unlockWithBiometrics()
   if (!success) {
-    error.value = 'Biometric authentication failed'
-    showBiometricPrompt.value = false
+    error.value = 'Biometric authentication failed. Tap fingerprint to retry.'
   }
 }
 
@@ -254,15 +223,12 @@ watch(
       return
     }
     if (hasBiometrics.value) {
-      showBiometricPrompt.value = true
       await nextTick()
       attemptBiometrics()
-    } else {
-      showBiometricPrompt.value = false
-      if (activeMethod.value === 'password') {
-        await nextTick()
-        passwordInputRef.value?.$el?.querySelector('input')?.focus()
-      }
+    }
+    if (activeMethod.value === 'password') {
+      await nextTick()
+      passwordInputRef.value?.$el?.querySelector('input')?.focus()
     }
   },
   { immediate: true },
@@ -271,8 +237,7 @@ watch(
 // biometricsEnrolled may resolve after the lock screen is already visible,
 // so watch it separately to auto-trigger when it becomes available.
 watch(hasBiometrics, async (available) => {
-  if (available && props.show && !showBiometricPrompt.value) {
-    showBiometricPrompt.value = true
+  if (available && props.show) {
     await nextTick()
     attemptBiometrics()
   }
