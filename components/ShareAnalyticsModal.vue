@@ -412,6 +412,8 @@
 </template>
 
 <script setup>
+import db from '~/db.js'
+
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
   hash: { type: String, default: null },
@@ -420,6 +422,28 @@ const props = defineProps({
 
 const _emit = defineEmits(['close'])
 const { apiFetch } = useApi()
+
+const ownerToken = ref(null)
+
+const loadOwnerToken = async () => {
+  if (!props.hash) return
+  try {
+    const record = await db.shareTokens.get(props.hash)
+    ownerToken.value = record?.token || null
+  } catch {
+    ownerToken.value = null
+  }
+}
+
+// Build request headers: use authHeaders if available, otherwise include the
+// locally-stored owner/delete token for anonymous share ownership verification.
+const requestHeaders = computed(() => {
+  const headers = { ...props.authHeaders }
+  if (!headers.Authorization && ownerToken.value) {
+    headers['x-delete-token'] = ownerToken.value
+  }
+  return headers
+})
 
 const tabs = [
   { id: 'summary', label: 'Summary' },
@@ -445,16 +469,18 @@ let autoRefreshTimer = null
 
 watch(
   () => props.isOpen,
-  (open) => {
+  async (open) => {
     if (open && props.hash) {
       activeTab.value = 'summary'
       showRaw.value = false
       selectedIds.value = new Set()
       currentPage.value = 1
+      await loadOwnerToken()
       loadData(1)
       startAutoRefresh()
     } else {
       data.value = null
+      ownerToken.value = null
       stopAutoRefresh()
     }
   },
@@ -487,7 +513,7 @@ const loadData = async (page = 1) => {
   loading.value = true
   try {
     data.value = await apiFetch(`/api/share/${props.hash}/analytics?page=${page}&limit=20`, {
-      headers: props.authHeaders,
+      headers: requestHeaders.value,
     })
     currentPage.value = data.value.page
   } catch {
@@ -568,7 +594,7 @@ const confirmDeleteSelected = async () => {
   try {
     await apiFetch(`/api/share/${props.hash}/analytics`, {
       method: 'DELETE',
-      headers: props.authHeaders,
+      headers: requestHeaders.value,
       body: { ids: [...selectedIds.value] },
     })
     selectedIds.value = new Set()
@@ -590,7 +616,7 @@ const confirmDeleteAll = async () => {
   try {
     await apiFetch(`/api/share/${props.hash}/analytics`, {
       method: 'DELETE',
-      headers: props.authHeaders,
+      headers: requestHeaders.value,
     })
     selectedIds.value = new Set()
     await loadData(1)

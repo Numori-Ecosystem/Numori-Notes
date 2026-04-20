@@ -115,4 +115,9 @@ db.version(3)
     }
   })
 
+// ── Version 4 — share owner tokens for anonymous unshare/analytics ─────
+db.version(4).stores({
+  shareTokens: 'hash',
+})
+
 export default db

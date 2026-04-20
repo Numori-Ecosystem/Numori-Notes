@@ -1,4 +1,5 @@
-import { requireAuth } from '../../../utils/auth.js'
+import { createHash } from 'node:crypto'
+import { optionalAuth } from '../../../utils/auth.js'
 import { query } from '../../../utils/db.js'
 
 /**
@@ -6,17 +7,34 @@ import { query } from '../../../utils/db.js'
  * Body: { ids?: number[] }
  *   - If ids provided: delete those specific view records (granular)
  *   - If no ids: delete ALL analytics for this shared note (bulk)
- * Only the owner can do this.
+ *
+ * Authorization: either
+ *   1. Authenticated user who owns the share (user_id matches), OR
+ *   2. Valid owner token passed via `X-Delete-Token` header (for anonymous shares).
  */
 export default defineEventHandler(async (event) => {
-  const auth = await requireAuth(event)
+  const auth = await optionalAuth(event)
   const hash = getRouterParam(event, 'hash')
+  const deleteToken = getHeader(event, 'x-delete-token')
+
+  if (!auth && !deleteToken) {
+    throw createError({ statusCode: 401, statusMessage: 'Authentication or owner token required' })
+  }
 
   // Verify ownership (include soft-deleted)
-  const noteResult = await query('SELECT id FROM shared_notes WHERE hash = $1 AND user_id = $2', [
-    hash,
-    auth.userId,
-  ])
+  let noteResult
+  if (auth) {
+    noteResult = await query('SELECT id FROM shared_notes WHERE hash = $1 AND user_id = $2', [
+      hash,
+      auth.userId,
+    ])
+  } else {
+    const tokenHash = createHash('sha256').update(deleteToken).digest('hex')
+    noteResult = await query(
+      'SELECT id FROM shared_notes WHERE hash = $1 AND delete_token_hash = $2',
+      [hash, tokenHash],
+    )
+  }
 
   if (noteResult.rows.length === 0) {
     throw createError({

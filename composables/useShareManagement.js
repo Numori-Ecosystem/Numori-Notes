@@ -1,3 +1,5 @@
+import db from '~/db.js'
+
 /**
  * Manages shared note state and share/unshare actions.
  */
@@ -55,10 +57,32 @@ export function useShareManagement({ auth, notes, apiFetch }) {
     const hash = sharedNotesMap.value.get(noteId)
     if (!hash) return
     try {
+      const headers = { ...auth.authHeaders.value }
+
+      // If not logged in, use the stored delete token
+      if (!auth.isLoggedIn.value) {
+        try {
+          const record = await db.shareTokens.get(hash)
+          if (record?.token) {
+            headers['x-delete-token'] = record.token
+          }
+        } catch {
+          /* db unavailable */
+        }
+      }
+
       await apiFetch(`/api/share/${hash}`, {
         method: 'DELETE',
-        headers: auth.authHeaders.value,
+        headers,
       })
+
+      // Clean up stored delete token
+      try {
+        await db.shareTokens.delete(hash)
+      } catch {
+        /* db unavailable */
+      }
+
       await loadSharedNotes()
     } catch {
       /* ignore */

@@ -34,7 +34,6 @@
 
         <!-- Analytics link -->
         <UiButton
-          v-if="isLoggedIn"
           variant="ghost"
           color="primary"
           size="sm"
@@ -168,11 +167,8 @@
 
         <!-- Analytics toggle with tooltip -->
         <div class="relative">
-          <label
-            class="flex items-center gap-2"
-            :class="isLoggedIn ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
-          >
-            <UiCheckbox v-model="collectAnalytics" :disabled="!isLoggedIn" />
+          <label class="flex items-center gap-2 cursor-pointer">
+            <UiCheckbox v-model="collectAnalytics" />
             <span class="text-sm text-gray-700 dark:text-gray-400">Enable view analytics</span>
             <UiTooltip width="w-56 sm:w-64">
               <Icon name="mdi:information-outline" class="w-4 h-4 text-gray-400 cursor-help" />
@@ -200,10 +196,6 @@
               </template>
             </UiTooltip>
           </label>
-          <p v-if="!isLoggedIn" class="mt-1 text-xs text-amber-600 dark:text-amber-400">
-            <Icon name="mdi:account-alert-outline" class="w-3 h-3 inline" />
-            An account is required to track analytics.
-          </p>
         </div>
 
         <UiButton
@@ -222,6 +214,7 @@
 
 <script setup>
 import { encryptSharedNote, deriveShareKey, generateSharePassword } from '~/utils/crypto.js'
+import db from '~/db.js'
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -347,6 +340,15 @@ const handleShare = async () => {
     newShareHash.value = data.hash
     usedSharePassword.value = sharePasswordMode.value === 'custom'
 
+    // Store the delete token locally so anonymous users can stop sharing later
+    if (data.deleteToken) {
+      try {
+        await db.shareTokens.put({ hash: data.hash, token: data.deleteToken })
+      } catch {
+        /* db unavailable */
+      }
+    }
+
     // For passwordless sharing, append the random password to the URL
     // so the recipient can derive the decryption key from it.
     if (sharePasswordMode.value === 'none') {
@@ -361,12 +363,35 @@ const handleShare = async () => {
 }
 
 const handleUnshare = async () => {
-  if (!activeHash.value) return
+  const hash = activeHash.value
+  if (!hash) return
   try {
-    await apiFetch(`/api/share/${activeHash.value}`, {
+    const headers = { ...props.authHeaders }
+
+    // If not logged in, use the stored delete token
+    if (!props.isLoggedIn) {
+      try {
+        const record = await db.shareTokens.get(hash)
+        if (record?.token) {
+          headers['x-delete-token'] = record.token
+        }
+      } catch {
+        /* db unavailable */
+      }
+    }
+
+    await apiFetch(`/api/share/${hash}`, {
       method: 'DELETE',
-      headers: props.authHeaders,
+      headers,
     })
+
+    // Clean up stored delete token
+    try {
+      await db.shareTokens.delete(hash)
+    } catch {
+      /* db unavailable */
+    }
+
     emit('unshare')
     emit('close')
   } catch (err) {
