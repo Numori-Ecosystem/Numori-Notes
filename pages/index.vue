@@ -40,12 +40,8 @@
         @file-new="createNote"
         @file-open="noteActions.handleOpenFile"
         @file-duplicate="noteActions.handleDuplicate"
-        @file-export-text="noteActions.handleExportText"
-        @file-export-markdown="noteActions.handleExportMarkdown"
-        @file-export-pdf="noteActions.handleExportPdf"
-        @file-export-json="noteActions.handleExportJson"
-        @file-export-all="noteActions.handleExportAll"
-        @file-import="noteActions.handleImport"
+        @file-backup="showBackup = true"
+        @file-restore="noteActions.handleImport"
         @file-copy="noteActions.handleCopy"
         @file-print="noteActions.handlePrint"
         @file-about="showAbout = true"
@@ -186,6 +182,7 @@
     />
 
     <ExportOptionsModal :is-open="noteActions.showExportOptions.value" @close="noteActions.showExportOptions.value = false" @confirm="noteActions.handleExportConfirm" />
+    <BackupModal :is-open="showBackup" :has-note="!!currentNote" @close="showBackup = false" @confirm="handleBackupConfirm" />
     <ConfirmDeleteModal :is-open="showDeleteConfirm" :bin-enabled="binEnabled" @close="showDeleteConfirm = false" @confirm="handleDeleteConfirm" />
     <ConfirmBulkDeleteModal :is-open="showBulkDeleteConfirm" :count="pendingBulkDeleteIds.length" :bin-enabled="binEnabled" @close="showBulkDeleteConfirm = false" @confirm="handleBulkDeleteConfirm" />
 
@@ -353,7 +350,7 @@ const handleReorder = (orderedIds) => { reorderNotes(orderedIds); syncNow() }
 // --- Composable: Note file actions ---
 const selectedNoteIds = ref([])
 const noteActions = useNoteActions({
-  notes, currentNote, selectedNoteIds, createNote,
+  notes, groups, currentNote, selectedNoteIds, createNote,
   updateNoteMeta, updateNoteContent, evaluateLines, fileActions,
 })
 
@@ -391,9 +388,9 @@ const { isMac: _isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShort
   openFile: () => noteActions.handleOpenFile(),
   print: () => noteActions.handlePrint(),
   duplicate: () => noteActions.handleDuplicate(),
-  exportText: () => noteActions.handleExportText(),
+  exportText: () => { showBackup.value = true },
   help: () => { showHelp.value = true },
-  exportAll: () => noteActions.handleExportAll(),
+  exportAll: () => { showBackup.value = true },
 })
 
 const showSidebar = ref(true)
@@ -571,6 +568,13 @@ const updateContent = (content) => {
 
 const updateMeta = ({ title, description, tags, internalName }) => {
   if (currentNote.value) { updateNoteMeta(currentNote.value.id, { title, description, tags, internalName }); debouncedSync(currentNote.value.id) }
+}
+
+const showBackup = ref(false)
+
+const handleBackupConfirm = (options) => {
+  showBackup.value = false
+  noteActions.handleBackup(options)
 }
 
 const showDeleteConfirm = ref(false)

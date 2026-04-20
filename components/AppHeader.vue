@@ -40,12 +40,8 @@
             @new-note="$emit('file-new')"
             @open-file="$emit('file-open')"
             @duplicate="$emit('file-duplicate')"
-            @export-text="$emit('file-export-text')"
-            @export-markdown="$emit('file-export-markdown')"
-            @export-pdf="$emit('file-export-pdf')"
-            @export-json="$emit('file-export-json')"
-            @export-all="$emit('file-export-all')"
-            @import="$emit('file-import')"
+            @backup="$emit('file-backup')"
+            @restore="$emit('file-restore')"
             @copy="$emit('file-copy')"
             @print="$emit('file-print')"
           />
@@ -172,12 +168,8 @@ defineEmits([
   'file-new',
   'file-open',
   'file-duplicate',
-  'file-export-text',
-  'file-export-markdown',
-  'file-export-pdf',
-  'file-export-json',
-  'file-export-all',
-  'file-import',
+  'file-backup',
+  'file-restore',
   'file-copy',
   'file-print',
   'file-about',

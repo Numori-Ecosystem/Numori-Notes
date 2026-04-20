@@ -85,6 +85,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@vueuse/core": "^14.2.1",
     "@vueuse/nuxt": "^14.2.1",
+    "@zip.js/zip.js": "^2.8.26",
     "bcryptjs": "^3.0.3",
     "dexie": "^4.4.2",
     "highlight.js": "^11.11.1",

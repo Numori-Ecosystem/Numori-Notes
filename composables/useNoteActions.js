@@ -1,10 +1,11 @@
 /**
- * File menu action handlers for notes (export, import, duplicate, copy, print).
+ * File menu action handlers for notes (backup, import, duplicate, copy, print).
  */
 export function useNoteActions({
   notes,
+  groups,
   currentNote,
-  selectedNoteIds,
+  selectedNoteIds: _selectedNoteIds,
   createNote,
   updateNoteMeta,
   updateNoteContent,
@@ -16,7 +17,6 @@ export function useNoteActions({
     exportNoteAsJson,
     exportNoteAsMarkdown,
     exportNoteAsPdf,
-    exportAllNotes,
     openFile,
     importNotes,
     duplicateNote,
@@ -82,55 +82,59 @@ export function useNoteActions({
     }
   }
 
-  const getSelectedOrAll = () => {
-    if (selectedNoteIds.value.length > 0) {
-      return notes.value.filter((n) => selectedNoteIds.value.includes(n.id))
-    }
-    return null
-  }
+  const handleBackup = async ({
+    scope,
+    includeGroups,
+    includeArchive,
+    includeBin,
+    encrypt,
+    password,
+  }) => {
+    let backupNotes = []
 
-  const handleExportText = () => {
-    const selected = getSelectedOrAll()
-    if (selected) {
-      exportAllNotes(selected)
+    if (scope === 'current') {
+      if (currentNote.value) backupNotes.push(currentNote.value)
     } else {
-      askExportOptions('text')
+      backupNotes = notes.value.filter((n) => !n.archived && !n.deletedAt)
     }
-  }
 
-  const handleExportMarkdown = () => {
-    const selected = getSelectedOrAll()
-    if (selected) {
-      exportAllNotes(selected)
-    } else {
-      askExportOptions('markdown')
+    if (includeArchive) {
+      const archived = notes.value.filter((n) => n.archived && !n.deletedAt)
+      backupNotes = [...backupNotes, ...archived]
     }
-  }
 
-  const handleExportPdf = () => {
-    const selected = getSelectedOrAll()
-    if (selected) {
-      exportAllNotes(selected)
-    } else {
-      askExportOptions('pdf')
+    if (includeBin) {
+      const binned = notes.value.filter((n) => !!n.deletedAt)
+      backupNotes = [...backupNotes, ...binned]
     }
-  }
 
-  const handleExportJson = () => {
-    const selected = getSelectedOrAll()
-    if (selected) {
-      exportAllNotes(selected)
-    } else {
-      exportNoteAsJson(currentNote.value)
+    const payload = {
+      notes: backupNotes,
+      ...(includeGroups && { groups: JSON.parse(JSON.stringify(groups?.value || [])) }),
     }
-  }
 
-  const handleExportAll = () => {
-    const selected = getSelectedOrAll()
-    if (selected) {
-      exportAllNotes(selected)
+    const dateStr = new Date().toISOString().slice(0, 10)
+
+    if (encrypt && password) {
+      const { BlobWriter, TextReader, ZipWriter } = await import('@zip.js/zip.js')
+      const blobWriter = new BlobWriter('application/zip')
+      const zipWriter = new ZipWriter(blobWriter, { password })
+      await zipWriter.add('backup.json', new TextReader(JSON.stringify(payload, null, 2)))
+      const blob = await zipWriter.close()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `numori-backup-${dateStr}.zip`
+      a.click()
+      URL.revokeObjectURL(url)
     } else {
-      exportAllNotes(notes.value)
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `numori-backup-${dateStr}.json`
+      a.click()
+      URL.revokeObjectURL(url)
     }
   }
 
@@ -206,11 +210,7 @@ export function useNoteActions({
     handleExportConfirm,
     handleOpenFile,
     handleDuplicate,
-    handleExportText,
-    handleExportMarkdown,
-    handleExportPdf,
-    handleExportJson,
-    handleExportAll,
+    handleBackup,
     handleImport,
     handleCopy,
     handlePrint,

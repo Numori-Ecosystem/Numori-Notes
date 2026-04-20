@@ -35,32 +35,6 @@
 
     <UiDivider />
 
-    <!-- Export sub-menu -->
-    <UiDropdownSubmenu
-      icon="mdi:export"
-      :label="selectionCount > 0 ? `Export Selection (${selectionCount})` : 'Export'"
-      :disabled="!hasNote && selectionCount === 0"
-    >
-      <UiDropdownItem
-        icon="mdi:download"
-        :label="selectionCount > 0 ? `Selection as JSON (${selectionCount})` : 'Text (.txt)'"
-        :shortcut="selectionCount > 0 ? '' : `${modLabel}+E`"
-        @click="action('export-text')"
-      />
-      <UiDropdownItem
-        v-if="selectionCount === 0"
-        icon="mdi:language-markdown-outline"
-        label="Markdown (.md)"
-        @click="action('export-markdown')"
-      />
-      <UiDropdownItem
-        v-if="selectionCount === 0"
-        icon="mdi:file-pdf-box"
-        label="PDF"
-        @click="action('export-pdf')"
-      />
-    </UiDropdownSubmenu>
-
     <UiDropdownItem
       icon="mdi:content-copy"
       label="Copy to Clipboard"
@@ -77,22 +51,17 @@
 
     <UiDivider />
 
-    <!-- Backup & restore -->
+    <!-- Backup & Restore -->
     <UiDropdownItem
-      icon="mdi:code-json"
-      :label="
-        selectionCount > 0 ? `Export Selection as JSON (${selectionCount})` : 'Export as JSON'
-      "
-      :disabled="!hasNote && selectionCount === 0"
-      @click="action('export-json')"
+      icon="mdi:backup-restore"
+      label="Back-up"
+      @click="action('backup')"
     />
     <UiDropdownItem
-      icon="mdi:database-export"
-      :label="selectionCount > 0 ? `Export Selection (${selectionCount})` : 'Export All Notes'"
-      :shortcut="selectionCount > 0 ? '' : `${modLabel}+⇧+S`"
-      @click="action('export-all')"
+      icon="mdi:upload"
+      label="Restore Back-up"
+      @click="action('restore')"
     />
-    <UiDropdownItem icon="mdi:upload" label="Import Notes…" @click="action('import')" />
   </UiDropdown>
 </template>
 
@@ -107,12 +76,8 @@ const emit = defineEmits([
   'new-note',
   'open-file',
   'duplicate',
-  'export-text',
-  'export-markdown',
-  'export-pdf',
-  'export-json',
-  'export-all',
-  'import',
+  'backup',
+  'restore',
   'copy',
   'print',
 ])
