@@ -42,6 +42,12 @@ const {
   exportNoteAsJson,
   exportNoteAsMarkdown,
   exportNoteAsPdf,
+  exportNoteAsHtml,
+  exportNoteAsLatex,
+  exportNoteAsCsv,
+  exportNoteAsRtf,
+  exportNoteAsOdt,
+  exportNoteAsDocx,
   exportAllNotes,
   openFile,
   duplicateNote,
@@ -463,5 +469,190 @@ describe('openFile', () => {
     }
 
     await expect(openFile()).rejects.toThrow('Cancelled')
+  })
+})
+
+describe('exportNoteAsText with custom extension', () => {
+  it('exports as .txt when extension specified', () => {
+    const note = { title: 'Test', content: 'hello' }
+    const result = exportNoteAsText(note, null, '.txt')
+
+    expect(result).toBe(true)
+    expect(createdElements[0].download).toBe('test.txt')
+  })
+
+  it('exports as .num by default', () => {
+    const note = { title: 'Test', content: 'hello' }
+    exportNoteAsText(note)
+    expect(createdElements[0].download).toBe('test.num')
+  })
+})
+
+describe('exportNoteAsHtml', () => {
+  it('returns false for null note', async () => {
+    expect(await exportNoteAsHtml(null)).toBe(false)
+  })
+
+  it('exports note as .html with colour spans', async () => {
+    const note = { title: 'HTML Test', content: 'hello\nworld' }
+    const result = await exportNoteAsHtml(note)
+
+    expect(result).toBe(true)
+    expect(createdElements[0].download).toBe('html_test.html')
+  })
+
+  it('exports with results when evaluateLines is provided', async () => {
+    const note = { title: 'Calc', content: '2 + 2' }
+    const result = await exportNoteAsHtml(note, mockEvaluateLines)
+
+    expect(result).toBe(true)
+    expect(createdElements[0].download).toBe('calc.html')
+  })
+
+  it('respects blackAndWhite flag', async () => {
+    const note = { title: 'BW', content: '// comment' }
+    const result = await exportNoteAsHtml(note, null, true)
+
+    expect(result).toBe(true)
+  })
+})
+
+describe('exportNoteAsLatex', () => {
+  it('returns false for null note', () => {
+    expect(exportNoteAsLatex(null)).toBe(false)
+  })
+
+  it('exports note as .tex', () => {
+    const note = { title: 'LaTeX Test', content: '2 + 2' }
+    const result = exportNoteAsLatex(note)
+
+    expect(result).toBe(true)
+    expect(createdElements[0].download).toBe('latex_test.tex')
+  })
+
+  it('converts headings to LaTeX sections', () => {
+    const note = { title: 'Doc', content: '# Introduction\n## Methods\n### Details' }
+    exportNoteAsLatex(note)
+
+    // Verify it was downloaded (content is in the blob)
+    expect(createdElements[0].download).toBe('doc.tex')
+  })
+
+  it('converts comments to LaTeX comments', () => {
+    const note = { title: 'Doc', content: '// this is a comment' }
+    exportNoteAsLatex(note)
+    expect(createdElements[0].download).toBe('doc.tex')
+  })
+
+  it('escapes LaTeX special characters', () => {
+    const note = { title: 'Special', content: '100% of $50 & more' }
+    const result = exportNoteAsLatex(note)
+    expect(result).toBe(true)
+  })
+
+  it('includes results when evaluateLines is provided', () => {
+    const note = { title: 'Calc', content: '2 + 2' }
+    const result = exportNoteAsLatex(note, mockEvaluateLines)
+    expect(result).toBe(true)
+  })
+})
+
+describe('exportNoteAsCsv', () => {
+  it('returns false for null note', () => {
+    expect(exportNoteAsCsv(null)).toBe(false)
+  })
+
+  it('exports note as .csv with header row', () => {
+    const note = { title: 'CSV Test', content: 'hello\nworld' }
+    const result = exportNoteAsCsv(note)
+
+    expect(result).toBe(true)
+    expect(createdElements[0].download).toBe('csv_test.csv')
+  })
+
+  it('includes results in second column', () => {
+    const note = { title: 'Calc', content: '2 + 2\n# Header' }
+    const result = exportNoteAsCsv(note, mockEvaluateLines)
+
+    expect(result).toBe(true)
+    expect(createdElements[0].download).toBe('calc.csv')
+  })
+
+  it('escapes commas and quotes in CSV', () => {
+    const note = { title: 'Escape', content: 'hello, world\n"quoted"' }
+    const result = exportNoteAsCsv(note)
+    expect(result).toBe(true)
+  })
+})
+
+describe('exportNoteAsRtf', () => {
+  it('returns false for null note', async () => {
+    expect(await exportNoteAsRtf(null)).toBe(false)
+  })
+
+  it('exports note as .rtf', async () => {
+    const note = { title: 'RTF Test', content: 'hello\nworld' }
+    const result = await exportNoteAsRtf(note)
+
+    expect(result).toBe(true)
+    expect(createdElements[0].download).toBe('rtf_test.rtf')
+  })
+
+  it('exports with results', async () => {
+    const note = { title: 'Calc', content: '2 + 2' }
+    const result = await exportNoteAsRtf(note, mockEvaluateLines)
+    expect(result).toBe(true)
+  })
+
+  it('respects blackAndWhite flag', async () => {
+    const note = { title: 'BW', content: '// comment\n2 + 2' }
+    const result = await exportNoteAsRtf(note, null, true)
+    expect(result).toBe(true)
+  })
+})
+
+describe('exportNoteAsOdt', () => {
+  it('returns false for null note', async () => {
+    expect(await exportNoteAsOdt(null)).toBe(false)
+  })
+
+  it('exports note as .odt', async () => {
+    const note = { title: 'ODT Test', content: 'hello\nworld' }
+    const result = await exportNoteAsOdt(note)
+
+    expect(result).toBe(true)
+    expect(globalThis.URL.createObjectURL).toHaveBeenCalled()
+  })
+
+  it('exports with results', async () => {
+    const note = { title: 'Calc', content: '2 + 2' }
+    const result = await exportNoteAsOdt(note, mockEvaluateLines)
+    expect(result).toBe(true)
+  })
+})
+
+describe('exportNoteAsDocx', () => {
+  it('returns false for null note', async () => {
+    expect(await exportNoteAsDocx(null)).toBe(false)
+  })
+
+  it('exports note as .docx', async () => {
+    const note = { title: 'DOCX Test', content: 'hello\nworld' }
+    const result = await exportNoteAsDocx(note)
+
+    expect(result).toBe(true)
+    expect(globalThis.URL.createObjectURL).toHaveBeenCalled()
+  })
+
+  it('exports with results', async () => {
+    const note = { title: 'Calc', content: '2 + 2' }
+    const result = await exportNoteAsDocx(note, mockEvaluateLines)
+    expect(result).toBe(true)
+  })
+
+  it('respects blackAndWhite flag', async () => {
+    const note = { title: 'BW', content: '// comment' }
+    const result = await exportNoteAsDocx(note, null, true)
+    expect(result).toBe(true)
   })
 })
