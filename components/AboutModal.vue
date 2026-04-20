@@ -138,7 +138,7 @@
           </p>
         </div>
         <p class="text-sm text-gray-700 dark:text-gray-400">
-          Erik Bjerke — TheProcedural Software Ltd
+          Erik Bjerke
         </p>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
           <a
@@ -311,20 +311,8 @@ const donateLinks = [
 const authorLinks = [
   { href: 'https://erikbjerke.com', label: 'erikbjerke.com', icon: 'mdi:web', external: true },
   {
-    href: 'https://theprocedural.com',
-    label: 'theprocedural.com',
-    icon: 'mdi:web',
-    external: true,
-  },
-  {
     href: 'mailto:contact@erikbjerke.com',
     label: 'contact@erikbjerke.com',
-    icon: 'mdi:email-outline',
-    external: false,
-  },
-  {
-    href: 'mailto:contact@theprocedural.com',
-    label: 'contact@theprocedural.com',
     icon: 'mdi:email-outline',
     external: false,
   },

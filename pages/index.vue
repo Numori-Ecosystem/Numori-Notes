@@ -204,6 +204,7 @@
     <ConfirmDeleteModal :is-open="showDeleteConfirm" :bin-enabled="binEnabled" @close="showDeleteConfirm = false" @confirm="handleDeleteConfirm" />
     <ConfirmBulkDeleteModal :is-open="showBulkDeleteConfirm" :count="pendingBulkDeleteIds.length" :bin-enabled="binEnabled" @close="showBulkDeleteConfirm = false" @confirm="handleBulkDeleteConfirm" />
     <ConfirmPermanentDeleteModal :is-open="showPermanentDeleteConfirm" :count="pendingPermanentDeleteIds.length" @close="handlePermanentDeleteCancel" @confirm="handlePermanentDeleteConfirm" />
+    <RestoreFromBinModal :is-open="noteActions.showRestoreFromBin.value" :note-title="noteActions.pendingRestoreFromBinTitle.value" @close="noteActions.handleRestoreFromBinClose" @confirm="handleRestoreFromBinConfirm" />
 
     <WelcomeWizard
       :is-open="welcomeWizard.isOpen.value" :preferences="localePrefs.preferences"
@@ -279,7 +280,7 @@ import { useGroupManagement } from '~/composables/useGroupManagement'
 import { useNoteActions } from '~/composables/useNoteActions'
 
 const {
-  notes, currentNoteId, currentNote, allTags, deletedIds,
+  notes, notesLoaded, currentNoteId, currentNote, allTags, deletedIds,
   addNote, deleteNote, softDeleteNote, restoreNote, permanentlyDeleteNote,
   updateNoteContent, updateNoteMeta, saveNotes,
   clearDeletedIds, reorderNotes, moveNotesToGroup, removeNotesFromGroup,
@@ -369,8 +370,8 @@ const handleReorder = (orderedIds) => { reorderNotes(orderedIds); syncNow() }
 // --- Composable: Note file actions ---
 const selectedNoteIds = ref([])
 const noteActions = useNoteActions({
-  notes, groups, currentNote, selectedNoteIds, createNote,
-  updateNoteMeta, updateNoteContent, softDeleteNote, archiveNote,
+  notes, groups, currentNote, currentNoteId, selectedNoteIds, createNote,
+  updateNoteMeta, updateNoteContent, softDeleteNote, archiveNote, restoreNote,
   evaluateLines, fileActions, toast,
 })
 
@@ -589,9 +590,34 @@ onMounted(async () => {
 // Check for pending "Open With" file from OS
 onMounted(() => {
   const consumePending = () => {
-    if (window.__pendingOpenWithNote) {
-      const data = window.__pendingOpenWithNote
-      window.__pendingOpenWithNote = null
+    if (!window.__pendingOpenWithNote) return
+    const data = window.__pendingOpenWithNote
+
+    // If notes haven't loaded from DB yet, wait until they do
+    if (!notesLoaded.value) {
+      const stop = watch(notesLoaded, (loaded) => {
+        if (loaded) {
+          stop()
+          consumePending()
+        }
+      })
+      return
+    }
+
+    window.__pendingOpenWithNote = null
+    // Check if a note with the same content already exists (using hash for efficiency)
+    const existing = noteActions.findExistingNote(data.title, data.content)
+    if (existing) {
+      if (existing.deletedAt) {
+        // Note is in the bin — show restore modal
+        noteActions.showRestoreFromBin.value = true
+        noteActions.pendingRestoreFromBinTitle.value = existing.title
+        // Store the id so handleRestoreFromBinConfirm can use it
+        noteActions.pendingRestoreFromBinId.value = existing.id
+      } else {
+        currentNoteId.value = existing.id
+      }
+    } else {
       const newNote = createNote()
       updateNoteMeta(newNote.id, { title: data.title, description: data.description })
       updateNoteContent(newNote.id, data.content)
@@ -698,6 +724,12 @@ const handlePermanentDeleteCancel = () => {
   showPermanentDeleteConfirm.value = false
   pendingPermanentDeleteIds.value = []
   toast.show('Deletion cancelled', { type: 'info', icon: 'mdi:close-circle-outline' })
+}
+
+const handleRestoreFromBinConfirm = () => {
+  noteActions.handleRestoreFromBinConfirm()
+  syncNow(currentNoteId.value)
+  toast.show('Note restored', { type: 'success', icon: 'mdi:restore' })
 }
 
 // --- Sidebar props/events (shared between desktop and mobile) ---

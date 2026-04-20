@@ -6,6 +6,7 @@ export const useNotes = () => {
   const notes = ref([])
   const currentNoteId = ref(null)
   const deletedIds = ref([])
+  const notesLoaded = ref(false)
 
   // ── Reactive liveQuery: auto-updates `notes` when DB changes ──────────
   let subscription = null
@@ -76,6 +77,7 @@ export const useNotes = () => {
 
     // Start live reactivity after initial load
     startLiveQuery()
+    notesLoaded.value = true
   }
 
   // ── Persist helpers ───────────────────────────────────────────────────
@@ -440,6 +442,7 @@ Discounted: prev - 10%
 
   return {
     notes,
+    notesLoaded,
     currentNoteId,
     currentNote,
     allTags,

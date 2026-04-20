@@ -9,12 +9,14 @@ export function useNoteActions({
   notes,
   groups,
   currentNote,
+  currentNoteId,
   selectedNoteIds: _selectedNoteIds,
   createNote,
   updateNoteMeta,
   updateNoteContent,
   softDeleteNote,
   archiveNote,
+  restoreNote,
   evaluateLines,
   fileActions,
   toast,
@@ -85,9 +87,44 @@ export function useNoteActions({
     }
   }
 
+  // --- Restore from bin state (for open file duplicate in bin) ---
+  const showRestoreFromBin = ref(false)
+  const pendingRestoreFromBinId = ref(null)
+  const pendingRestoreFromBinTitle = ref('')
+
+  const handleRestoreFromBinConfirm = () => {
+    showRestoreFromBin.value = false
+    if (pendingRestoreFromBinId.value) {
+      restoreNote(pendingRestoreFromBinId.value)
+      currentNoteId.value = pendingRestoreFromBinId.value
+    }
+    pendingRestoreFromBinId.value = null
+    pendingRestoreFromBinTitle.value = ''
+  }
+
+  const handleRestoreFromBinClose = () => {
+    showRestoreFromBin.value = false
+    pendingRestoreFromBinId.value = null
+    pendingRestoreFromBinTitle.value = ''
+  }
+
   const handleOpenFile = async () => {
     try {
       const data = await openFile()
+      // Check if a note with the same content already exists (using hash for efficiency)
+      const incomingHash = hashNote(data.title, data.content)
+      const existing = notes.value.find((n) => hashNote(n.title, n.content) === incomingHash)
+      if (existing) {
+        if (existing.deletedAt) {
+          // Note is in the bin — show restore modal
+          pendingRestoreFromBinId.value = existing.id
+          pendingRestoreFromBinTitle.value = existing.title
+          showRestoreFromBin.value = true
+        } else {
+          currentNoteId.value = existing.id
+        }
+        return
+      }
       const newNote = createNote()
       updateNoteMeta(newNote.id, {
         title: data.title,
@@ -570,6 +607,12 @@ export function useNoteActions({
     showPrintModal.value = true
   }
 
+  // Find an existing note by title+content hash (for deduplication)
+  const findExistingNote = (title, content) => {
+    const incomingHash = hashNote(title, content)
+    return notes.value.find((n) => hashNote(n.title, n.content) === incomingHash) || null
+  }
+
   return {
     showExportOptions,
     handleExportConfirm,
@@ -597,5 +640,11 @@ export function useNoteActions({
     handleExportById,
     handleCopyById,
     handlePrintById,
+    findExistingNote,
+    showRestoreFromBin,
+    pendingRestoreFromBinId,
+    pendingRestoreFromBinTitle,
+    handleRestoreFromBinConfirm,
+    handleRestoreFromBinClose,
   }
 }
