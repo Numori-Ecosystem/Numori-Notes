@@ -731,7 +731,7 @@ ${bodyLines}
    * Open a .num, .txt, or .md file as a new note.
    */
   const openFile = async () => {
-    const { name, text } = await pickFile('.num,.txt,.md,.json,.rtf,.odt,.docx')
+    const { name, text } = await pickFile('.num,.txt,.md,.csv')
     let title = name.replace(/\.[^.]+$/, '') || 'Opened Note'
     let content = text
 
