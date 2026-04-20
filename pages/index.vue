@@ -399,6 +399,7 @@ const { isMac: _isMac, modLabel, handlers: shortcutHandlers } = useKeyboardShort
   exportText: () => { showBackup.value = true },
   help: () => { showHelp.value = true },
   exportAll: () => { showBackup.value = true },
+  toggleFocus: () => { focusMode.value = !focusMode.value },
 })
 
 const showSidebar = ref(true)

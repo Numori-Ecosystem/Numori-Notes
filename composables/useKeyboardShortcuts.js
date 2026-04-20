@@ -29,6 +29,7 @@ export const useKeyboardShortcuts = (handlers = {}) => {
     n: 'newNote',
     s: 'exportAll',
     d: 'duplicate',
+    f: 'toggleFocus',
   }
 
   const onKeydown = (e) => {

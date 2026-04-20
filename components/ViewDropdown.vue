@@ -12,6 +12,16 @@
       </UiButton>
     </template>
 
+    <UiButton variant="menu-item" @click="action('toggle-focus')">
+      <Icon name="mdi:fullscreen" class="w-4 h-4 block flex-shrink-0" />
+      <span class="flex-1 text-left">Focus Mode</span>
+      <kbd
+        class="ml-auto text-[10px] text-gray-400 dark:text-gray-500 font-mono"
+      >{{ modLabel }}+Shift+F</kbd>
+    </UiButton>
+
+    <UiDivider />
+
     <!-- Zoom controls -->
     <div class="flex items-center gap-1 px-3 py-1.5">
       <UiButton
@@ -152,10 +162,17 @@ const emit = defineEmits([
   'zoom-in',
   'zoom-out',
   'zoom-reset',
+  'toggle-focus',
   'templates',
   'help',
   'about',
 ])
+
+const isMac = computed(() => {
+  if (import.meta.server) return false
+  return navigator.userAgent?.toUpperCase().includes('MAC')
+})
+const modLabel = computed(() => (isMac.value ? '⌘' : 'Ctrl'))
 
 const dropdownRef = ref(null)
 

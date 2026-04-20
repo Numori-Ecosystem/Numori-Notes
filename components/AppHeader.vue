@@ -54,6 +54,7 @@
             @zoom-in="$emit('zoom-in')"
             @zoom-out="$emit('zoom-out')"
             @zoom-reset="$emit('zoom-reset')"
+            @toggle-focus="$emit('toggle-focus')"
             @templates="$emit('show-templates')"
             @help="$emit('show-help')"
             @about="$emit('file-about')"
