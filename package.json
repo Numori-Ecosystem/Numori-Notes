@@ -2,7 +2,7 @@
   "name": "numori-notes",
   "type": "module",
   "private": true,
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "Free, open-source notes app with a built-in natural language calculator. Do math as you write, export to multiple formats, and sync with end-to-end encryption.",
   "authors": [
     {
