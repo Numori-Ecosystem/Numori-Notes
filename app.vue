@@ -66,4 +66,48 @@ textarea,
     padding-right: var(--sar);
   }
 }
+
+/* ─── Custom scrollbars (Electron / Webkit) ─── */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #C1C0C0 transparent;
+}
+.dark * {
+  scrollbar-color: #5B595C transparent;
+}
+
+/* Webkit / Blink (Electron, Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #C1C0C0;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #939293;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #5B595C;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #727072;
+}
 </style>
