@@ -4,19 +4,12 @@
     <div class="max-w-2xl mx-auto">
       <SettingsSectionHeader icon="mdi:tune-variant" title="General" description="Miscellaneous application settings" />
       <UiListMenu label="Setup" preset="settings">
-        <UiListMenuItem icon="mdi:wizard-hat" hint="Show the first-time setup wizard again" clickable @click="emit('relaunch-wizard')">
-          Welcome Wizard
-          <template #suffix>
-            <span class="text-xs font-medium text-primary-600 dark:text-primary-400">Relaunch</span>
-          </template>
-        </UiListMenuItem>
+        <UiListMenuItem icon="mdi:wizard-hat" hint="Show the first-time setup wizard again" clickable @click="emit('relaunch-wizard')">Relaunch Welcome Wizard</UiListMenuItem>
       </UiListMenu>
       <UiListMenu label="Deletion" preset="settings" class="mt-5">
-        <UiListMenuItem icon="mdi:delete-outline" hint="Move deleted notes to bin instead of permanently deleting them">
+        <UiListMenuItem icon="mdi:delete-outline" hint="Move deleted notes to bin instead of permanently deleting them" :toggle="preferences.binEnabled !== false" @update:toggle="preferences.binEnabled = $event; onSettingChange()">
           Bin (Trash)
-          <template #suffix>
-            <UiToggle :model-value="preferences.binEnabled !== false" @update:model-value="preferences.binEnabled = $event; onSettingChange()" />
-          </template>
+          <template #suffix><UiToggle :model-value="preferences.binEnabled !== false" readonly /></template>
         </UiListMenuItem>
       </UiListMenu>
       <UiListMenu label="Updates" preset="settings" class="mt-5">
