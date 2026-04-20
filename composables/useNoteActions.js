@@ -22,6 +22,8 @@ export function useNoteActions({
     exportNoteAsRtf,
     exportNoteAsOdt,
     exportNoteAsDocx,
+    exportNoteAsHtml,
+    exportNoteAsLatex,
     downloadFile,
     downloadBlob,
     shareFile,
@@ -477,6 +479,12 @@ export function useNoteActions({
         break
       case 'docx':
         exportNoteAsDocx(note, calc, bw)
+        break
+      case 'html':
+        exportNoteAsHtml(note, calc, bw)
+        break
+      case 'tex':
+        exportNoteAsLatex(note, calc)
         break
     }
     pendingSaveNote.value = null

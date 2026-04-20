@@ -594,6 +594,111 @@ export const useFileActions = () => {
     return true
   }
 
+  // ── HTML export (full colour with inline styles) ───────
+
+  const exportNoteAsHtml = async (note, evaluateLines = null, blackAndWhite = false) => {
+    if (!note) return false
+    const colouredLines = await parseColouredContent(note.content, evaluateLines, blackAndWhite)
+
+    const escapeHtml = (str) =>
+      str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+    const bodyLines = colouredLines
+      .map((line) => {
+        if (line.length === 0) return '<br>'
+        const spans = line
+          .map((span) => {
+            let style = `color:${span.color}`
+            if (span.bold) style += ';font-weight:bold'
+            if (span.italic) style += ';font-style:italic'
+            return `<span style="${style}">${escapeHtml(span.text)}</span>`
+          })
+          .join('')
+        return `<div>${spans}</div>`
+      })
+      .join('\n')
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(note.title || 'Untitled')}</title>
+<style>
+body { font-family: 'Courier New', monospace; font-size: 10pt; line-height: 1.6; padding: 2rem; max-width: 800px; margin: 0 auto; white-space: pre-wrap; }
+div { min-height: 1.6em; }
+</style>
+</head>
+<body>
+${bodyLines}
+</body>
+</html>`
+
+    const filename = `${sanitizeFilename(note.title)}.html`
+    downloadFile(filename, html, 'text/html')
+    return true
+  }
+
+  // ── LaTeX export ──────────────────────────────────────
+
+  const exportNoteAsLatex = (note, evaluateLines = null) => {
+    if (!note) return false
+    const content = note.content || ''
+    const lines = content.split('\n')
+    const results = evaluateLines ? evaluateLines(lines) : []
+
+    const escapeLatex = (str) =>
+      str
+        .replace(/\\/g, '\\textbackslash{}')
+        .replace(/[&%$#_{}]/g, (m) => '\\' + m)
+        .replace(/~/g, '\\textasciitilde{}')
+        .replace(/\^/g, '\\textasciicircum{}')
+
+    const bodyLines = lines
+      .map((line, i) => {
+        const r = results[i]
+        const displayLine = r && r.result ? `${line}  = ${r.result}` : line
+        const trimmed = line.trimStart()
+
+        if (trimmed.startsWith('# ')) {
+          return `\\section{${escapeLatex(trimmed.slice(2))}}`
+        } else if (trimmed.startsWith('## ')) {
+          return `\\subsection{${escapeLatex(trimmed.slice(3))}}`
+        } else if (trimmed.startsWith('### ')) {
+          return `\\subsubsection{${escapeLatex(trimmed.slice(4))}}`
+        } else if (trimmed.startsWith('//')) {
+          return `% ${trimmed.slice(2).trim()}`
+        } else if (displayLine.trim() === '') {
+          return ''
+        } else {
+          return escapeLatex(displayLine) + ' \\\\\\\\'
+        }
+      })
+      .join('\n')
+
+    const latex = `\\documentclass{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage{geometry}
+\\geometry{a4paper, margin=2.5cm}
+\\usepackage{parskip}
+
+\\title{${escapeLatex(note.title || 'Untitled')}}
+\\date{}
+
+\\begin{document}
+\\maketitle
+
+\\begin{ttfamily}
+${bodyLines}
+\\end{ttfamily}
+
+\\end{document}`
+
+    const filename = `${sanitizeFilename(note.title)}.tex`
+    downloadFile(filename, latex, 'application/x-tex')
+    return true
+  }
+
   // ── File picking (open / import) ───────────────────────
 
   /**
@@ -733,6 +838,8 @@ export const useFileActions = () => {
     exportNoteAsRtf,
     exportNoteAsOdt,
     exportNoteAsDocx,
+    exportNoteAsHtml,
+    exportNoteAsLatex,
     exportAllNotes,
     openFile,
     importNotes,

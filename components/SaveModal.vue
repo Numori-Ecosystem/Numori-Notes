@@ -61,13 +61,15 @@ const formats = [
   { value: 'num', label: 'Numori (.num)', subtitle: 'Native format, plain text' },
   { value: 'txt', label: 'Plain Text (.txt)', subtitle: 'Simple text, no formatting' },
   { value: 'md', label: 'Markdown (.md)', subtitle: 'Lightweight markup format' },
+  { value: 'html', label: 'HTML (.html)', subtitle: 'Web page, opens in any browser' },
   { value: 'pdf', label: 'PDF (.pdf)', subtitle: 'Portable document, print-ready' },
   { value: 'rtf', label: 'Rich Text (.rtf)', subtitle: 'Formatted text, widely compatible' },
   { value: 'odt', label: 'OpenDocument (.odt)', subtitle: 'LibreOffice / open standard' },
   { value: 'docx', label: 'Word (.docx)', subtitle: 'Microsoft Word document' },
+  { value: 'tex', label: 'LaTeX (.tex)', subtitle: 'Academic typesetting format' },
 ]
 
-const colourFormats = new Set(['pdf', 'rtf', 'odt', 'docx'])
+const colourFormats = new Set(['html', 'pdf', 'rtf', 'odt', 'docx'])
 const supportsColour = computed(() => colourFormats.has(selectedFormat.value))
 
 const handleSave = () => {
