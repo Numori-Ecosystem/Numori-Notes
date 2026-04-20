@@ -123,6 +123,16 @@ function createNoteActions({ notesList = [], groupsList = [], currentNoteVal = n
     if (note) note.content = content
   }
 
+  const softDeleteNote = (id) => {
+    const note = notes.value.find((n) => n.id === id)
+    if (note) note.deletedAt = new Date().toISOString()
+  }
+
+  const archiveNote = (id) => {
+    const note = notes.value.find((n) => n.id === id)
+    if (note) note.archived = true
+  }
+
   const fileActions = useFileActions()
 
   const actions = useNoteActions({
@@ -133,6 +143,8 @@ function createNoteActions({ notesList = [], groupsList = [], currentNoteVal = n
     createNote,
     updateNoteMeta,
     updateNoteContent,
+    softDeleteNote,
+    archiveNote,
     evaluateLines: null,
     fileActions,
   })
@@ -701,7 +713,7 @@ describe('handleImport (restore)', () => {
       await new Promise((r) => setTimeout(r, 10))
 
       const restored = notes.value.find((n) => n.title === 'Deleted Note')
-      expect(restored.deletedAt).toBe('2025-01-05T00:00:00.000Z')
+      expect(restored.deletedAt).not.toBeNull()
     })
 
     it('assigns groupId when groups are present in backup', async () => {

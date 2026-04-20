@@ -39,7 +39,7 @@ export const useFileActions = () => {
   // ── Download / Save ──────────────────────────────────────
 
   /**
-   * Web: trigger a browser download. Native: write to cache then share.
+   * Web: trigger a browser download. Native: write to cache then present save/share dialog.
    */
   const downloadFile = async (filename, content, mimeType = 'text/plain') => {
     if (!isNative) {
@@ -55,24 +55,24 @@ export const useFileActions = () => {
       return
     }
 
-    // Native: write to cache, then share so the user can choose where to save
+    // Native: write to cache, then present system save/share dialog
     const result = await Filesystem.writeFile({
       path: filename,
       data: content,
       directory: Directory.Cache,
       encoding: Encoding.UTF8,
+      recursive: true,
     })
 
-    const fileUri = result.uri
     await Share.share({
       title: filename,
-      url: fileUri,
-      dialogTitle: `Save ${filename}`,
+      url: result.uri,
+      dialogTitle: `Save "${filename}"`,
     })
   }
 
   /**
-   * Download a Blob (binary data). Web: object URL download. Native: base64 write + share.
+   * Download a Blob (binary data). Web: object URL download. Native: base64 write to cache + save dialog.
    */
   const downloadBlob = async (filename, blob) => {
     if (!isNative) {
@@ -87,7 +87,7 @@ export const useFileActions = () => {
       return
     }
 
-    // Native: convert blob to base64, write to cache, then share
+    // Native: convert blob to base64, write to cache, then present save dialog
     const arrayBuffer = await blob.arrayBuffer()
     const bytes = new Uint8Array(arrayBuffer)
     let binary = ''
@@ -100,12 +100,13 @@ export const useFileActions = () => {
       path: filename,
       data: base64,
       directory: Directory.Cache,
+      recursive: true,
     })
 
     await Share.share({
       title: filename,
       url: result.uri,
-      dialogTitle: `Save ${filename}`,
+      dialogTitle: `Save "${filename}"`,
     })
   }
 

@@ -9,8 +9,11 @@ export function useNoteActions({
   createNote,
   updateNoteMeta,
   updateNoteContent,
+  softDeleteNote,
+  archiveNote,
   evaluateLines,
   fileActions,
+  toast,
 }) {
   const {
     exportNoteAsText,
@@ -156,8 +159,10 @@ export function useNoteActions({
   // Restore state
   const showRestorePassword = ref(false)
   const restorePasswordError = ref('')
-  let _restoreFile = null
+  const showRestoreConfirm = ref(false)
+  const restoreDuplicateCount = ref(0)
   let _restoreResolve = null
+  let _restoreConfirmResolve = null
 
   const requestRestorePassword = () => {
     return new Promise((resolve) => {
@@ -177,6 +182,44 @@ export function useNoteActions({
     showRestorePassword.value = false
     if (_restoreResolve) _restoreResolve(null)
     _restoreResolve = null
+  }
+
+  const requestRestoreConfirm = (count) => {
+    return new Promise((resolve) => {
+      _restoreConfirmResolve = resolve
+      restoreDuplicateCount.value = count
+      showRestoreConfirm.value = true
+    })
+  }
+
+  const handleRestoreConfirmOverwrite = () => {
+    showRestoreConfirm.value = false
+    if (_restoreConfirmResolve) _restoreConfirmResolve('overwrite')
+    _restoreConfirmResolve = null
+  }
+
+  const handleRestoreConfirmSkip = () => {
+    showRestoreConfirm.value = false
+    if (_restoreConfirmResolve) _restoreConfirmResolve('skip')
+    _restoreConfirmResolve = null
+  }
+
+  const handleRestoreConfirmClose = () => {
+    showRestoreConfirm.value = false
+    if (_restoreConfirmResolve) _restoreConfirmResolve('cancel')
+    _restoreConfirmResolve = null
+  }
+
+  // Simple hash of note content for duplicate detection
+  const hashNote = (title, content) => {
+    const str = `${title || ''}::${content || ''}`
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
+    }
+    return hash.toString(36)
   }
 
   const handleImport = async () => {
@@ -224,9 +267,41 @@ export function useNoteActions({
         parsed = JSON.parse(text)
       }
 
-      // Restore notes
+      // Prepare notes to restore
       const notesToRestore = parsed.notes || (Array.isArray(parsed) ? parsed : [parsed])
+
+      // Build hash set of existing notes for duplicate detection
+      const existingHashes = new Map()
+      for (const n of notes.value) {
+        const h = hashNote(n.title, n.content)
+        existingHashes.set(h, n)
+      }
+
+      // Find duplicates
+      const duplicates = []
+      const unique = []
       for (const noteData of notesToRestore) {
+        const h = hashNote(noteData.title, noteData.content)
+        if (existingHashes.has(h)) {
+          duplicates.push({ noteData, existingNote: existingHashes.get(h) })
+        } else {
+          unique.push(noteData)
+        }
+      }
+
+      // If duplicates found, ask user what to do
+      let action = 'overwrite'
+      if (duplicates.length > 0) {
+        action = await requestRestoreConfirm(duplicates.length)
+        if (action === 'cancel') return
+      }
+
+      // Restore unique notes
+      let restored = 0
+      let overwritten = 0
+      let skipped = duplicates.length
+
+      for (const noteData of unique) {
         const newNote = createNote()
         updateNoteMeta(newNote.id, {
           title: noteData.title || 'Imported Note',
@@ -234,16 +309,37 @@ export function useNoteActions({
           tags: noteData.tags || [],
         })
         updateNoteContent(newNote.id, noteData.content || '')
-        // Preserve archived/deleted state if present
-        const note = notes.value.find((n) => n.id === newNote.id)
-        if (note) {
-          if (noteData.archived) note.archived = true
-          if (noteData.deletedAt) note.deletedAt = noteData.deletedAt
-          if (noteData.groupId && parsed.groups) note.groupId = noteData.groupId
+        if (noteData.groupId) {
+          const note = notes.value.find((n) => n.id === newNote.id)
+          if (note) note.groupId = noteData.groupId
+        }
+        if (noteData.deletedAt) {
+          softDeleteNote(newNote.id)
+        } else if (noteData.archived) {
+          archiveNote(newNote.id)
+        }
+        restored++
+      }
+
+      // Handle duplicates based on user choice
+      if (action === 'overwrite') {
+        skipped = 0
+        for (const { noteData, existingNote } of duplicates) {
+          updateNoteMeta(existingNote.id, {
+            title: noteData.title || existingNote.title,
+            description: noteData.description ?? existingNote.description,
+            tags: noteData.tags || existingNote.tags,
+          })
+          updateNoteContent(existingNote.id, noteData.content ?? existingNote.content)
+          existingNote.archived = noteData.archived || false
+          existingNote.deletedAt = noteData.deletedAt || null
+          if (noteData.groupId) existingNote.groupId = noteData.groupId
+          overwritten++
         }
       }
 
       // Restore groups if present
+      let groupsRestored = 0
       if (parsed.groups && Array.isArray(parsed.groups) && groups) {
         for (const groupData of parsed.groups) {
           const exists = groups.value.find((g) => g.id === groupData.id)
@@ -257,8 +353,24 @@ export function useNoteActions({
               createdAt: groupData.createdAt || new Date().toISOString(),
               updatedAt: groupData.updatedAt || new Date().toISOString(),
             })
+            groupsRestored++
           }
         }
+      }
+
+      // Show result toast
+      if (toast) {
+        const parts = []
+        if (restored > 0) parts.push(`${restored} restored`)
+        if (overwritten > 0) parts.push(`${overwritten} overwritten`)
+        if (skipped > 0) parts.push(`${skipped} skipped`)
+        if (groupsRestored > 0)
+          parts.push(`${groupsRestored} group${groupsRestored > 1 ? 's' : ''} restored`)
+        const message = parts.length > 0 ? parts.join(', ') : 'Nothing to restore'
+        toast.show(message, {
+          type: restored > 0 || overwritten > 0 ? 'success' : 'info',
+          icon: 'mdi:backup-restore',
+        })
       }
     } catch {
       // User cancelled or file read/parse failed
@@ -322,6 +434,11 @@ export function useNoteActions({
     restorePasswordError,
     handleRestorePasswordConfirm,
     handleRestorePasswordClose,
+    showRestoreConfirm,
+    restoreDuplicateCount,
+    handleRestoreConfirmOverwrite,
+    handleRestoreConfirmSkip,
+    handleRestoreConfirmClose,
     handleOpenFile,
     handleDuplicate,
     handleBackup,

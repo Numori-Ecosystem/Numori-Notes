@@ -3,12 +3,8 @@
     :show="isOpen"
     title="Encrypted Back-up"
     icon="mdi:lock-outline"
-    confirm-label="Decrypt"
-    cancel-label="Cancel"
-    :confirm-on-enter="true"
-    :disabled="!password.trim()"
+    :confirm-on-enter="false"
     @close="handleClose"
-    @confirm="handleConfirm"
   >
     <div class="space-y-3">
       <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -25,6 +21,10 @@
         {{ error }}
       </p>
     </div>
+    <template #actions>
+      <UiButton variant="ghost" color="gray" @click="handleClose">Cancel</UiButton>
+      <UiButton :disabled="!password.trim()" @click="handleConfirm">Decrypt</UiButton>
+    </template>
   </UiPrompt>
 </template>
 

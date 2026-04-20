@@ -184,6 +184,7 @@
     <ExportOptionsModal :is-open="noteActions.showExportOptions.value" @close="noteActions.showExportOptions.value = false" @confirm="noteActions.handleExportConfirm" />
     <BackupModal :is-open="showBackup" :has-note="!!currentNote" @close="showBackup = false" @confirm="handleBackupConfirm" />
     <RestorePasswordModal :is-open="noteActions.showRestorePassword.value" :error="noteActions.restorePasswordError.value" @close="noteActions.handleRestorePasswordClose" @confirm="noteActions.handleRestorePasswordConfirm" />
+    <RestoreConfirmModal :is-open="noteActions.showRestoreConfirm.value" :duplicate-count="noteActions.restoreDuplicateCount.value" @close="noteActions.handleRestoreConfirmClose" @skip="noteActions.handleRestoreConfirmSkip" @overwrite="noteActions.handleRestoreConfirmOverwrite" />
     <ConfirmDeleteModal :is-open="showDeleteConfirm" :bin-enabled="binEnabled" @close="showDeleteConfirm = false" @confirm="handleDeleteConfirm" />
     <ConfirmBulkDeleteModal :is-open="showBulkDeleteConfirm" :count="pendingBulkDeleteIds.length" :bin-enabled="binEnabled" @close="showBulkDeleteConfirm = false" @confirm="handleBulkDeleteConfirm" />
 
@@ -352,7 +353,8 @@ const handleReorder = (orderedIds) => { reorderNotes(orderedIds); syncNow() }
 const selectedNoteIds = ref([])
 const noteActions = useNoteActions({
   notes, groups, currentNote, selectedNoteIds, createNote,
-  updateNoteMeta, updateNoteContent, evaluateLines, fileActions,
+  updateNoteMeta, updateNoteContent, softDeleteNote, archiveNote,
+  evaluateLines, fileActions, toast,
 })
 
 const handleReorderAll = (orders) => {
