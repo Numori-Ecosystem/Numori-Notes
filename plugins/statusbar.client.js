@@ -6,7 +6,8 @@ export default defineNuxtPlugin(() => {
 
   const colorMode = useColorMode()
 
-  const syncStatusBar = (mode: string) => {
+  /** @param {string} mode */
+  const syncStatusBar = (mode) => {
     const isDark = mode === 'dark'
     StatusBar.setBackgroundColor({ color: isDark ? '#221F22' : '#F5F4F2' })
     StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light })
