@@ -168,8 +168,11 @@
 
         <!-- Analytics toggle with tooltip -->
         <div class="relative">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <UiCheckbox v-model="collectAnalytics" />
+          <label
+            class="flex items-center gap-2"
+            :class="isLoggedIn ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
+          >
+            <UiCheckbox v-model="collectAnalytics" :disabled="!isLoggedIn" />
             <span class="text-sm text-gray-700 dark:text-gray-400">Enable view analytics</span>
             <UiTooltip width="w-56 sm:w-64">
               <Icon name="mdi:information-outline" class="w-4 h-4 text-gray-400 cursor-help" />
@@ -197,6 +200,10 @@
               </template>
             </UiTooltip>
           </label>
+          <p v-if="!isLoggedIn" class="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            <Icon name="mdi:account-alert-outline" class="w-3 h-3 inline" />
+            An account is required to track analytics.
+          </p>
         </div>
 
         <UiButton
